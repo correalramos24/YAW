@@ -1,0 +1,9 @@
+
+
+slurm_runner:
+  nodes:
+  mpi_per_node:
+  cpu_per_node:
+  ref_rundir:
+  script:
+  script_in_rundir:
