@@ -1,6 +1,7 @@
 
+from slurm_runner import slurmRunner
+
 from pathlib import Path
-from runners import *
 import sys
 import yaml
 

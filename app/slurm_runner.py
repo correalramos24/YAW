@@ -1,17 +1,9 @@
 
-from pathlib import Path
+
+from abstract_runner import AbstractRunner
 from dataclasses import dataclass, field
+from utils import *
 
-
-
-class AbstractRunner:
-    
-    def check_parameters(self):
-        raise Exception("UNDEFINED RUN")
-
-    def run(self):
-        raise Exception("UNDEFINED RUN!")
-    
 @dataclass
 class slurmRunner(AbstractRunner):
 
@@ -23,12 +15,8 @@ class slurmRunner(AbstractRunner):
     script_in_rundir: bool = True
     dry_mode :bool = False
 
-    @staticmethod
-    def empty_recipe():
-        pass
+    
 
     def run(self):
         for nodes in self.nodes:
             print(f"Running {self.script} with {nodes}")
-
-
