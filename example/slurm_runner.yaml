@@ -1,9 +1,9 @@
 
 
 slurm_runner:
-  nodes:
+  nodes: [1,2,3,4,5]
   mpi_per_node:
   cpu_per_node:
   ref_rundir:
-  script:
+  script: run_nemo.slurm
   script_in_rundir:
