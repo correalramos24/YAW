@@ -24,6 +24,7 @@ class xiosCompiler(AbstractRunner):
     svn_rev  : int = None
 
     def __post_init__(self):
+        super.__post_init__()
         self.xios_root = Path(self.xios_root)
         self.bld_fldr = Path(self.bld_fldr)
         self.env_file  = Path(self.env_file)
