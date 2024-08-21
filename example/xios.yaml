@@ -1,0 +1,14 @@
+
+
+xios_compile:
+  xios_root: my/path/xios/trunk
+  arch_name: mn5_gpp_intel
+  env_file: my_env
+  generate_arch: false
+  c_compiler: mpicc
+  f_compiler: mpif90
+  linker: mpif90 -nofor-main
+  make_jobs: 32
+  submit_script: False
+  make_xios_flags:
+  svn_repo: False
