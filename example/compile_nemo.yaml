@@ -1,0 +1,26 @@
+
+nemo_compile:
+  nemo_root: $EDITO_SCRATCH/NEMO5-TESTING/nemo/
+  cfg_name:
+  env_file:
+
+  c_preproc:
+  c_compiler: 
+  f_compiler:
+  f_compiler_flags:
+  linker:
+  linker_flags:
+  fpp_flags:
+
+  xios_lib_path: 
+  hdf5_path: $HDF5_DIR
+  netcdf_path: $NETCDF_DIR
+
+  git:
+  ref_cfg:
+  modules:
+  add_keys:
+  del_keys:
+
+  make_jobs:
+
