@@ -15,7 +15,8 @@ class slurmRunner(AbstractRunner):
     script_in_rundir: bool = True
     dry_mode :bool = False
 
-    
+    def check_parameters(self):
+        print("Checking parameters...")
 
     def run(self):
         for nodes in self.nodes:
