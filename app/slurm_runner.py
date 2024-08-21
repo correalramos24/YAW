@@ -11,9 +11,13 @@ class slurmRunner(AbstractRunner):
     mpi_per_node: list[int] = field(default_factory=list)
     cpu_per_node: list[int] = field(default_factory=list)
     ref_rundir: Path = None
+    env : str = None
     script: Path = None
     script_in_rundir: bool = True
     dry_mode :bool = False
+
+    def __post_init__(self):
+        return super().__post_init__()
 
     def check_parameters(self):
         print("Checking parameters...")
