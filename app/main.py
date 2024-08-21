@@ -1,10 +1,11 @@
 
 from slurm_runner import slurmRunner
-from xios_runner import xiosCompiler
+from xios_compiler import xiosCompiler
 from abstract_runner import AbstractRunner
 from pathlib import Path
 import sys
 import yaml
+import pdb
 
 INPUT=sys.argv[1]
 
@@ -14,7 +15,6 @@ runners = {
 }
 
 def main():
-    
     actions : list[AbstractRunner] = []
     print("Parsing", INPUT)
     with open(file=INPUT, mode='r') as yaml_file:

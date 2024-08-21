@@ -1,13 +1,16 @@
 
 
 xios_compile:
-  xios_root: my/path/xios/trunk
-  arch_name: mn5_gpp_intel
-  env_file: my_env
-  generate_arch: false
+  xios_root: /gpfs/scratch/bsc32/bsc032756/EDITO/XIOS2/trunk/
+  bld_fldr: mn5_testing
+  arch_name: mn5_gpp_intel_testing
+  env_file: /gpfs/scratch/bsc32/bsc032756/EDITO/SCRIPTS/ENV/mn5-gpp-intel
+  generate_arch: True
   c_compiler: mpicc
   f_compiler: mpif90
   linker: mpif90 -nofor-main
+  c_preproc: mpicc -EP
+  f_preproc: cpp -p
   make_jobs: 32
   submit_script: False
   make_xios_flags:
