@@ -53,9 +53,8 @@ class xiosCompiler(AbstractRunner):
 
         # 2. Generate arch file ?
         if self.generate_arch:
-            print("Generating arch", self.arch_name)
+            self.generate_arch_file()
         else:
-            print("Using arch", self.arch_name)
             check_file_exists(Path(self.xios_root, "arch", "arch-"+self.arch_name+".fcm"))
 
         # 3. Run make_xios!
@@ -66,3 +65,6 @@ class xiosCompiler(AbstractRunner):
             print("Run using srun!")
         else:
             print("Compiling using bash!")
+    
+    def generate_arch_file(self):
+        print("Generating arch", self.arch_name)
