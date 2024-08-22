@@ -15,6 +15,7 @@ class bashRunner(AbstractRunner):
     log_name : Optional[str] = field(default=None)
     ref_rundir : Optional[Path] = field(default=None)
     rundir_files : Optional[list[Path]] = field(default=None)
+    dry : bool = field(default=False)
 
     def __post_init__(self):
         super().__post_init__()
@@ -63,4 +64,5 @@ source {self.env_file}
 ./{self.script} $@
                             """)
         print("Created run script!")
-        execute_script("./run_wrapper.sh", self.args, self.rundir, self.log_name)          
+        if not self.dry:
+            execute_script("./run_wrapper.sh", self.args, self.rundir, self.log_name)          
