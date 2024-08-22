@@ -26,7 +26,7 @@ class xiosCompiler(AbstractRunner):
     log_name : Optional[str] = field(default=None)
 
     def __post_init__(self):
-        super.__post_init__()
+        super().__post_init__()
         self.xios_root = Path(self.xios_root)
         self.bld_fldr = Path(self.bld_fldr)
         self.env_file  = Path(self.env_file)

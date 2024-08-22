@@ -1,7 +1,7 @@
 
 
 xios_compile_intel:
-  type: xios
+  type: xios_compile
   xios_root: /gpfs/scratch/bsc32/bsc032756/EDITO/XIOS2/trunk/
   bld_fldr: mn5_testing
   arch_name: mn5_gpp_intel_testing

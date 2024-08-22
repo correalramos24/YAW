@@ -21,13 +21,13 @@ def main():
     print("Parsing", INPUT)
     with open(file=INPUT, mode='r') as yaml_file:
         content : dict = yaml.safe_load(yaml_file)
-        for recipe_id, (k, v) in enumerate(content.items()):
-            recipe_type = v["type"]
+        for recipe_id, (name, content) in enumerate(content.items()):
+            recipe_type = content["type"]
             if recipe_type in runners:
                 print(f"Building recipe {recipe_id} ({recipe_type})")
-                actions.append(runners[recipe_type](**v))
+                actions.append(runners[recipe_type](**content))
             else:
-                print("Unrecognized recipe", k)
+                print("Unrecognized recipe type", recipe_type)
     print("="*20)
     for i, action in enumerate(actions):
         print(f"Executing recipe {i}")
