@@ -1,7 +1,7 @@
 
 
 run1:
-  type: run
+  type: bashRunner
   log_name: run1.log
   script: my_script.sh
   args: 
@@ -13,7 +13,7 @@ run1:
   ref_rundir: /home/vcorreal/Documents/github/YAW/example/bash_runner
 
 run2:
-  type: run
+  type: bashRunner
   script: my_script.sh
   args: alfa
   log_name: run2.log
@@ -24,7 +24,7 @@ run2:
     - /home/vcorreal/Documents/github/YAW/example/bash_runner/my_script.sh
 
 run3:
-  type: run
+  type: bashRunner
   log_name: #example.log
   script: my_script.sh
   args: 

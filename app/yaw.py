@@ -12,7 +12,7 @@ INPUT=sys.argv[1]
 runners = {
     "slurm_runner": slurmRunner,
     "xios_compile": xiosCompiler,
-    "run": bashRunner
+    "bashRunner": bashRunner
 }
 
 def main():
