@@ -1,10 +1,13 @@
 
 from pathlib import Path
 import os
+from dataclasses import dataclass
 
-
+@dataclass
 class AbstractRunner:
     
+    type : str
+
     @staticmethod
     def empty_recipe():
         pass
@@ -19,7 +22,7 @@ class AbstractRunner:
                 else:
                     v = env_val
 
-    def check_parameters(self):
+    def manage_parameters(self):
         raise Exception("UNDEFINED RUN")
 
     def run(self):

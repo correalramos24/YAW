@@ -1,7 +1,8 @@
 
+from abstract_runner import AbstractRunner
 from slurm_runner import slurmRunner
 from xios_compiler import xiosCompiler
-from abstract_runner import AbstractRunner
+from bash_runner import bashRunner
 from pathlib import Path
 import sys
 import yaml
@@ -10,7 +11,8 @@ INPUT=sys.argv[1]
 
 runners = {
     "slurm_runner": slurmRunner,
-    "xios_compile": xiosCompiler
+    "xios_compile": xiosCompiler,
+    "run": bashRunner
 }
 
 def main():
@@ -20,17 +22,18 @@ def main():
     with open(file=INPUT, mode='r') as yaml_file:
         content : dict = yaml.safe_load(yaml_file)
         for recipe_id, (k, v) in enumerate(content.items()):
-            if k in runners:
-                print(f"Building recipe {recipe_id} ({k})")
-                actions.append(runners[k](**v))
+            recipe_type = v["type"]
+            if recipe_type in runners:
+                print(f"Building recipe {recipe_id} ({recipe_type})")
+                actions.append(runners[recipe_type](**v))
             else:
                 print("Unrecognized recipe", k)
-            
+    print("="*20)
     for i, action in enumerate(actions):
         print(f"Executing recipe {i}")
-        print(action)
-        action.check_parameters()
+        action.manage_parameters()
         action.run()
+        print("="*20)
 
 if __name__ == "__main__":
     main()

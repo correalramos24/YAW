@@ -1,0 +1,24 @@
+
+
+run1:
+  type: run
+  script: my_script.sh
+  args: 
+    - alfa
+    - beta
+    - charlie
+  log_name: #example.log
+  env_file: env.sh
+  rundir: /home/vcorreal/Documents/YAW/run_wf_1
+  ref_rundir: /home/vcorreal/Documents/YAW/run_wf
+
+run2:
+  type: run
+  script: my_script.sh
+  args: alfa
+  log_name: #example.log
+  env_file: env.sh
+  rundir: /home/vcorreal/Documents/YAW/run_wf_2
+  rundir_files:
+    - /home/vcorreal/Documents/YAW/run_wf/env.sh
+    - /home/vcorreal/Documents/YAW/run_wf/my_script.sh
