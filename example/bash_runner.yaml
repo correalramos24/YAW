@@ -2,7 +2,7 @@
 
 run1:
   type: run
-  log_name: #example.log
+  log_name: run1.log
   script: my_script.sh
   args: 
     - alfa
@@ -16,7 +16,7 @@ run2:
   type: run
   script: my_script.sh
   args: alfa
-  log_name: #example.log
+  log_name: run2.log
   env_file: env.sh
   rundir: /home/vcorreal/Documents/YAW/run_wf_2
   rundir_files:

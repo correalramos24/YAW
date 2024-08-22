@@ -36,7 +36,7 @@ class AbstractRunner:
         if self.log_name is None:
             print("WARNING: Not using a log, appending all to STDOUT")
         else:
-            print(f"Using {self.log_name} to append STDOUT and STDERR")
+            print(f"Using {self.log_name}, appending STDOUT and STDERR")
         # Manage rundir:
         if not check_path_exists(self.rundir):
             create_dir(self.rundir)
