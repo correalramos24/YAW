@@ -67,3 +67,8 @@ def execute_script(script, args, rundir, log_file=None):
         fdesc_stdout.close()
 
     print("Completed with return code: ", r.returncode)
+
+def execute_command(cmd: str, rundir: Path):
+    subprocess.run(f"/bin/bash {cmd}", cwd=rundir, 
+            shell=True, text=True,
+            stderr=subprocess.STDOUT)

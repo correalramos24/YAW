@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from utils import *
 from pathlib import Path
 from typing import Optional
-import os
 
 @dataclass
 class bashRunner(AbstractRunner):

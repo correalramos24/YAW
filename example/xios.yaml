@@ -1,6 +1,7 @@
 
 
-xios_compile:
+xios_compile_intel:
+  type: xios
   xios_root: /gpfs/scratch/bsc32/bsc032756/EDITO/XIOS2/trunk/
   bld_fldr: mn5_testing
   arch_name: mn5_gpp_intel_testing
@@ -15,3 +16,4 @@ xios_compile:
   submit_script: False
   make_xios_flags:
   svn_repo: False
+  log_name: xios_example.log
