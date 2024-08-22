@@ -57,12 +57,12 @@ class bashRunner(AbstractRunner):
             
 
     def run(self):
-        with open(Path(self.rundir, "run_wrapper.sh"), mode="w") as bash_file:
-            bash_file.write(f"""
-#!/bin/bash
-source {self.env_file}
-./{self.script} $@
-                            """)
+        super().generate_bash_wrapper(Path(self.rundir, "run_wrapper.sh"), 
+            [
+                f"source {self.env_file}",
+                f"./{self.script} $@"
+            ]
+        )
         print("Created run script!")
         if not self.dry:
             execute_script("./run_wrapper.sh", self.args, self.rundir, self.log_name)          

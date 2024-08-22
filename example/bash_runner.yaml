@@ -10,7 +10,7 @@ run1:
   log_name: #example.log
   env_file: env.sh
   rundir: /home/vcorreal/Documents/rundir/YAW/run_wf_1
-  ref_rundir: /home/vcorreal/Documents/YAW/example/bash_runner
+  ref_rundir: /home/vcorreal/Documents/github/YAW/example/bash_runner
 
 run2:
   type: run
@@ -20,5 +20,5 @@ run2:
   env_file: env.sh
   rundir: /home/vcorreal/Documents/YAW/run_wf_2
   rundir_files:
-    - /home/vcorreal/Documents/YAW/example/bash_runner/env.sh
-    - /home/vcorreal/Documents/YAW/example/bash_runner/my_script.sh
+    - /home/vcorreal/Documents/github/YAW/example/bash_runner/env.sh
+    - /home/vcorreal/Documents/github/YAW/example/bash_runner/my_script.sh

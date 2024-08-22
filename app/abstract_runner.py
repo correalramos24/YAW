@@ -26,9 +26,13 @@ class AbstractRunner:
         raise Exception("UNDEFINED RUN")
 
     @staticmethod
-    def generate_bash_wrapper():
-        # Add here the logic to generate wrapper bash files
-        pass
+    def generate_bash_wrapper(fPath : Path, cmds : list[str]):
+        cmds_with_endline = '\n'.join(cmds)
+        with open(fPath, mode="w") as bash_file:
+            bash_file.write(f"""#!/bin/bash
+# AUTOMATED BASH WRAPPER GENERATION:
+{cmds_with_endline}
+            """)
 
     def run(self):
         raise Exception("UNDEFINED RUN!")
