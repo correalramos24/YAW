@@ -11,7 +11,7 @@ class xiosCompiler(AbstractRunner):
     xios_root: Path = None
     bld_fldr: Path = None
     arch_name : str = None
-    env_file : Path = None
+    generate_arch : bool = True
     c_compiler : str = None
     f_compiler : str = None
     linker : str = None
@@ -19,27 +19,31 @@ class xiosCompiler(AbstractRunner):
     f_preproc: str = None
     make_xios_flags: str = None
     make_jobs : int  = 1
-    generate_arch : bool = True
     submit_script : bool = False
     svn_repo : str = None
     svn_rev  : int = None
 
     def __post_init__(self):
         super().__post_init__()
-        self.xios_root = Path(self.xios_root)
-        self.bld_fldr = Path(self.bld_fldr)
-        self.env_file  = Path(self.env_file)
+        self.xios_root = Path(self.xios_root) if self.xios_root else None
+        self.bld_fldr = Path(self.bld_fldr) if self.bld_fldr else None
+        self.env_file  = Path(self.env_file) if self.env_file else None
 
-    req_args_msg = "xios_root, bld_fldr and arch_name are required parameters!"
+        # Check required parameters:
+        if None in (self.xios_root, self.arch_name, self.bld_fldr):
+            raise Exception("xios_root, bld_fldr and arch_name are required parameters!")
+        else:
+            self.__arch_root = Path(self.xios_root, "arch")
+            self.__fcm_file  = Path(self.arch_root,"arch-"+self.arch_name+".fcm")
+            self.__env_file  = Path(self.arch_root,"arch-"+self.arch_name+".env")
+            self.__path_file  = Path(self.arch_root,"arch-"+self.arch_name+".path")
 
     def manage_parameters(self):
-        # Check required parameters:
-        if self.xios_root is None or self.arch_name is None or self.bld_fldr is None:
-            print(self.req_args_msg)
-            exit(1)
+        
         
         # Download from svn?
         if self.svn_repo:
+            #TODO: Add functionality, even add to abstract runner
             print(f"Downloading XIOS from {self.svn_repo} to {self.xios_root}")
             if self.svn_rev is not None:
                 print(f"Using rev", self.svn_rev)
@@ -50,15 +54,16 @@ class xiosCompiler(AbstractRunner):
 
         # Manage arch files:
         if self.generate_arch:
-            if  (self.c_compiler is None) or (self.f_compiler is None) or \
-                (self.linker is None) or (self.c_preproc is None) or \
-                (self.f_preproc is None):
-                print("If generate_arch is enable, you need to provide c_compiler, f_compiler, cpp, fpp and linker, check YAML file")
+            if None in (self.c_compiler, self.f_compiler, self.linker, 
+                        self.c_preproc, self.f_preproc):
+                print("If generate_arch is enable, you need to provide at least"
+                      "c_compiler, f_compiler, cpp, fpp and linker." 
+                      "Check YAML file")
                 exit(1)
             else:
                 self.generate_arch_file()
         else:
-            check_file_exists(Path(self.xios_root, "arch", "arch-"+self.arch_name+".fcm"))
+            check_file_exists(self.__fcm_file)
         
         # Manage env file:
         if self.env_file is None:
@@ -86,14 +91,11 @@ class xiosCompiler(AbstractRunner):
 
 
     def generate_arch_file(self):
-        arch_root = Path(self.xios_root, "arch")
-        fcm_file  = Path(arch_root,"arch-"+self.arch_name+".fcm")
-        env_file  = Path(arch_root,"arch-"+self.arch_name+".env")
-        path_file  = Path(arch_root,"arch-"+self.arch_name+".path")
-
-        print("Generating", fcm_file)
-        with open(fcm_file, "w") as fcm_f:
-            fcm_f.write(f"""################################################################################
+        
+        print("Generating", self.__fcm_file)
+        with open(self.fcm_file, "w") as fcm_f:
+            fcm_f.write(f"""
+################################################################################
 ###################                Projet XIOS               ###################
 ################################################################################
 
@@ -119,11 +121,11 @@ class xiosCompiler(AbstractRunner):
 %MAKE           gmake
 
 """)
-        print("Generating", env_file)
-        
-        execute_command(f"grep 'module' {self.env_file} > {env_file}", arch_root)
-        print("Generating", path_file) 
-        with open(path_file, "w") as path_f:
+        print("Generating", self.__env_file)
+        execute_command(f"grep 'module' {self.env_file} > {self.__env_file}", self.__arch_root)
+
+        print("Generating", self.__path_file) 
+        with open(self.__path_file, "w") as path_f:
             path_f.write(f"""
 NETCDF_INCDIR="-I{getenv("NETCDF_PATH")}/include"
 NETCDF_LIBDIR="-L{getenv("NETCDF_PATH")}/lib"
@@ -132,6 +134,7 @@ HDF5_INCDIR="-I{getenv("HDF5_PATH")}/include"
 HDF5_LIBDIR="-L{getenv("HDF5_PATH")}/lib"
 HDF5_LIB="-lhdf5_hl -lhdf5 -lhdf5 -lz"
 """)
-        check_file_exists(fcm_file)
-        check_file_exists(env_file)
-        check_file_exists(path_file)
+        # Check all file created!
+        check_file_exists(self.__fcm_file)
+        check_file_exists(self.__env_file)
+        check_file_exists(self.__path_file)
