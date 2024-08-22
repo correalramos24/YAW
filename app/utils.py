@@ -5,32 +5,6 @@ import subprocess
 
 process = None
 
-def start_bash_console(log_file_path: Path):
-    global process 
-    print("Starting bash instance, output redirected to", log_file_path)
-    with open(log_file_path, mode='w') as logfile:
-        process= subprocess.Popen(['/bin/bash'], 
-                stdin=subprocess.PIPE, stdout=logfile, stderr=logfile, text=True)
-
-def run_bash_command(cmd:str) -> int:
-    global process
-    if process is None:
-        Exception("Invalid state of process", process)
-    
-    print(">", cmd)
-    process.stdin.write(cmd + '\n')
-
-
-def finish_bash_console():
-    global process
-    process.stdin.close()
-    stdout, stderr = process.communicate()
-    print("Ending bash instance")
-    return stdout, stderr
-
-
-
-
 def copy_folder(reference_folder: Path, destination_folder: Path, force: bool):
     if not reference_folder.exists():
         raise FileNotFoundError(f"Reference folder '{reference_folder}' not found.")
@@ -51,7 +25,45 @@ def check_file_exists(filePath: Path):
     if not filePath.is_file():
         raise Exception(filePath, "not found!")
 
-def check_path_exists(folderPath: Path):        
+def copy_file(source: Path, destination: Path):
+    if not source.is_file():
+        raise FileNotFoundError(f"Unable to find {source}")
+    try:
+        shutil.copy2(source, destination)
+    except PermissionError:
+        print(f"Bad permisions either for {source} or {destination}.")
+    except FileExistsError:
+        print(f"{destination} already exists")
+    except Exception as e:
+        print(f"Error: {e}")
+
+def check_path_exists(folderPath: Path):
+    return folderPath.exists()
+
+def create_dir(folderPath: Path):
+    if not folderPath.exists():
+        folderPath.mkdir(parents=True, exist_ok=True)
+    else:
+        raise Exception("Creating an already existing dir!")
+
+def check_path_exists_exception(folderPath: Path):        
     if not folderPath.exists():
         raise Exception(f"{folderPath} not found!")
     
+def execute_script(script, args, rundir, log_file=None):
+
+    if log_file is not None:
+        print(f"Executing {script} with {args} at {rundir}, writting STDOUT to {log_file}")
+        fdesc_stdout = open(log_file, mode="w") 
+    else:
+        print(f"Executing {script} with {args} at {rundir}")
+        fdesc_stdout = None
+
+    r = subprocess.run(f"/bin/bash {script} {args}", cwd=rundir, 
+            shell=True, text=True,
+            stderr=subprocess.STDOUT, stdout=fdesc_stdout)
+
+    if log_file is not None:
+        fdesc_stdout.close()
+
+    print("Completed with return code: ", r.returncode)
