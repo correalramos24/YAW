@@ -19,7 +19,7 @@ class slurmRunner(AbstractRunner):
     def __post_init__(self):
         return super().__post_init__()
 
-    def check_parameters(self):
+    def manage_parameters(self):
         print("Checking parameters...")
 
     def run(self):
