@@ -2,12 +2,12 @@
 
 run1:
   type: run
+  log_name: #example.log
   script: my_script.sh
   args: 
     - alfa
     - beta
     - charlie
-  log_name: #example.log
   env_file: env.sh
   rundir: /home/vcorreal/Documents/rundir/YAW/run_wf_1
   ref_rundir: /home/vcorreal/Documents/github/YAW/example/bash_runner

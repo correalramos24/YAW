@@ -24,7 +24,7 @@ def main():
         for recipe_id, (name, content) in enumerate(content.items()):
             recipe_type = content["type"]
             if recipe_type in runners:
-                print(f"Building recipe {recipe_id} ({recipe_type})")
+                print(f"Building recipe {recipe_id} ({recipe_type} - {name})")
                 actions.append(runners[recipe_type](**content))
             else:
                 print("Unrecognized recipe type", recipe_type)

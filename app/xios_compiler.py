@@ -8,10 +8,10 @@ from typing import Optional
 
 @dataclass
 class xiosCompiler(AbstractRunner):
-    xios_root: Path
-    bld_fldr: Path
-    arch_name : str
-    env_file : Path
+    xios_root: Path = None
+    bld_fldr: Path = None
+    arch_name : str = None
+    env_file : Path = None
     c_compiler : str = None
     f_compiler : str = None
     linker : str = None
@@ -23,7 +23,6 @@ class xiosCompiler(AbstractRunner):
     submit_script : bool = False
     svn_repo : str = None
     svn_rev  : int = None
-    log_name : Optional[str] = field(default=None)
 
     def __post_init__(self):
         super().__post_init__()

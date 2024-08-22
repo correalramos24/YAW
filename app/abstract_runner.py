@@ -1,16 +1,17 @@
 
 from pathlib import Path
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field, MISSING
+from utils import *
 
 @dataclass
 class AbstractRunner:
     
     type : str
-
-    @staticmethod
-    def empty_recipe():
-        pass
+    rundir: Path
+    log_name : str = MISSING
+    env_file: Path = MISSING
+    dry : bool = False
 
     def __post_init__(self):
         for v in self.__dict__.values():
@@ -22,8 +23,22 @@ class AbstractRunner:
                 else:
                     v = env_val
 
+        self.env_file = Path(self.env_file) if self.env_file else None
+        self.rundir = Path(self.rundir) if self.rundir else None
+
     def manage_parameters(self):
-        raise Exception("UNDEFINED RUN")
+        print(">>", self.log_name)
+        # Manage log file
+        if self.log_name is None:
+            print("WARNING: Not using a log, appending all to STDOUT")
+        else:
+            print(f"Using {self.log_name} to append STDOUT and STDERR")
+        # Manage rundir:
+        if not check_path_exists(self.rundir):
+            create_dir(self.rundir)
+            print(f"Using {self.rundir} as rundir")
+        else:
+            print(f"WARNING, rundir {self.rundir} already exists!")
 
     @staticmethod
     def generate_bash_wrapper(fPath : Path, cmds : list[str]):
