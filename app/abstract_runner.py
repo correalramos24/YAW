@@ -20,7 +20,7 @@ class AbstractRunner:
             # Expand bash env variables
         for v in self.__dict__.values():
             if isinstance(v, str) and v.startswith("$"):
-                print(">Expanding bash env var", v)
+                #print(">Expanding bash env var", v)
                 env_val = os.getenv(v[1:])
                 if env_val is None:
                     raise Exception("Unable to find env var", v, env_val)
@@ -31,7 +31,6 @@ class AbstractRunner:
         self.rundir = Path(self.rundir) if self.rundir else None
 
     def manage_parameters(self):
-        print(">>", self.log_name)
         # Manage log file
         if self.log_name is None:
             print("WARNING: Not using a log, appending all to STDOUT")
@@ -52,7 +51,7 @@ class AbstractRunner:
 # AUTOMATED BASH WRAPPER GENERATION:
 {cmds_with_endline}
             """)
-
+        print(f"Created", fPath)
     def run(self):
         raise Exception("UNDEFINED RUN!")
     

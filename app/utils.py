@@ -51,7 +51,6 @@ def check_path_exists_exception(folderPath: Path):
         raise Exception(f"{folderPath} not found!")
     
 def execute_script(script, args, rundir, log_file=None):
-
     if log_file is not None:
         print(f"Executing {script} with {args} at {rundir}, writting STDOUT to {log_file}")
         fdesc_stdout = open(log_file, mode="w") 

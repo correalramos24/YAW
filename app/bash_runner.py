@@ -10,6 +10,7 @@ class bashRunner(AbstractRunner):
     args : str = field(default=None)
     ref_rundir : Path = field(default=None)
     rundir_files : list[Path] = field(default=None)
+    WRAPPER_NAME="bash_wrapper.sh"
     
     def __post_init__(self):
         super().__post_init__()
@@ -17,7 +18,7 @@ class bashRunner(AbstractRunner):
         
         self.ref_rundir = Path(self.ref_rundir) if self.ref_rundir else None
         
-        if self.args is list:
+        if isinstance(self.args, list) :
             self.args = ' '.join(self.args)
 
         if not self.rundir and not self.script :
@@ -38,17 +39,20 @@ class bashRunner(AbstractRunner):
             for f in self.rundir_files:
                 copy_file(f, Path(self.rundir, f.name))
         else:
-            raise Exception("Logic exceptio, you must see this msg!")
+            raise Exception("Logic exception, you must see this msg!")
             
 
     def run(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
-        super().generate_bash_wrapper(Path(self.rundir, "run_wrapper.sh"), 
+        super().generate_bash_wrapper(Path(self.rundir, self.WRAPPER_NAME),
             [
                 load_env_cmd,
                 f"./{self.script} $@"
             ]
         )
-        print("Created run script!")
-        if not self.dry:
-            execute_script("./run_wrapper.sh", self.args, self.rundir, self.log_name)          
+        
+        if self.dry:
+            print("DRY MODE: Not executing anything!")
+        else:
+            execute_script(self.WRAPPER_NAME, self.args, 
+                           self.rundir, self.log_name)
