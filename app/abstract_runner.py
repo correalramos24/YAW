@@ -25,6 +25,11 @@ class AbstractRunner:
     def manage_parameters(self):
         raise Exception("UNDEFINED RUN")
 
+    @staticmethod
+    def generate_bash_wrapper():
+        # Add here the logic to generate wrapper bash files
+        pass
+
     def run(self):
         raise Exception("UNDEFINED RUN!")
     

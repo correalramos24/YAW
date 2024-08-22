@@ -31,7 +31,7 @@ class xiosCompiler(AbstractRunner):
 
     req_args_msg = "xios_root, bld_fldr and arch_name are required parameters!"
 
-    def check_parameters(self):
+    def manage_parameters(self):
         if self.xios_root is None or self.arch_name is None or self.bld_fldr is None:
             print(self.req_args_msg)
             exit(1)
@@ -53,6 +53,7 @@ class xiosCompiler(AbstractRunner):
             check_file_exists(self.env_file)
 
     def run(self):
+        raise Exception("NOT COMPLETED!")
         start_bash_console("make_xios.log")
         run_bash_command(f"source {self.env_file}")
         run_bash_command(f"module list")
