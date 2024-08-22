@@ -3,6 +3,6 @@ Yet another workflow manager
 version: Alfa
 
 ## Description
-Workflow to automate stuff, build with Python and Bash
+Workflow to automate repetitive process, build with Python and Bash
 
 ## Usage
