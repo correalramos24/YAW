@@ -9,11 +9,15 @@ class AbstractRunner:
     
     type : str
     rundir: Path
-    log_name : str = MISSING
-    env_file: Path = MISSING
+    log_name : str = None
+    env_file: Path = None
     dry : bool = False
 
+    required_fields = ["type", "rundir"]
+    required_fields_msg = "are required arguments!"
+
     def __post_init__(self):
+            # Expand bash env variables
         for v in self.__dict__.values():
             if isinstance(v, str) and v.startswith("$"):
                 print(">Expanding bash env var", v)

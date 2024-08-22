@@ -25,7 +25,12 @@ def main():
             recipe_type = content["type"]
             if recipe_type in runners:
                 print(f"Building recipe {recipe_id} ({recipe_type} - {name})")
-                actions.append(runners[recipe_type](**content))
+                try:
+                    r = runners[recipe_type](**content)
+                    actions.append(r)
+                except Exception as e:
+                    print("EXCEPTION!", e)
+                    print("Excluding recipe", recipe_id, name)
             else:
                 print("Unrecognized recipe type", recipe_type)
     print("="*20)

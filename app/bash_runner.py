@@ -37,7 +37,6 @@ class bashRunner(AbstractRunner):
         elif self.rundir_files is not None:
             for f in self.rundir_files:
                 copy_file(f, Path(self.rundir, f.name))
-
         else:
             raise Exception("Logic exceptio, you must see this msg!")
             

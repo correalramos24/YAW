@@ -22,3 +22,14 @@ run2:
   rundir_files:
     - /home/vcorreal/Documents/github/YAW/example/bash_runner/env.sh
     - /home/vcorreal/Documents/github/YAW/example/bash_runner/my_script.sh
+
+run3:
+  type: run
+  log_name: #example.log
+  script: my_script.sh
+  args: 
+    - alfa
+    - beta
+    - charlie
+  env_file: env.sh
+  ref_rundir: /home/vcorreal/Documents/github/YAW/example/bash_runner
