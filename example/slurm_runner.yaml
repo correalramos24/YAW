@@ -1,10 +1,11 @@
 
 
-slurm_runner:
+slurm_example:
+  type: slurm_runner
   nodes: [1,2,3,4,5]
-  mpi_per_node:
-  cpu_per_node:
-  ref_rundir:
-  env: $ENV_FILE
+  mpi_per_node: 112
+  cpu_per_node: 1
+  env_file:
   script: run_nemo.slurm
-  script_in_rundir:
+  rundir: /home/vcorreal/Documents/rundir/YAW/slurm_rundir1
+  ref_rundir: /home/vcorreal/Documents/github/YAW/example/bash_runner

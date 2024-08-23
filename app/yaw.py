@@ -7,8 +7,10 @@ from pathlib import Path
 import sys
 import yaml
 
+# TODO: Add args here, manage generation of templates
 INPUT=sys.argv[1]
 
+# TODO: Move this to a manager or whatever
 runners = {
     "slurm_runner": slurmRunner,
     "xios_compile": xiosCompiler,
@@ -16,6 +18,11 @@ runners = {
 }
 
 def main():
+    
+
+    a = AbstractRunner("alfa", "")
+    a.generate_str_yaml_template()
+    exit(0)
     
     actions : list[AbstractRunner] = []
     print("Parsing", INPUT)

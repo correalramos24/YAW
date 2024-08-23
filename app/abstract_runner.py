@@ -14,7 +14,15 @@ class AbstractRunner:
     dry : bool = False
 
     required_fields = ["type", "rundir"]
-    required_fields_msg = "are required arguments!"
+    required_fields_msg = ", ".join(required_fields) + "are required arguments!"
+
+    help_dict = {
+        "type" : "Type of runner",
+        "rundir" : "Rundir path to execute the runner.",
+        "log_name" : "Log file to dump the STDOUT and STDERR",
+        "env_file" : "Environment file to use",
+        "dry" : "Dry run, only generate running directory"
+    }
 
     def __post_init__(self):
             # Expand bash env variables
@@ -52,9 +60,26 @@ class AbstractRunner:
 {cmds_with_endline}
             """)
         print(f"Created", fPath)
+
     def run(self):
         raise Exception("UNDEFINED RUN!")
     
+
+    def generate_str_yaml_template(self):
+        delim = "#"*33 + "-YAW-" + "#"*33
+        ret = f"{delim}\n## TEMPLATE FOR {self.type} RUNNER\n"
+        ret += "your_recipe_name:\n"
+    
+        for parameter, comment in self.help_dict.items():
+
+            if parameter == "type":
+                ret += "\t" + f"type: {self.type}\n"
+            else:
+                ret += "\t" + parameter + ": " + f"# {comment}\n"
+        ret += delim
+        print(ret)
+        return ret
+
 
 
 
