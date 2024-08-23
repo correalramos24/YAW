@@ -29,7 +29,6 @@ class bashRunner(AbstractRunner):
         if not self.ref_rundir and not self.rundir_files:
             warning("Not selected ref_rundir or rundir_files")
         
-        self.help_dict = {}
 
 
     def manage_parameters(self):
