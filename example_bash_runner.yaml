@@ -1,0 +1,13 @@
+#################################-YAW-#################################
+## TEMPLATE FOR bash_runner RUNNER
+your_recipe_name:
+  type: bash_runner
+  rundir: $HOME/YAW-TEST
+  log_name: #Log file to dump the STDOUT and STDERR
+  env_file: #Environment file to use
+  dry: False
+  script: ls
+  args: -la
+  ref_rundir: #Reference rundir to use, (copy all to rundir)
+  rundir_files: #List of files to copy to the rundir
+#################################-YAW-#################################

@@ -1,8 +1,7 @@
 
 from arguments import *
-from runner_manager import *
-from abstract_runner import AbstractRunner
-
+from runners import AbstractRunner, runners
+from utils import *
 import yaml
 
 
@@ -11,30 +10,33 @@ def main():
     actions : list[AbstractRunner] = []
     # 1. PARSE
     for input in input_files:
-        print("Parsing", input)
+        info("Parsing", input)
 
         with open(file=input, mode='r') as yaml_file:
             content : dict = yaml.safe_load(yaml_file)
             for recipe_id, (name, content) in enumerate(content.items()):
                 recipe_t = content["type"]
                 if recipe_t in runners:
-                    print(f"Building recipe {recipe_id} ({recipe_t} - {name})")
+                    info(f"Building recipe {recipe_id} ({recipe_t} - {name})")
                     try:
                         r = runners[recipe_t](**content)
                         actions.append(r)
                     except Exception as e:
-                        print("EXCEPTION!", e)
-                        print("Excluding recipe", recipe_id, name)
+                        error("While processing recipe ->" + str(e))
+                        warning("Excluding recipe", recipe_id, name)
                 else:
-                    print("Unrecognized recipe type", recipe_t)
+                    warning("Unrecognized recipe type", recipe_t)
     
     print("="*20)
 
     # 2. RUN RECIPE(S)
     for i, action in enumerate(actions):
-        print(f"Executing recipe {i}")
-        action.manage_parameters()
-        action.run()
+        try:
+            info(f"Executing recipe {i}")
+            action.manage_parameters()
+            action.run()
+        except Exception as e:
+            warning(f"While executing recipe {i} ->", e)
         print("="*20)
 
 if __name__ == "__main__":

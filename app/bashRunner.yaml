@@ -1,0 +1,9 @@
+#################################-YAW-#################################
+## TEMPLATE FOR bashRunner RUNNER
+your_recipe_name:
+	type: bashRunner
+	rundir: # Rundir path to execute the runner.
+	log_name: # Log file to dump the STDOUT and STDERR
+	env_file: # Environment file to use
+	dry: # Dry run, only generate running directory
+#################################-YAW-#################################

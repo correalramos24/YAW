@@ -1,5 +1,5 @@
 
-from abstract_runner import AbstractRunner
+from .abstract_runner import AbstractRunner
 from dataclasses import dataclass, field
 from utils import *
 from pathlib import Path

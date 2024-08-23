@@ -1,6 +1,6 @@
 
 
-from bash_runner import bashRunner
+from .bash_runner import bashRunner
 from dataclasses import dataclass, field
 from utils import *
 

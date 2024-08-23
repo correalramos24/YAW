@@ -1,7 +1,7 @@
 
 from pathlib import Path
 import os
-from dataclasses import dataclass, field, MISSING
+from dataclasses import dataclass
 from utils import *
 
 @dataclass
@@ -15,6 +15,7 @@ class AbstractRunner:
 
     required_fields = ["type", "rundir"]
     required_fields_msg = ", ".join(required_fields) + "are required arguments!"
+    delim = "#"*33 + "-YAW-" + "#"*33
 
     help_dict = {
         "type" : "Type of runner",
@@ -26,14 +27,11 @@ class AbstractRunner:
 
     def __post_init__(self):
             # Expand bash env variables
-        for v in self.__dict__.values():
-            if isinstance(v, str) and v.startswith("$"):
-                #print(">Expanding bash env var", v)
-                env_val = os.getenv(v[1:])
-                if env_val is None:
-                    raise Exception("Unable to find env var", v, env_val)
-                else:
-                    v = env_val
+        for field, value in self.__dict__.items():
+            
+            if isinstance(value, str) and "$" in value:
+                info("Expanding bash env var at", value)
+                self.__dict__[field] = expand_env_variables(value)
 
         self.env_file = Path(self.env_file) if self.env_file else None
         self.rundir = Path(self.rundir) if self.rundir else None
@@ -65,26 +63,24 @@ class AbstractRunner:
         raise Exception("UNDEFINED RUN!")
     
     @classmethod
-    def generate_yaml_template(cls):
-        with open(cls.type+".yaml", mode="w") as template:
-            template.write(cls.__generate_str_yaml_template())
-
-    @classmethod
-    def __generate_str_yaml_template(cls):
-        delim = "#"*33 + "-YAW-" + "#"*33
-        ret = f"{delim}\n## TEMPLATE FOR {cls.type} RUNNER\n"
-        ret += "your_recipe_name:\n"
-    
+    def __generate_yaml_template_content(cls):
+        ret = ""
         for parameter, comment in cls.help_dict.items():
-
             if parameter == "type":
-                ret += "\t" + f"type: {cls.type}\n"
+                ret += f"  {parameter}: {cls.type}\n"
             else:
-                ret += "\t" + parameter + ": " + f"# {comment}\n"
-        ret += delim + '\n'
-        print(ret)
+                ret += f"  {parameter}: #{comment}\n"
         return ret
 
+    @classmethod
+    def generate_yaml_template(cls):
+        ret = f"{AbstractRunner.delim}\n## TEMPLATE FOR {cls.type} RUNNER\n"
+        ret += "your_recipe_name:\n"
+        ret += cls.__generate_yaml_template_content()
+        ret += AbstractRunner.delim + '\n'
+
+        with open(cls.type+".yaml", mode="w") as template:
+            template.write(ret)
 
 
 

@@ -1,6 +1,7 @@
 from pathlib import Path
 import argparse
-from runner_manager import runners
+from runners import *
+from utils import *
 
 # Declare the flags:
 parser = argparse.ArgumentParser(description="YAW - Yet another workflow")
@@ -19,9 +20,12 @@ gen_template = app_args.generate
 
 # Manage generation of templates:
 if gen_template:
-    print("Template generation for", gen_template)
+    info("Generting", gen_template, "template")
 
     runners[gen_template].generate_yaml_template()
 
-    print("done")
+    info("done")
     exit(0)
+elif not input_files:
+    error_and_exit("You must provide any YAW recipe!", 1)
+
