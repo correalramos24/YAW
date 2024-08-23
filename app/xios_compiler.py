@@ -8,6 +8,7 @@ from typing import Optional
 
 @dataclass
 class xiosCompiler(AbstractRunner):
+    type : str = "xiosCompiler"
     xios_root: Path = None
     bld_fldr: Path = None
     arch_name : str = None

@@ -7,8 +7,8 @@ from utils import *
 @dataclass
 class AbstractRunner:
     
-    type : str
-    rundir: Path
+    type : str = None
+    rundir: Path = None
     log_name : str = None
     env_file: Path = None
     dry : bool = False
@@ -64,19 +64,24 @@ class AbstractRunner:
     def run(self):
         raise Exception("UNDEFINED RUN!")
     
+    @classmethod
+    def generate_yaml_template(cls):
+        with open(cls.type+".yaml", mode="w") as template:
+            template.write(cls.__generate_str_yaml_template())
 
-    def generate_str_yaml_template(self):
+    @classmethod
+    def __generate_str_yaml_template(cls):
         delim = "#"*33 + "-YAW-" + "#"*33
-        ret = f"{delim}\n## TEMPLATE FOR {self.type} RUNNER\n"
+        ret = f"{delim}\n## TEMPLATE FOR {cls.type} RUNNER\n"
         ret += "your_recipe_name:\n"
     
-        for parameter, comment in self.help_dict.items():
+        for parameter, comment in cls.help_dict.items():
 
             if parameter == "type":
-                ret += "\t" + f"type: {self.type}\n"
+                ret += "\t" + f"type: {cls.type}\n"
             else:
                 ret += "\t" + parameter + ": " + f"# {comment}\n"
-        ret += delim
+        ret += delim + '\n'
         print(ret)
         return ret
 

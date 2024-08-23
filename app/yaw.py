@@ -1,46 +1,36 @@
 
+from arguments import *
+from runner_manager import *
 from abstract_runner import AbstractRunner
-from slurm_runner import slurmRunner
-from xios_compiler import xiosCompiler
-from bash_runner import bashRunner
-from pathlib import Path
-import sys
+
 import yaml
 
-# TODO: Add args here, manage generation of templates
-INPUT=sys.argv[1]
-
-# TODO: Move this to a manager or whatever
-runners = {
-    "slurm_runner": slurmRunner,
-    "xios_compile": xiosCompiler,
-    "bashRunner": bashRunner
-}
 
 def main():
     
-
-    a = AbstractRunner("alfa", "")
-    a.generate_str_yaml_template()
-    exit(0)
-    
     actions : list[AbstractRunner] = []
-    print("Parsing", INPUT)
-    with open(file=INPUT, mode='r') as yaml_file:
-        content : dict = yaml.safe_load(yaml_file)
-        for recipe_id, (name, content) in enumerate(content.items()):
-            recipe_type = content["type"]
-            if recipe_type in runners:
-                print(f"Building recipe {recipe_id} ({recipe_type} - {name})")
-                try:
-                    r = runners[recipe_type](**content)
-                    actions.append(r)
-                except Exception as e:
-                    print("EXCEPTION!", e)
-                    print("Excluding recipe", recipe_id, name)
-            else:
-                print("Unrecognized recipe type", recipe_type)
+    # 1. PARSE
+    for input in input_files:
+        print("Parsing", input)
+
+        with open(file=input, mode='r') as yaml_file:
+            content : dict = yaml.safe_load(yaml_file)
+            for recipe_id, (name, content) in enumerate(content.items()):
+                recipe_t = content["type"]
+                if recipe_t in runners:
+                    print(f"Building recipe {recipe_id} ({recipe_t} - {name})")
+                    try:
+                        r = runners[recipe_t](**content)
+                        actions.append(r)
+                    except Exception as e:
+                        print("EXCEPTION!", e)
+                        print("Excluding recipe", recipe_id, name)
+                else:
+                    print("Unrecognized recipe type", recipe_t)
+    
     print("="*20)
+
+    # 2. RUN RECIPE(S)
     for i, action in enumerate(actions):
         print(f"Executing recipe {i}")
         action.manage_parameters()

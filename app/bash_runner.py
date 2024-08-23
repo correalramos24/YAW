@@ -6,6 +6,7 @@ from pathlib import Path
 
 @dataclass
 class bashRunner(AbstractRunner):
+    type : str = "bashRunner"
     script: Path = None
     args : str = field(default=None)
     ref_rundir : Path = field(default=None)

@@ -6,7 +6,7 @@ from utils import *
 
 @dataclass
 class slurmRunner(bashRunner):
-
+    type: str = "slurmRunner"
     nodes: list[int] = None
     mpi_per_node: list[int] = None
     cpu_per_node: list[int] = None
