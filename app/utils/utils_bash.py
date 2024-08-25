@@ -2,6 +2,7 @@ from pathlib import Path
 import subprocess
 import os
 import re
+from .utils_print import *
 
 
 def expand_env_variables(line: str) -> str:
@@ -24,16 +25,21 @@ def generate_bash_script(fPath: Path, cmds : list[str]):
 # AUTOMATED BASH WRAPPER GENERATION:
 {cmds_with_endline}
 """)
-        print(f"Created", fPath)
+        log(f"Created", fPath)
 
 def execute_script(script, args, rundir, log_file=None):
+    if not args: 
+        args = ""
+        args_str = "without args"
+    else: 
+        args_str = "with " + args
     if log_file is not None:
-        print(f"Executing {script} with {args} at {rundir}, writting STDOUT to {log_file}")
+        info(f"Executing {script} {args_str} at {rundir}, writting STDOUT to {log_file}")
         fdesc_stdout = open(log_file, mode="w") 
     else:
-        print(f"Executing {script} with {args} at {rundir}")
+        info(f"Executing {script} {args_str} at {rundir}")
         fdesc_stdout = None
-
+    
     r = subprocess.run(f"/bin/bash {script} {args}", cwd=rundir, 
             shell=True, text=True,
             stderr=subprocess.STDOUT, stdout=fdesc_stdout)
@@ -41,7 +47,7 @@ def execute_script(script, args, rundir, log_file=None):
     if log_file is not None:
         fdesc_stdout.close()
 
-    print("Completed with return code: ", r.returncode)
+    info(f"Completed {script} with return code: ", r.returncode)
 
 def execute_command(cmd: str, rundir: Path):
     subprocess.run(f"/bin/bash {cmd}", cwd=rundir, 

@@ -15,8 +15,10 @@ class bashRunner(AbstractRunner):
     
 
     def __post_init__(self):
+        self.req_param.extend(["script"])
+        self.single_params.extend(["dry", "ref_rundir", "rundir_files"])
         super().__post_init__()
-        
+        # MANAGE PARAMETER TYPES:
         self.script = Path(self.script) if self.script else None
         self.ref_rundir = Path(self.ref_rundir) if self.ref_rundir else None
         self.rundir_files = [Path(f) for f in self.rundir_files] \
@@ -43,6 +45,7 @@ class bashRunner(AbstractRunner):
 
     def run(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
+        print(self.rundir)
         generate_bash_script(Path(self.rundir, self.WRAPPER_NAME),
             [
                 load_env_cmd,
@@ -58,6 +61,8 @@ class bashRunner(AbstractRunner):
     
     @classmethod
     def generate_yaml_template(cls):
+        cls.req_param.extend(["script"])
+        cls.single_params.extend(["dry", "ref_rundir", "rundir_files"])
         cls.help_dict.update({
             "script" : "Script to be executed (can be a bash command)",
             "args" : "Script arguments",
