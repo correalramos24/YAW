@@ -17,6 +17,15 @@ def expand_env_variables(line: str) -> str:
     # Substitute variables in the string with their values
     return re.sub(pattern, replace_variable, line)
 
+def generate_bash_script(fPath: Path, cmds : list[str]):
+    cmds_with_endline = '\n'.join(cmds)
+    with open(fPath, mode="w") as bash_file:
+        bash_file.write(f"""#!/bin/bash
+# AUTOMATED BASH WRAPPER GENERATION:
+{cmds_with_endline}
+""")
+        print(f"Created", fPath)
+
 def execute_script(script, args, rundir, log_file=None):
     if log_file is not None:
         print(f"Executing {script} with {args} at {rundir}, writting STDOUT to {log_file}")

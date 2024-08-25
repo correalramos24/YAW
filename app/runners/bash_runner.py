@@ -30,7 +30,6 @@ class bashRunner(AbstractRunner):
             warning("Not selected ref_rundir or rundir_files")
         
 
-
     def manage_parameters(self):
         super().manage_parameters()
         
@@ -44,7 +43,7 @@ class bashRunner(AbstractRunner):
 
     def run(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
-        super().generate_bash_wrapper(Path(self.rundir, self.WRAPPER_NAME),
+        generate_bash_script(Path(self.rundir, self.WRAPPER_NAME),
             [
                 load_env_cmd,
                 f"{self.script} $@"

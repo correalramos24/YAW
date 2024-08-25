@@ -1,28 +1,18 @@
 
 
 from .bash_runner import bashRunner
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from utils import *
 
 @dataclass
 class slurmRunner(bashRunner):
-    type: str = "slurmRunner"
+    type: str = "slurm_runner"
     nodes: list[int] = None
     mpi_per_node: list[int] = None
     cpu_per_node: list[int] = None
 
     def __post_init__(self):
         super().__post_init__()
-    
-        # Manage input as strings!
-    
-        self.nodes = [self.nodes] if isinstance(self.nodes, int) else self.nodes
-        self.mpi_per_node = [self.mpi_per_node] \
-                                if isinstance(self.mpi_per_node, int) \
-                                else self.mpi_per_node
-        self.cpu_per_node = [self.cpu_per_node] \
-                                if isinstance(self.cpu_per_node, int) \
-                                else self.cpu_per_node
 
 
     def manage_parameters(self):
@@ -40,3 +30,12 @@ class slurmRunner(bashRunner):
                           f"{node} nodes, {mpi} tasks per node "
                           f"and {omp} cpus per task "
                           f"at {self.rundir}")
+    @classmethod
+    def generate_yaml_template(cls):
+        cls.help_dict.update({
+            "nodes" : "Nodes to be used",
+            "mpi_per_node" : "Tasks per node to be used",
+            "cpu_per_node" : "CPU(s) per task to be used",
+            "cartesian" : "Run all the parameter combinations."
+        })
+        super().generate_yaml_template()

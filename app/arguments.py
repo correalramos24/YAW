@@ -12,11 +12,15 @@ parser.add_argument('input',
 parser.add_argument('--generate', help="Generate templeate to be \
                     filled by the user", choices=runners.keys())
 
+parser.add_argument('--print-combinations', action='store_true',
+                    help="Print combinations of multi-parameters")
+
 # Parse the arguments:
 app_args = parser.parse_args()
 
-input_files : list[Path] =app_args.input
-gen_template = app_args.generate
+input_files : list[Path] = app_args.input
+gen_template: str        = app_args.generate
+print_multi : bool       = app_args.print_combinations
 
 # Manage generation of templates:
 if gen_template:
@@ -27,5 +31,5 @@ if gen_template:
     info("done")
     exit(0)
 elif not input_files:
-    error_and_exit("You must provide any YAW recipe!", 1)
+    critical("You must provide any YAW recipe!", 1)
 
