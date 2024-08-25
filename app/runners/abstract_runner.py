@@ -59,7 +59,6 @@ class AbstractRunner:
             else:
                 raise Exception("Unrecognized type for env_file", 
                                 type(self.env_file))
-        
 
     def __init_bash_env_variables(self):
         """Convert the bash variables ($VAR or ${VAR}) to the value.
