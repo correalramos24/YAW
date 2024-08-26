@@ -1,0 +1,32 @@
+#################################-YAW-#################################
+## TEMPLATE FOR slurmRunner RUNNER
+test:
+  type: bash_runner
+  mode: cartesian
+  rundir: $HOME/YAW-test
+  log_name: #Log file to dump the STDOUT and STDERR
+  env_file: $HOME/env_a
+  dry: True
+  script: ls
+  args: 
+    - -la
+    - -la
+    - -ls
+  ref_rundir: #Reference rundir to use, (copy all to rundir)
+  rundir_files: #List of files to copy to the rundir
+  cartesian: False
+
+missing_params:
+  type: bash_runner
+  env_file: $HOME/env_a
+
+simple:
+  type: bash_runner
+  rundir: $HOME/YAW-test
+  log_name: #Log file to dump the STDOUT and STDERR
+  env_file: $HOME/env_a
+  script: ls
+
+alfa:
+  type: no-type
+#################################-YAW-#################################
