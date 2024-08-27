@@ -3,7 +3,6 @@
 from .bash_runner import bashRunner
 from dataclasses import dataclass
 from utils import *
-from utils import generate_slurm_script
 
 @dataclass
 class slurmRunner(bashRunner):
@@ -20,6 +19,7 @@ class slurmRunner(bashRunner):
     slurm_time_limit : str = None
     slurm_contiguous : bool = None
     slurm_other_cmds : str = None
+    WRAPPER_NAME="slurm_wrapper.slurm"
 
     def __post_init__(self):
         self.req_param.extend(["slurm_nodes", "slurm_mpi", "slurm_cpus"])
@@ -45,7 +45,8 @@ class slurmRunner(bashRunner):
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
-            print("A")
+            execute_slurm_script(self.WRAPPER_NAME, self.args, 
+                                 self.rundir, self.log_name)
 
        
     @classmethod

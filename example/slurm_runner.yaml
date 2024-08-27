@@ -1,11 +1,15 @@
-
-
-slurm_example:
+#####################################-YAW-######################################
+## TEMPLATE FOR slurm_runner RUNNER
+## Required parameters:type rundir nodes mpi_per_node cpu_per_node script
+## Single parameters: type rundir dry ref_rundir rundir_files
+your_recipe_name:
   type: slurm_runner
-  nodes: [1,2,3,4,5]
-  mpi_per_node: 112
-  cpu_per_node: 1
-  env_file:
-  script: run_nemo.slurm
-  rundir: /home/vcorreal/Documents/rundir/YAW/slurm_rundir1
-  ref_rundir: /home/vcorreal/Documents/github/YAW/example/bash_runner
+  rundir: $HOME/YAW-SLURM
+  slurm_nodes: 33
+  slurm_mpi: 112
+  slurm_cpus: 1
+  script: ls -la
+  args: #Script arguments
+  ref_rundir: #Reference rundir to use, (copy all to rundir)
+  rundir_files: #List of files to copy to the rundir
+#####################################-YAW-######################################
