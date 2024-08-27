@@ -47,5 +47,3 @@ def execute_slurm_script(script, args, rundir, log_file=None):
 
     if log_file is not None:
         fdesc_stdout.close()
-
-    info(f"Completed {script} with return code: ", r.returncode)
