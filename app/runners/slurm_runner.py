@@ -55,6 +55,12 @@ class slurmRunner(bashRunner):
         cls.help_dict.update({
             "slurm_nodes" : "Nodes to execute the script",
             "slurm_mpi" : "Tasks per node",
-            "slurm_cpus" : "Cpus per task"
+            "slurm_cpus" : "Cpus per task",
+            "slurm_queue" : "queue for the submission",
+            "slurm_account" : "slurm account",
+            "slurm_wait" : "block the execution of sbatch until job end?",
+            "slurm_time_limit" : "time_limit in SLURM format (DD:HH:MM:SS)",
+            "slurm_contiguous" : "place contiguous nodes?",
+            "slurm_other_cmds" : "other slurm commands"
         })
         super().generate_yaml_template()
