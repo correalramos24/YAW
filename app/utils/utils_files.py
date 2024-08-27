@@ -16,7 +16,7 @@ def copy_folder(reference_folder: Path, destination_folder: Path, force: bool):
         else:
             shutil.rmtree(destination_folder)
     
-    shutil.copytree(reference_folder, destination_folder)
+    shutil.copytree(reference_folder, destination_folder, symlinks=True)
     print(f"Generated '{destination_folder}' from '{reference_folder}'.")
 
 
