@@ -3,39 +3,57 @@
 from .bash_runner import bashRunner
 from dataclasses import dataclass
 from utils import *
+from utils import generate_slurm_script
 
 @dataclass
 class slurmRunner(bashRunner):
     type: str = "slurm_runner"
-    nodes: list[int] = None
-    mpi_per_node: list[int] = None
-    cpu_per_node: list[int] = None
+    # Required:
+    slurm_nodes: int = None
+    slurm_mpi: int = None
+    slurm_cpus: int = None
+    
+    # Optional arguments:
+    slurm_queue : str = None
+    slurm_account : str = None
+    slurm_wait : bool = None
+    slurm_time_limit : str = None
+    slurm_contiguous : bool = None
+    slurm_other_cmds : str = None
 
     def __post_init__(self):
+        self.req_param.extend(["slurm_nodes", "slurm_mpi", "slurm_cpus"])
         super().__post_init__()
 
 
     def manage_parameters(self):
         super().manage_parameters()
-        # Check if we only have 1 run or more...
+        #TODO: Check correctness of slurm parameters!
 
     def run(self):
-        
-        #TODO: Non-defined parameters must pick the default values form script!
+        slurm_directives = {k : v for k, v in self.__dict__.items() 
+                            if k.startswith("slurm_") and v }
+        generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
+            slurm_directives,
+            [
+                f"source {self.env_file}" if self.env_file else "",
+                "printenv &> env.log",
+                f"{self.script} $@"
+            ]            
+        )
 
-        for node in self.nodes:
-            for mpi in self.mpi_per_node:
-                for omp in self.cpu_per_node:
-                    print(f"Running {self.script} with "
-                          f"{node} nodes, {mpi} tasks per node "
-                          f"and {omp} cpus per task "
-                          f"at {self.rundir}")
+        if self.dry:
+            print("DRY MODE: Not executing anything!")
+        else:
+            print("A")
+
+       
     @classmethod
     def generate_yaml_template(cls):
+        cls.req_param.extend(["nodes", "mpi_per_node", "cpu_per_node"])
         cls.help_dict.update({
-            "nodes" : "Nodes to be used",
-            "mpi_per_node" : "Tasks per node to be used",
-            "cpu_per_node" : "CPU(s) per task to be used",
-            "cartesian" : "Run all the parameter combinations."
+            "slurm_nodes" : "Nodes to execute the script",
+            "slurm_mpi" : "Tasks per node",
+            "slurm_cpus" : "Cpus per task"
         })
         super().generate_yaml_template()
