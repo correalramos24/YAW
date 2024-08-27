@@ -41,9 +41,9 @@ class bashRunner(AbstractRunner):
         elif self.rundir_files is not None:
             for f in self.rundir_files:
                 copy_file(f, Path(self.rundir, f.name))
-    
 
-    def run(self):
+
+    def inflate_runner(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
         print(self.rundir)
         generate_bash_script(Path(self.rundir, self.WRAPPER_NAME),
@@ -53,7 +53,9 @@ class bashRunner(AbstractRunner):
                 f"{self.script} $@"
             ]
         )
-        
+
+    def run(self):
+        self.inflate_runner()
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
