@@ -50,15 +50,12 @@ class AbstractRunner:
         self.__init_bash_env_variables()
 
         # MANAGE PARAMETER TYPES:
-        self.rundir = Path(self.rundir) if self.rundir else None
-        if self.env_file:
-            if is_a_list(self.env_file):
-                self.env_file = [Path(f) for f in self.env_file]
-            elif is_a_str(self.env_file):
-                Path(self.env_file)
-            else:
-                raise Exception("Unrecognized type for env_file", 
-                                type(self.env_file))
+        self.rundir   = Path(self.rundir) if self.rundir else None
+        self.env_file = Path(self.env_file) if self.env_file else None
+        
+        # MANAGE WARNINGS
+        if not self.env_file:
+            warning("Running without env!")
 
     def __init_bash_env_variables(self):
         """Convert the bash variables ($VAR or ${VAR}) to the value.
@@ -82,12 +79,14 @@ class AbstractRunner:
         else:
             info(f"Using {self.log_name}, appending STDOUT and STDERR")
         # Manage rundir:
-        
         if not check_path_exists(self.rundir):
             create_dir(self.rundir)
             info(f"Using {self.rundir} as rundir")
         else:
             info(f"rundir {self.rundir} already exists!")
+        # Manage env file:
+        if self.env_file:
+            copy_file(self.env_file, self.rundir)
         
     def run(self):
         """Execute the runner
