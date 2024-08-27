@@ -23,8 +23,10 @@ def generate_slurm_script(fPath: Path,
     with open(fPath, mode="w") as bash_file:
         bash_file.write(f"""#!/bin/bash
 {foramtted_directives}                        
-# AUTOMATED SLURM SCRIPT WRAPPER GENERATION:
+{"="*80}
+# AUTOMATED SLURM SCRIPT WRAPPER GENERATION:\n
 {cmds_with_endline}
+{"="*80}
 """)
         log(f"Created", fPath)
 
@@ -41,7 +43,7 @@ def execute_slurm_script(script, args, rundir, log_file=None):
         info(f"Submitting {script} {args_str} at {rundir}")
         fdesc_stdout = None
     
-    r = subprocess.run(f"sbatch {script} {args}", cwd=rundir, 
+    r = subprocess.run(f"sbatch --parsable {script} {args}", cwd=rundir, 
             shell=True, text=True,
             stderr=subprocess.STDOUT, stdout=fdesc_stdout)
 
