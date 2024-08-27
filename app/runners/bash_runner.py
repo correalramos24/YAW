@@ -41,7 +41,7 @@ class bashRunner(AbstractRunner):
         elif self.rundir_files is not None:
             for f in self.rundir_files:
                 copy_file(f, Path(self.rundir, f.name))
-            
+    
 
     def run(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
@@ -49,6 +49,7 @@ class bashRunner(AbstractRunner):
         generate_bash_script(Path(self.rundir, self.WRAPPER_NAME),
             [
                 load_env_cmd,
+                "printenv &> env.log",
                 f"{self.script} $@"
             ]
         )
