@@ -1,6 +1,9 @@
 from utils import *
 from itertools import product
 
+# TODO: Transform this in a class, runnerOrchestrator or something like this
+# Keep the track of the registered recipies, 2 methods to complement the main
+
 def is_a_multi_recipe(**params) -> bool:
     return  [
             param for param, val in params.items()

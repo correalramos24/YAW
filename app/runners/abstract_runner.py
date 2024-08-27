@@ -23,7 +23,6 @@ class AbstractRunner:
     root_recipe: str = None
 
     req_param = ["type", "rundir"]
-    single_params   = [*req_param]
     DELIM = "#"*37 + "-YAW-" + "#"*38
 
     help_dict = {
@@ -114,4 +113,3 @@ class AbstractRunner:
 
         with open(cls.type+".yaml", mode="w") as template:
             template.write(ret)
-
