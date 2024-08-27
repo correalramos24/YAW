@@ -44,7 +44,7 @@ class AbstractRunner:
         # Check required parameter:
         for param in self.req_param:
             if not self.__dict__[param]:
-                error(param, "is a required argument!")
+                raise Exception(f"{param} is a required argument!")
 
         # EXPAND BASH ENV VARIABLES:
         self.__init_bash_env_variables()
