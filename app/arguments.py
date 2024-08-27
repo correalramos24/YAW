@@ -15,12 +15,16 @@ parser.add_argument('--generate', help="Generate templeate to be \
 parser.add_argument('--print-combinations', action='store_true',
                     help="Print combinations of multi-parameters")
 
+#parser.add_argument("--recipe", metavar="R", nargs="*",
+#                    help="Run only recipe(s) with name R from the file")
+
 # Parse the arguments:
 app_args = parser.parse_args()
 
 input_files : list[Path] = app_args.input
 gen_template: str        = app_args.generate
 print_multi : bool       = app_args.print_combinations
+#recipe      : str        = app_args.recipe
 
 # Manage generation of templates:
 if gen_template:
