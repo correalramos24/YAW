@@ -18,14 +18,14 @@ def expand_env_variables(line: str) -> str:
     # Substitute variables in the string with their values
     return re.sub(pattern, replace_variable, line)
 
-def generate_bash_script(fPath: Path, cmds : list[str]):
-    cmds_with_endline = '\n'.join(cmds)
-    with open(fPath, mode="w") as bash_file:
+def generate_bash_script(f_path: Path, cmds : list[str]):
+    cmds_with_end_line = '\n'.join(cmds)
+    with open(f_path, mode="w") as bash_file:
         bash_file.write(f"""#!/bin/bash
 # AUTOMATED BASH WRAPPER GENERATION:
-{cmds_with_endline}
+{cmds_with_end_line}
 """)
-        log(f"Created", fPath)
+        log(f"Created", f_path)
 
 def execute_script(script, args, rundir, log_file=None):
     if not args: 
@@ -33,19 +33,19 @@ def execute_script(script, args, rundir, log_file=None):
         args_str = "without args"
     else: 
         args_str = "with " + args
-    if log_file is not None:
-        info(f"Executing {script} {args_str} at {rundir}, writting STDOUT to {log_file}")
-        fdesc_stdout = open(log_file, mode="w") 
+    if log_file:
+        info(f"Executing {script} {args_str} at {rundir}, writing STDOUT to {log_file}")
+        file_desc = open(log_file, mode="w")
     else:
         info(f"Executing {script} {args_str} at {rundir}")
-        fdesc_stdout = None
-    
+        file_desc = None
+
     r = subprocess.run(f"/bin/bash {script} {args}", cwd=rundir, 
             shell=True, text=True,
-            stderr=subprocess.STDOUT, stdout=fdesc_stdout)
+            stderr=subprocess.STDOUT, stdout=file_desc)
 
     if log_file is not None:
-        fdesc_stdout.close()
+        file_desc.close()
 
     info(f"Completed {script} with return code: ", r.returncode)
 

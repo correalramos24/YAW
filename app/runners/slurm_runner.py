@@ -1,11 +1,11 @@
 
 
-from .bash_runner import bashRunner
+from .BashRunner import BashRunner
 from dataclasses import dataclass
 from utils import *
 
 @dataclass
-class slurmRunner(bashRunner):
+class slurmRunner(BashRunner):
     type: str = "slurm_runner"
     # Required:
     slurm_nodes: int = None
@@ -38,7 +38,7 @@ class slurmRunner(bashRunner):
             [
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
-                f"{self.script} $@"
+                f"{self.bash_cmd} $@"
             ]            
         )
         print()

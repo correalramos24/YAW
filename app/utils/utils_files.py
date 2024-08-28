@@ -26,28 +26,28 @@ def copy_file(source: Path, destination: Path):
     try:
         shutil.copy2(source, destination)
     except PermissionError:
-        print(f"Bad permisions either for {source} or {destination}.")
+        print(f"Bad permissions either for {source} or {destination}.")
     except FileExistsError:
         print(f"{destination} already exists")
     except Exception as e:
         print(f"Error: {e}")
 
-def check_file_exists(filePath: Path):
-    return filePath.is_file()
+def check_file_exists(file_path: Path):
+    return file_path.is_file()
 
-def check_file_exists_exception(filePath: Path):
-    if not filePath.is_file():
-        raise Exception(filePath, "not found!")
+def check_file_exists_exception(file_path: Path):
+    if not file_path.is_file():
+        raise Exception(file_path, "not found!")
 
-def check_path_exists(folderPath: Path):
-    return folderPath.exists()
+def check_path_exists(folder_path: Path):
+    return folder_path.exists()
 
-def check_path_exists_exception(folderPath: Path):        
-    if not folderPath.exists():
-        raise Exception(f"{folderPath} not found!")
+def check_path_exists_exception(folder_path: Path):
+    if not folder_path.exists():
+        raise Exception(f"{folder_path} not found!")
     
-def create_dir(folderPath: Path):
-    if not folderPath.exists():
-        folderPath.mkdir(parents=True, exist_ok=True)
+def create_dir(folder_path: Path):
+    if not folder_path.exists():
+        folder_path.mkdir(parents=True, exist_ok=True)
     else:
         raise Exception("Creating an already existing dir!")

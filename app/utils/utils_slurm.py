@@ -11,41 +11,41 @@ slurm_syntax = {
     "wait" : "-W","contiguous" : "--contiguous",
 }
 
-def generate_slurm_script(fPath: Path, 
+def generate_slurm_script(f_path: Path,
                           slurm_directives : dict[str, any],
                           cmds : list[str]):
-    foramtted_directives = ""
+    formatted_directives = ""
     for directive, val in slurm_directives.items():
         aux = directive.replace("slurm_","")
-        foramtted_directives += f"#SBATCH {slurm_syntax[aux]} {val}\n" 
+        formatted_directives += f"#SBATCH {slurm_syntax[aux]} {val}\n"
     
-    cmds_with_endline = '\n'.join(cmds)
-    with open(fPath, mode="w") as bash_file:
+    cmds_with_end_line = '\n'.join(cmds)
+    with open(f_path, mode="w") as bash_file:
         bash_file.write(f"""#!/bin/bash
-{foramtted_directives}                        
+{formatted_directives}                        
 {"="*80}
 # AUTOMATED SLURM SCRIPT WRAPPER GENERATION:\n
-{cmds_with_endline}
+{cmds_with_end_line}
 {"="*80}
 """)
-        log(f"Created", fPath)
+        log(f"Created", f_path)
 
 def execute_slurm_script(script, args, rundir, log_file=None):
-    if not args: 
+    if args:
+        args_str = "with " + args
+    else: 
         args = ""
         args_str = "without args"
-    else: 
-        args_str = "with " + args
-    if log_file is not None:
+    if log_file:
         info(f"Submitting {script} {args_str} at {rundir}, writting STDOUT to {log_file}")
-        fdesc_stdout = open(log_file, mode="w") 
+        file_desc = open(log_file, mode="w")
     else:
         info(f"Submitting {script} {args_str} at {rundir}")
-        fdesc_stdout = None
-    
+        file_desc = None
+
     r = subprocess.run(f"sbatch --parsable {script} {args}", cwd=rundir, 
             shell=True, text=True,
-            stderr=subprocess.STDOUT, stdout=fdesc_stdout)
+            stderr=subprocess.STDOUT, stdout=file_desc)
 
     if log_file is not None:
-        fdesc_stdout.close()
+        file_desc.close()

@@ -1,6 +1,7 @@
 from pathlib import Path
 import argparse
-from runners import *
+
+from app.runners.RunnerManager import RunnerManager
 from utils import *
 
 # Declare the flags:
@@ -9,8 +10,8 @@ parser.add_argument('input',
                     help="Select YAW recipe input file(S)", 
                     nargs ="*", type=Path)
 
-parser.add_argument('--generate', help="Generate templeate to be \
-                    filled by the user", choices=runners.keys())
+parser.add_argument('--generate', help="Generate template to be \
+                    filled by the user", choices=RunnerManager.get_runners())
 
 parser.add_argument('--print-combinations', action='store_true',
                     help="Print combinations of multi-parameters")
@@ -28,12 +29,11 @@ print_multi : bool       = app_args.print_combinations
 
 # Manage generation of templates:
 if gen_template:
-    info("Generting", gen_template, "template")
-
-    runners[gen_template].generate_yaml_template()
+    info("Generating", gen_template, "template")
+    RunnerManager.generate_template(gen_template)
 
     info("done")
     exit(0)
 elif not input_files:
-    critical("You must provide any YAW recipe!", 1)
+    critical("You must provide any YAW recipe!", "1")
 

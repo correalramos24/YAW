@@ -42,7 +42,7 @@ class nemoRunner(slurmRunner):
                 f"sed -i 's/[[:space:]]*nn_stock[[:space:]]*=[[:space:]]*.*/nn_stock=-1/' \"namelist_cfg\"",
                 f"sed -i \"s/nn_itend[ \\t]*=.*/nn_itend={self.steps}/\" namelist_cfg",
                 "#Running the model:",
-                f"{self.script} $@"
+                f"{self.bash_cmd} $@"
             ]            
         )
 
