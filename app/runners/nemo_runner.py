@@ -1,11 +1,11 @@
 
 
-from .slurm_runner import slurmRunner
+from .SlurmRunner import SlurmRunner
 from dataclasses import dataclass
 from utils import *
 
 @dataclass
-class nemoRunner(slurmRunner):
+class nemoRunner(SlurmRunner):
     type: str = "nemo_runner"
     WRAPPER_NAME="nemo.slurm"
     nemo_root : Path = None

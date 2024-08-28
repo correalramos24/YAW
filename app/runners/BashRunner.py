@@ -49,6 +49,7 @@ class BashRunner(AbstractRunner):
                                  f"{self.bash_cmd} $@"
                              ]
                              )
+
     def run(self):
         self.inflate_runner()
         if self.dry:

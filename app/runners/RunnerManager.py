@@ -1,5 +1,5 @@
 from app.utils import *
-from . import slurmRunner, nemoRunner, AbstractRunner
+from . import SlurmRunner, nemoRunner, AbstractRunner
 from .BashRunner import BashRunner
 from pathlib import Path
 import yaml
@@ -9,7 +9,7 @@ class RunnerManager:
 
     runners: dict = {
         "BashRunner": BashRunner,
-        "SlurmRunner": slurmRunner,
+        "SlurmRunner": SlurmRunner,
         "NemoRunner": nemoRunner,
     }
 
