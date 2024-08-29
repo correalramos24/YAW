@@ -13,7 +13,10 @@ def stringfy(var) -> str:
     if is_a_path(var): 
         return convert_path_to_str(var)
     elif is_a_list(var):
-        return ', '.join(var)
+        ret = str(var[0])
+        for e in var[1:]:
+            ret+= ',' +str(e)
+        return ret
     else:
         return var
     

@@ -1,3 +1,5 @@
+from _ast import List
+
 from .AbstractRunner import AbstractRunner
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -16,7 +18,8 @@ class BashRunner(AbstractRunner):
     def __post_init__(self):
         # ADD REQ_PARAMS FOR THIS RUNNER:
         self.req_param.extend(["bash_cmd"])
-
+        # INIT SUPER CLASS:
+        super().__post_init__()
         # MANAGE PARAMETER TYPES:
         self.bash_cmd = Path(self.bash_cmd) if self.bash_cmd else None
         self.ref_rundir = Path(self.ref_rundir) if self.ref_rundir else None
@@ -26,8 +29,11 @@ class BashRunner(AbstractRunner):
         if not self.ref_rundir and not self.rundir_files:
             warning("Not selected ref_rundir or rundir_files")
 
-        # INIT SUPER CLASS:
-        super().__post_init__()
+    @classmethod
+    def get_multi_value_params(cls) -> set[str]:
+        params = super().get_multi_value_params()
+        params.add("rundir_files")
+        return params
 
     def manage_parameters(self):
         super().manage_parameters()
@@ -41,7 +47,6 @@ class BashRunner(AbstractRunner):
 
     def inflate_runner(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
-        print(self.rundir)
         generate_bash_script(Path(self.rundir, self.WRAPPER_NAME),
                              [
                                  load_env_cmd,

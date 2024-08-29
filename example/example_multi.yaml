@@ -1,15 +1,18 @@
 test:
-  type: bash_runner
+  type: BashRunner
   mode: cartesian
   rundir: $HOME/YAW-test
   log_name: #Log file to dump the STDOUT and STDERR
-  env_file: $HOME/env_a
+  env_file:
+    - $HOME/env_a
+    - $HOME/env_b
   dry: True
-  script: ls
+  bash_cmd: hostname
   args: 
     - -la
     - -la
     - -ls
   ref_rundir: #Reference rundir to use, (copy all to rundir)
-  rundir_files: #List of files to copy to the rundir
-  cartesian: False
+  rundir_files:
+    - $HOME/alfa
+    - $HOME/beta

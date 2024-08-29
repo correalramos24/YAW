@@ -2,10 +2,11 @@
 
 from .SlurmRunner import SlurmRunner
 from dataclasses import dataclass
-from utils import *
+from app.utils import *
+from pathlib import Path
 
 @dataclass
-class nemoRunner(SlurmRunner):
+class NemoRunner(SlurmRunner):
     type: str = "nemo_runner"
     WRAPPER_NAME="nemo.slurm"
     nemo_root : Path = None
@@ -13,15 +14,18 @@ class nemoRunner(SlurmRunner):
     
     # Optional, initialized to some arbitrary value:
     steps : int = 10
-    
+
+    PATH_TO_NEMO=Path('BLD','bin','nemo.exe')
+
     def __post_init__(self):
         self.req_param.extend(["nemo_root", "nemo_cfg"])
         super().__post_init__()
+        self.nemo_root = Path(self.nemo_root)
 
     def manage_parameters(self):
         super().manage_parameters()
         # 1. Check file presence:
-        bin_nemo = Path(self.nemo_root, 'cfgs', self.nemo_cfg, 'BLD','bin','nemo.exe')
+        bin_nemo = Path(self.nemo_root, 'cfgs', self.nemo_cfg, self.PATH_TO_NEMO)
         check_file_exists_exception(bin_nemo)
         if self.env_file: 
             check_file_exists_exception(self.env_file)
@@ -49,10 +53,10 @@ class nemoRunner(SlurmRunner):
 
     @classmethod
     def generate_yaml_template(cls):
-        cls.req_param.extend(["nemo_root", "nemo_cfg"])
-        cls.help_dict.update({
-            "nemo_root" : "nemo installation root",
-            "nemo_cfg"  : "nemo cfg to be executed",
-            "steps"     : "model steps to be executed (10 by default)"
-        })
-        super().generate_yaml_template()
+        parameters_info = SlurmRunner._inflate_yaml_template_info()
+        parameters_info.extend([
+            ("nemo_root", "nemo installation root"),
+            ("nemo_cfg" ,  "nemo cfg to be executed"),
+            ("steps" , "model steps to be executed (10 by default)")
+        ])
+        return parameters_info
