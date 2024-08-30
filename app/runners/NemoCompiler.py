@@ -2,6 +2,7 @@ from . import AbstractRunner
 from dataclasses import dataclass
 from app.utils import *
 from pathlib import Path
+from copy import deepcopy
 
 @dataclass
 class NemoCompiler(AbstractRunner):
@@ -28,6 +29,7 @@ class NemoCompiler(AbstractRunner):
     fpp_flags : str = None
 
     def __post_init__(self):
+        self.req_param = deepcopy(self.req_param)
         self.req_param.extend(["cfg_name", "ref_cfg"])
         super().__post_init__()
         if self.generate_arch:
@@ -61,8 +63,6 @@ class NemoCompiler(AbstractRunner):
         if self.dry:
             info("DRY MODE! ONLY GENERATE RUNDIR")
             return
-        elif self.slurm_submit:
-            info("Sumitting compilation via SLURM")
         if self.clean_config:
             self._inflate_runner()
             execute_command(f"echo \"y\" | ./makenemo -n {self.cfg_name} clean_config", self.rundir)

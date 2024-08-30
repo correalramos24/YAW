@@ -4,6 +4,7 @@ from .SlurmRunner import SlurmRunner
 from dataclasses import dataclass
 from app.utils import *
 from pathlib import Path
+from copy import deepcopy
 
 @dataclass
 class NemoRunner(SlurmRunner):
@@ -18,6 +19,7 @@ class NemoRunner(SlurmRunner):
     PATH_TO_NEMO=Path('BLD','bin','nemo.exe')
 
     def __post_init__(self):
+        self.req_param = deepcopy(self.req_param)
         self.req_param.extend(["nemo_root", "nemo_cfg"])
         super().__post_init__()
         self.nemo_root = Path(self.nemo_root)
