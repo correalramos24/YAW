@@ -33,18 +33,42 @@ class NemoCompiler(AbstractRunner):
         if self.generate_arch:
            # CHECK REQUIRED THEN
            pass
+        self.compile_wrapper : str = f"compile_{self.cfg_name}.sh"
 
     def manage_parameters(self):
+        super().manage_parameters()
         if self.generate_arch:
             info("Generating arch with name", self.arch_name)
         check_file_exists_exception(Path(self.rundir, 'arch', 'arch-'+self.arch_name+'.fcm'))
         check_file_exists_exception(Path(self.rundir, "makenemo"))
 
+    def _inflate_runner(self):
+        load_env_cmd = f"source {self.env_file}" if self.env_file else ""
+        compilation_str = f"./makenemo -m {self.arch_name} -r {self.ref_cfg} " \
+                f"-n {self.cfg_name} -d \'{self.modules}\' " \
+                f"add_key \'{self.add_keys}\' del_key \'{self.del_keys}\'"
+        
+        generate_bash_script(Path(self.rundir, self.compile_wrapper),
+            [
+                load_env_cmd,
+                "printenv &> env.log",
+                compilation_str
+            ]
+        )
+
     def run(self):
+        self._inflate_runner()
+        if self.dry:
+            info("DRY MODE! ONLY GENERATE RUNDIR")
+            return
+        elif self.slurm_submit:
+            info("Sumitting compilation via SLURM")
         if self.clean_config:
-            execute_command(f"echo \"y\" | ./makenemo -n {self.arch_name} clean_config", self.rundir)
+            self._inflate_runner()
+            execute_command(f"echo \"y\" | ./makenemo -n {self.cfg_name} clean_config", self.rundir)
+
         info("Submitting compilation!")
-        #execute_command(f"")
+        execute_script(self.compile_wrapper, None, self.rundir, self.log_name)
 
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:

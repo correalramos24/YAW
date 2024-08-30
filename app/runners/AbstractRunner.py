@@ -65,7 +65,7 @@ class AbstractRunner:
             info(f"Using {self.log_name}, appending STDOUT and STDERR")
         # MANAGE ENV:
         if self.env_file:
-            copy_file(self.env_file, self.rundir)
+            check_file_exists_exception(self.env_file)
 
     def run(self):
         """Execute the runner

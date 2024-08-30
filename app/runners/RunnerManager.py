@@ -125,6 +125,7 @@ class RunnerManager:
                     print(f"Recipe {i} is empty, check the parsing step -> SKIP")
             except Exception as e:
                 error(f"While executing recipe {i} ->", str(e))
+                print(traceback.format_exc())
         print("=" * 87)
 
     # GENERATION:
