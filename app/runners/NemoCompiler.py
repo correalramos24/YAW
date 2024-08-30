@@ -1,5 +1,4 @@
 from . import AbstractRunner
-from .BashRunner import BashRunner
 from dataclasses import dataclass
 from app.utils import *
 from pathlib import Path
@@ -14,7 +13,9 @@ class NemoCompiler(AbstractRunner):
     modules : str = None
     add_keys : str = None
     del_keys : str = None
+    # Misc:
     make_jobs : int = 8
+    clean_config : bool = False
 
     # Generate arch file:
     generate_arch : bool = False
@@ -33,6 +34,17 @@ class NemoCompiler(AbstractRunner):
            # CHECK REQUIRED THEN
            pass
 
+    def manage_parameters(self):
+        if self.generate_arch:
+            info("Generating arch with name", self.arch_name)
+        check_file_exists_exception(Path(self.rundir, 'arch', 'arch-'+self.arch_name+'.fcm'))
+        check_file_exists_exception(Path(self.rundir, "makenemo"))
+
+    def run(self):
+        if self.clean_config:
+            execute_command(f"echo \"y\" | ./makenemo -n {self.arch_name} clean_config", self.rundir)
+        info("Submitting compilation!")
+        #execute_command(f"")
 
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
@@ -56,5 +68,6 @@ class NemoCompiler(AbstractRunner):
             ("fpp_flags", "Flags for the pre-processor"),
             ("comment", "MISC"),
             ("make_jobs", "Number of jobs to run"),
+            ("clean_config", "Force clean cfg before compiling"),
         ])
         return parameters_info

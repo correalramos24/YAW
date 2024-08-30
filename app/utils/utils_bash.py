@@ -50,6 +50,6 @@ def execute_script(script, args, rundir, log_file=None):
     info(f"Completed {script} with return code: ", r.returncode)
 
 def execute_command(cmd: str, rundir: Path):
-    subprocess.run(f"/bin/bash {cmd}", cwd=rundir, 
+    subprocess.run(f"{cmd}", cwd=rundir,
             shell=True, text=True,
-            stderr=subprocess.STDOUT)
+           stderr=subprocess.STDOUT)

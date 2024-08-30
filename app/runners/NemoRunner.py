@@ -36,8 +36,8 @@ class NemoRunner(SlurmRunner):
         slurm_directives = {k : v for k, v in self.__dict__.items() 
                             if k.startswith("slurm_") and v }
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-            slurm_directives,
-            [
+                              slurm_directives,
+                              [
                 "#loading and saving the source:",
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
@@ -47,8 +47,8 @@ class NemoRunner(SlurmRunner):
                 f"sed -i \"s/nn_itend[ \\t]*=.*/nn_itend={self.steps}/\" namelist_cfg",
                 "#Running the model:",
                 f"{self.bash_cmd} $@"
-            ]            
-        )
+            ]
+                              )
 
 
     @classmethod
