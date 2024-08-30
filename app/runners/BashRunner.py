@@ -11,7 +11,7 @@ class BashRunner(AbstractRunner):
     type: str = "bash_runner"
     bash_cmd: Path = None
     args: str = None
-    ref_rundir: Path = None
+    ref_run_dir: Path = None
     rundir_files: list[Path] = None
     WRAPPER_NAME = "bash_wrapper.sh"
 
@@ -22,11 +22,11 @@ class BashRunner(AbstractRunner):
         super().__post_init__()
         # MANAGE PARAMETER TYPES:
         self.bash_cmd = Path(self.bash_cmd) if self.bash_cmd else None
-        self.ref_rundir = Path(self.ref_rundir) if self.ref_rundir else None
+        self.ref_run_dir = Path(self.ref_run_dir) if self.ref_run_dir else None
         self.rundir_files = [Path(f) for f in self.rundir_files] \
             if self.rundir_files else None
 
-        if not self.ref_rundir and not self.rundir_files:
+        if not self.ref_run_dir and not self.rundir_files:
             warning("Not selected ref_rundir or rundir_files")
 
     @classmethod
@@ -39,8 +39,8 @@ class BashRunner(AbstractRunner):
         super().manage_parameters()
 
         # MANAGE RUNDIR FILES:
-        if self.ref_rundir is not None:
-            copy_folder(self.ref_rundir, self.rundir, True)
+        if self.ref_run_dir is not None:
+            copy_folder(self.ref_run_dir, self.rundir, True)
         if self.rundir_files is not None:
             for f in self.rundir_files:
                 copy_file(f, Path(self.rundir, f.name))
@@ -63,8 +63,8 @@ class BashRunner(AbstractRunner):
             execute_script(self.WRAPPER_NAME, self.args,
                            self.rundir, self.log_name)
 
-    @staticmethod
-    def _inflate_yaml_template_info() -> list[(str, str)]:
+    @classmethod
+    def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         parameters_info = AbstractRunner._inflate_yaml_template_info()
         parameters_info.extend([
             ("comment", "BASH PARAMETERS"),

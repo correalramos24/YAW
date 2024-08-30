@@ -51,8 +51,8 @@ class SlurmRunner(BashRunner):
             execute_slurm_script(self.WRAPPER_NAME, self.args, 
                                  self.rundir, self.log_name)
 
-    @staticmethod
-    def _inflate_yaml_template_info() -> list[(str, str)]:
+    @classmethod
+    def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         parameters_info = AbstractRunner._inflate_yaml_template_info()
         parameters_info.extend([
             ("comment", "SLURM PARAMETERS"),

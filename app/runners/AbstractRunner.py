@@ -119,8 +119,8 @@ class AbstractRunner:
 
         return ret
 
-    @staticmethod
-    def _inflate_yaml_template_info() -> list[(str, str)]:
+    @classmethod
+    def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         return [
             ("comment", "SETUP"),
             ("type", "Type of runner"),

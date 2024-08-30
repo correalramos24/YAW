@@ -1,6 +1,6 @@
+
+from . import AbstractRunner, BashRunner, SlurmRunner, NemoRunner, NemoCompiler
 from app.utils import *
-from . import SlurmRunner, NemoRunner, AbstractRunner
-from .BashRunner import BashRunner
 from pathlib import Path
 import yaml
 import traceback
@@ -13,6 +13,7 @@ class RunnerManager:
         "BashRunner": BashRunner,
         "SlurmRunner": SlurmRunner,
         "NemoRunner": NemoRunner,
+        "NemoCompiler": NemoCompiler,
     }
 
     def __init__(self, input_files: list[Path]):
