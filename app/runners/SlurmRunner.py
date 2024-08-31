@@ -34,13 +34,13 @@ class SlurmRunner(BashRunner):
         slurm_directives = {k : v for k, v in self.__dict__.items() 
                             if k.startswith("slurm_") and v }
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-            slurm_directives,
-            [
+                              slurm_directives,
+                              [
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
                 f"{self.bash_cmd} $@"
-            ]            
-        )
+            ]
+                              )
         print()
 
     def run(self):
@@ -48,11 +48,11 @@ class SlurmRunner(BashRunner):
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
-            execute_slurm_script(self.WRAPPER_NAME, self.args, 
+            execute_slurm_script(self.WRAPPER_NAME, self.args,
                                  self.rundir, self.log_name)
 
-    @staticmethod
-    def _inflate_yaml_template_info() -> list[(str, str)]:
+    @classmethod
+    def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         parameters_info = AbstractRunner._inflate_yaml_template_info()
         parameters_info.extend([
             ("comment", "SLURM PARAMETERS"),

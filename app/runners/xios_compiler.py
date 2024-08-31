@@ -74,8 +74,8 @@ class xiosCompiler(AbstractRunner):
 
     def run(self):
         compile_str = f"./make_xios --job {self.make_jobs} --full --build-dir {self.bld_fldr} --arch {self.arch_name}"
-        generate_bash_script(Path(self.rundir, "run_wrapper.sh"), 
-            [
+        generate_bash_script(Path(self.rundir, "run_wrapper.sh"),
+                             [
                 f"source {self.env_file}",
                 "module list",
                 compile_str

@@ -65,7 +65,7 @@ class AbstractRunner:
             info(f"Using {self.log_name}, appending STDOUT and STDERR")
         # MANAGE ENV:
         if self.env_file:
-            copy_file(self.env_file, self.rundir)
+            check_file_exists_exception(self.env_file)
 
     def run(self):
         """Execute the runner
@@ -119,8 +119,8 @@ class AbstractRunner:
 
         return ret
 
-    @staticmethod
-    def _inflate_yaml_template_info() -> list[(str, str)]:
+    @classmethod
+    def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         return [
             ("comment", "SETUP"),
             ("type", "Type of runner"),

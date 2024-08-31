@@ -4,6 +4,7 @@ from .SlurmRunner import SlurmRunner
 from dataclasses import dataclass
 from app.utils import *
 from pathlib import Path
+from copy import deepcopy
 
 @dataclass
 class NemoRunner(SlurmRunner):
@@ -18,6 +19,7 @@ class NemoRunner(SlurmRunner):
     PATH_TO_NEMO=Path('BLD','bin','nemo.exe')
 
     def __post_init__(self):
+        self.req_param = deepcopy(self.req_param)
         self.req_param.extend(["nemo_root", "nemo_cfg"])
         super().__post_init__()
         self.nemo_root = Path(self.nemo_root)
@@ -36,8 +38,8 @@ class NemoRunner(SlurmRunner):
         slurm_directives = {k : v for k, v in self.__dict__.items() 
                             if k.startswith("slurm_") and v }
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-            slurm_directives,
-            [
+                              slurm_directives,
+                              [
                 "#loading and saving the source:",
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
@@ -47,8 +49,8 @@ class NemoRunner(SlurmRunner):
                 f"sed -i \"s/nn_itend[ \\t]*=.*/nn_itend={self.steps}/\" namelist_cfg",
                 "#Running the model:",
                 f"{self.bash_cmd} $@"
-            ]            
-        )
+            ]
+                              )
 
 
     @classmethod
