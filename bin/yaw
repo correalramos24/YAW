@@ -2,6 +2,6 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export PYTHONPATH=$SCRIPT_DIR/../yaw
-
-python3 -m yaw $@
+export PYTHONPATH="$SCRIPT_DIR/.."
+echo $PYTHONPATH
+python3 yaw/yaw.py $@

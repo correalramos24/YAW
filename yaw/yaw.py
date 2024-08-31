@@ -1,5 +1,7 @@
 
-from .arguments import *
+from arguments import *
+
+print(__name__)
 
 def main():
 
@@ -13,4 +15,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()

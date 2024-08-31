@@ -1,7 +1,7 @@
 import argparse
 
-from yaw.core.RunnerManager import RunnerManager
-from yaw.utils import *
+from core.RunnerManager import RunnerManager
+from utils import *
 
 # Declare the flags:
 parser = argparse.ArgumentParser(description="YAW - Yet another workflow")

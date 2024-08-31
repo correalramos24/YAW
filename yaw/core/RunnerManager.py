@@ -1,4 +1,4 @@
-from yaw.utils import *
+from utils import *
 from . import SlurmRunner, AbstractRunner
 from .BashRunner import BashRunner
 from pathlib import Path

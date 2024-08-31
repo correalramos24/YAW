@@ -1,8 +1,7 @@
-from _ast import List
 
-from yaw.utils import *
+from utils import *
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -34,7 +33,8 @@ class AbstractRunner:
             Exception: If some bad parameter found
         """
         # CHECK REQ. ARGUMENTS:
-        filter(lambda x : not x, self.req_param)
+        a = filter(lambda x : not x, self.req_param)
+        print(list(a))
         for param in self.req_param:
             if not self.__dict__[param]:
                 raise Exception(f"{param} is a required argument!")
@@ -124,8 +124,10 @@ class AbstractRunner:
             ("comment", "SETUP"), ("type", "Type of runner"),
             ("mode", "cartesian | zip (default)"),
             ("dry", "Dry run, only generate running directory"),
-            ("comment", "BASIC PARAMETERS"), ("rundir", "Rundir path to execute the runner."),
-            ("log_name", "Log file to dump the STDOUT and STDERR"), ("env_file", "Environment file to use")
+            ("comment", "BASIC PARAMETERS"), 
+            ("rundir", "Rundir path to execute the runner."),
+            ("log_name", "Log file to dump the STDOUT and STDERR"), 
+            ("env_file", "Environment file to use")
         ]
 
     def __init_bash_env_variables(self):
