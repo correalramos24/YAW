@@ -82,7 +82,7 @@ class AbstractRunner:
                 ]
 
 
-    def get_required_params(self) -> List(str):
+    def get_required_params(self) -> List[str]:
         return self.req_param
 
     @classmethod
