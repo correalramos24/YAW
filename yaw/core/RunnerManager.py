@@ -1,6 +1,6 @@
-
-from . import AbstractRunner, BashRunner, SlurmRunner, NemoRunner, NemoCompiler
-from app.utils import *
+from yaw.utils import *
+from . import SlurmRunner, AbstractRunner
+from .BashRunner import BashRunner
 from pathlib import Path
 import yaml
 import traceback
@@ -11,9 +11,7 @@ class RunnerManager:
 
     runners: dict = {
         "BashRunner": BashRunner,
-        "SlurmRunner": SlurmRunner,
-        "NemoRunner": NemoRunner,
-        "NemoCompiler": NemoCompiler,
+        "SlurmRunner": SlurmRunner
     }
 
     def __init__(self, input_files: list[Path]):
@@ -68,7 +66,7 @@ class RunnerManager:
         ]
 
         # 2. CHECK MODE FOR VARIATION GENERATION:
-        if "mode" in params.keys() and params["mode"]:
+        if safe_check_key_dict(params, "mode"):
             # 2A. CARTESIAN
             join_op = product
             info("Cartesian mode for multi-parameter(s):", ' '.join(param for param, _ in multi_params))

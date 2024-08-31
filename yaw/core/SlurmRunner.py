@@ -2,7 +2,7 @@
 
 from .BashRunner import BashRunner
 from .AbstractRunner import AbstractRunner
-from app.utils import *
+from yaw.utils import *
 from dataclasses import dataclass
 
 @dataclass

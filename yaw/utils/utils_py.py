@@ -1,5 +1,12 @@
 from pathlib import Path
 
+def safe_check_key_dict(d: dict, key: object) -> object:
+    if key in d.keys():
+        return d[key]
+    else:
+        return None
+
+
 def is_a_list(var) -> bool:
     return isinstance(var, list)
 

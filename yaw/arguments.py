@@ -1,8 +1,7 @@
-from pathlib import Path
 import argparse
 
-from app.runners.RunnerManager import RunnerManager
-from utils import *
+from yaw.core.RunnerManager import RunnerManager
+from yaw.utils import *
 
 # Declare the flags:
 parser = argparse.ArgumentParser(description="YAW - Yet another workflow")

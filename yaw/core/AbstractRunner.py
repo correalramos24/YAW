@@ -1,6 +1,6 @@
 from _ast import List
 
-from app.utils import *
+from yaw.utils import *
 from pathlib import Path
 from dataclasses import dataclass, field
 
@@ -34,6 +34,7 @@ class AbstractRunner:
             Exception: If some bad parameter found
         """
         # CHECK REQ. ARGUMENTS:
+        filter(lambda x : not x, self.req_param)
         for param in self.req_param:
             if not self.__dict__[param]:
                 raise Exception(f"{param} is a required argument!")
@@ -93,14 +94,12 @@ class AbstractRunner:
         """
         Generate a YAML template for the runner
         """
-        ret = f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.type} RUNNER\n"
-        ret += "## Required parameters:" + ' '.join(cls.req_param) + "\n"
-        ret += "your_recipe_name:\n"
-        ret += cls._generate_yaml_template_content()
-        ret += cls.YAML_DELIM + '\n'
-
         with open(cls.type + ".yaml", mode="w") as template:
-            template.write(ret)
+            template.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.type} RUNNER")
+            template.write("## Required parameters:" + ' '.join(cls.req_param))
+            template.write(f"your_recipe_name:\n")
+            template.write(cls._generate_yaml_template_content())
+            template.write(cls.YAML_DELIM)
 
     @classmethod
     def _generate_yaml_template_content(cls) -> str:
@@ -122,14 +121,11 @@ class AbstractRunner:
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         return [
-            ("comment", "SETUP"),
-            ("type", "Type of runner"),
+            ("comment", "SETUP"), ("type", "Type of runner"),
             ("mode", "cartesian | zip (default)"),
             ("dry", "Dry run, only generate running directory"),
-            ("comment", "BASIC PARAMETERS"),
-            ("rundir", "Rundir path to execute the runner."),
-            ("log_name", "Log file to dump the STDOUT and STDERR"),
-            ("env_file", "Environment file to use")
+            ("comment", "BASIC PARAMETERS"), ("rundir", "Rundir path to execute the runner."),
+            ("log_name", "Log file to dump the STDOUT and STDERR"), ("env_file", "Environment file to use")
         ]
 
     def __init_bash_env_variables(self):

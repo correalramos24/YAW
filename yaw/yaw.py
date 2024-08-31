@@ -1,5 +1,5 @@
-from app.runners.RunnerManager import RunnerManager
-from arguments import *
+
+from .arguments import *
 
 def main():
 
