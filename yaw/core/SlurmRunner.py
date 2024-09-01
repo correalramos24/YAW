@@ -33,7 +33,7 @@ class SlurmRunner(BashRunner):
         super().manage_parameters()
         #TODO: Check correctness of slurm parameters!
 
-    def inflate_runner(self):
+    def _inflate_runner(self):
         slurm_directives = {k : v for k, v in self.__dict__.items() 
                             if k.startswith("slurm_") and v }
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
@@ -47,7 +47,7 @@ class SlurmRunner(BashRunner):
         print()
 
     def run(self):
-        self.inflate_runner()
+        self._inflate_runner()
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:

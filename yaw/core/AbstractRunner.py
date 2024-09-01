@@ -86,11 +86,11 @@ class AbstractRunner:
         return cls.multi_value_param
 
     @classmethod
-    def generate_yaml_template(cls, file_name : Path) -> None:
+    def generate_yaml_template(cls) -> None:
         """
         Generate a YAML template for the runner
         """
-        with open(file_name + ".yaml", mode="w") as template:
+        with open(cls.type + ".yaml", mode="w") as template:
             template.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.type} RUNNER")
             template.write("## Required parameters:" + ' '.join(cls.req_param))
             template.write(f"your_recipe_name:\n")
