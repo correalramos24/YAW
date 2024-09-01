@@ -1,0 +1,20 @@
+test1:
+  type: BashRunner
+  rundir: $HOME/YAW-TEST
+  log_name: #Log file to dump the STDOUT and STDERR
+  bash_cmd: echo "compile"
+
+test2:
+  type: SlurmRunner
+  rundir: $HOME/YAW-test
+  bash_cmd: echo "Submit"
+  slurm_nodes: 33
+  slurm_mpi: 112
+  slurm_cpus: 1
+  dry: True
+
+post-run:
+  type: BashRunner
+  rundir: $HOME/YAW-TEST
+  log_name: #Log file to dump the STDOUT and STDERR
+  bash_cmd: echo "post"

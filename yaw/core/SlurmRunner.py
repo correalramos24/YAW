@@ -2,8 +2,9 @@
 
 from .BashRunner import BashRunner
 from .AbstractRunner import AbstractRunner
-from app.utils import *
+from utils import *
 from dataclasses import dataclass
+from copy import deepcopy
 
 @dataclass
 class SlurmRunner(BashRunner):
@@ -23,8 +24,10 @@ class SlurmRunner(BashRunner):
     WRAPPER_NAME="slurm_wrapper.slurm"
 
     def __post_init__(self):
+        self.req_param = deepcopy(self.req_param)
         self.req_param.extend(["slurm_nodes", "slurm_mpi", "slurm_cpus"])
         super().__post_init__()
+
 
     def manage_parameters(self):
         super().manage_parameters()

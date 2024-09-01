@@ -1,9 +1,9 @@
-from app.runners.RunnerManager import RunnerManager
+
 from arguments import *
 
 def main():
 
-    manager = RunnerManager(input_files)
+    manager = RunnerManager(input_files, step_names, print_multi)
 
     # 1. PARSE RECIPIE INPUT FILES:
     manager.parse_files()
@@ -13,4 +13,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()

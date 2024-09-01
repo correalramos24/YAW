@@ -1,24 +1,24 @@
-
-from . import AbstractRunner, BashRunner, SlurmRunner, NemoRunner, NemoCompiler
-from app.utils import *
+from utils import *
+from . import AbstractRunner, BashRunner, SlurmRunner
 from pathlib import Path
-import yaml
-import traceback
-from itertools import product, combinations
+import yaml, traceback
+from itertools import product
 
 
 class RunnerManager:
 
     runners: dict = {
         "BashRunner": BashRunner,
-        "SlurmRunner": SlurmRunner,
-        "NemoRunner": NemoRunner,
-        "NemoCompiler": NemoCompiler,
+        "SlurmRunner": SlurmRunner
     }
 
-    def __init__(self, input_files: list[Path]):
+    def __init__(self, input_files: list[Path], 
+                 run_step_names : list[str], print_multi : bool):
         self.input_files = input_files
         self.steps : list[AbstractRunner|None] = []
+        self.step_names : list[str] = []
+        self.print_multi : bool = print_multi
+        self.run_step_name : list[str] = run_step_names
 
     # PARSE:
     def parse_files(self):
@@ -35,17 +35,21 @@ class RunnerManager:
                 step_str = f"{step_id} ({step_t} - {name})"
                 print(f"Building recipe {step_str} from {input_file}")
                 try:
-                    if RunnerManager._is_a_multi_recipie(step_t, **content):
-                        variations = RunnerManager._derive_multi_recipe(name, step_t, True, **content)
+                    if self._is_a_multi_recipie(step_t, **content):
+                        variations = self._derive_multi_recipe(
+                                name, step_t, self.print_multi, **content)
                         for variation in variations:
                             self.steps.append(self.runners[step_t](**variation))
+                            self.step_names.append(name)
                     else:
                         self.steps.append(self.runners[step_t](**content))
+                        self.step_names.append(name)
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
-                    traceback.print_exc()
+                    #traceback.print_exc()
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
+                    self.step_names.append(name)
                 print("-" * 87)
 
     @staticmethod
@@ -68,7 +72,7 @@ class RunnerManager:
         ]
 
         # 2. CHECK MODE FOR VARIATION GENERATION:
-        if "mode" in params.keys() and params["mode"]:
+        if safe_check_key_dict(params, "mode"):
             # 2A. CARTESIAN
             join_op = product
             info("Cartesian mode for multi-parameter(s):", ' '.join(param for param, _ in multi_params))
@@ -114,18 +118,25 @@ class RunnerManager:
 
     # RUN:
     def run_steps(self):
+        if self.run_step_name:
+            print("Only executting steps with name", stringfy(self.run_step_name))
+        else:
+            self.run_step_name = self.step_names
         print("=" * 40 + "RUNNING" + "=" * 40)
-        for i, step in enumerate(self.steps):
+        for i, (name, step) in enumerate(zip(self.step_names, self.steps)):
             try:
-                print(f"Executing step {i}")
-                if step:
+                if step and name in self.run_step_name:
+                    print(f"Executing step {i} {name}")
                     step.manage_parameters()
                     step.run()
+                elif step and name not in self.run_step_name :
+                    print(f"Recipie {i} - {name} skipped due cmd line")
                 else:
-                    print(f"Recipe {i} is empty, check the parsing step -> SKIP")
+                    print(f"Recipe {i} - {name} is empty, check recipie -> SKIP")
             except Exception as e:
                 error(f"While executing recipe {i} ->", str(e))
                 print(traceback.format_exc())
+            print("-" * 87)
         print("=" * 87)
 
     # GENERATION:
