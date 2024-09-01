@@ -1,0 +1,24 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR NemoRunner RUNNER## Required parameters:type rundiryour_recipe_name:
+ # SETUP
+  type: NemoRunner
+  mode: #cartesian | zip (default)
+  dry: #Dry run, only generate running directory
+ # BASIC PARAMETERS
+  rundir: #Rundir path to execute the runner.
+  log_name: #Log file to dump the STDOUT and STDERR
+  env_file: #Environment file to use
+ # SLURM PARAMETERS
+  slurm_nodes: #Nodes
+  slurm_mpi: #Tasks per node
+  slurm_cpus: #Cpus per task
+  slurm_queue: #queue for the submission
+  slurm_account: #slurm account
+  slurm_wait: #block the execution of sbatch until job end?
+  slurm_time_limit: #time_limit in SLURM format (DD:HH:MM:SS)
+  slurm_contiguous: #place contiguous nodes?
+  slurm_other_cmds: #other slurm commands
+  nemo_root: #nemo installation root
+  nemo_cfg: #nemo cfg to be executed
+  steps: #model steps to be executed (10 by default)
+#####################################-YAW-######################################
