@@ -4,7 +4,7 @@ from .AbstractRunner import AbstractRunner
 from dataclasses import dataclass, field
 from pathlib import Path
 from utils import *
-
+from copy import deepcopy
 
 @dataclass
 class BashRunner(AbstractRunner):
@@ -17,6 +17,7 @@ class BashRunner(AbstractRunner):
 
     def __post_init__(self):
         # ADD REQ_PARAMS FOR THIS RUNNER:
+        self.req_param = deepcopy(self.req_param)
         self.req_param.extend(["bash_cmd"])
         # INIT SUPER CLASS:
         super().__post_init__()

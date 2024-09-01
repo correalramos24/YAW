@@ -120,6 +120,8 @@ class RunnerManager:
     def run_steps(self):
         if self.run_step_name:
             print("Only executting steps with name", stringfy(self.run_step_name))
+        else:
+            self.run_step_name = self.step_names
         print("=" * 40 + "RUNNING" + "=" * 40)
         for i, (name, step) in enumerate(zip(self.step_names, self.steps)):
             try:
