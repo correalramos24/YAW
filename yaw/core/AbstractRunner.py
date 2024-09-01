@@ -32,12 +32,12 @@ class AbstractRunner:
         Raises:
             Exception: If some bad parameter found
         """
-        # CHECK REQ. ARGUMENTS:
-        a = filter(lambda x : not x, self.req_param)
-        print(list(a))
-        for param in self.req_param:
-            if not self.__dict__[param]:
-                raise Exception(f"{param} is a required argument!")
+        req_not_fill = \
+            list(filter(lambda param : not self.__dict__[param], 
+                   self.req_param)
+        )
+        if len(req_not_fill) > 0:
+            raise Exception(f"Required argument(s) {stringfy(req_not_fill)} not found")
 
         # EXPAND BASH ENV VARIABLES:
         self.__init_bash_env_variables()
@@ -53,18 +53,15 @@ class AbstractRunner:
     def manage_parameters(self):
         """Generate the environment for the run stage.
         """
-        # MANAGE RUNDIR:
-        if not check_path_exists(self.rundir):
+        if check_path_exists(self.rundir):
+            info(f"rundir {self.rundir} already exists, overwritting")
+        else:
             create_dir(self.rundir)
             info(f"Using {self.rundir} as rundir")
-        else:
-            info(f"rundir {self.rundir} already exists!")
-        # MANAGE LOG FILE
-        if self.log_name is None:
-            warning("Not using a log, appending all to STDOUT")
-        else:
+        if self.log_name:
             info(f"Using {self.log_name}, appending STDOUT and STDERR")
-        # MANAGE ENV:
+        else:
+            warning("Not using a log, appending all to STDOUT")
         if self.env_file:
             check_file_exists_exception(self.env_file)
 
@@ -75,13 +72,12 @@ class AbstractRunner:
 
     @classmethod
     def get_parameters(cls) -> list[str]:
-        return [str(p) for p in cls.__dict__.keys() if
-                not p.startswith("_") and
-                not p.isupper() and
-                not callable(getattr(cls, p))
-                ]
+        return [str(param) for param in cls.__dict__.keys() if
+            not param.startswith("_") and not param.isupper() and
+            not callable(getattr(cls, param))
+        ]
 
-
+    @classmethod
     def get_required_params(self) -> list[str]:
         return self.req_param
 
@@ -90,11 +86,11 @@ class AbstractRunner:
         return cls.multi_value_param
 
     @classmethod
-    def generate_yaml_template(cls):
+    def generate_yaml_template(cls, file_name : Path) -> None:
         """
         Generate a YAML template for the runner
         """
-        with open(cls.type + ".yaml", mode="w") as template:
+        with open(file_name + ".yaml", mode="w") as template:
             template.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.type} RUNNER")
             template.write("## Required parameters:" + ' '.join(cls.req_param))
             template.write(f"your_recipe_name:\n")
@@ -130,7 +126,7 @@ class AbstractRunner:
             ("env_file", "Environment file to use")
         ]
 
-    def __init_bash_env_variables(self):
+    def __init_bash_env_variables(self) -> None:
         """Convert the bash variables ($VAR or ${VAR}) to the value.
         """
         no_empty_params = {k : v for k, v in self.__dict__.items() if v}
