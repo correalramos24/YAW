@@ -5,16 +5,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 @dataclass
-class RundirRunner(AbstractRunner):
+class RundirHelper(AbstractRunner):
     """Contain the minimum parameters to run something with
     a rundir.
     """
-    type: str = "RundirRunner"
+    type: str = "RundirHelper"
     rundir : Path = None
     ref_rundir : Path = None
     files_rundir : list[Path] = None
-    git_repo : str = None
-    git_branch : str = ""
 
     def __post_init__(self):
         super().__post_init__()
@@ -24,8 +22,6 @@ class RundirRunner(AbstractRunner):
             if self.rundir_files else None
         if not self.ref_rundir and not self.rundir_files:
             warning("Not selected ref_rundir or rundir_files")
-        if self.git_branch and not self.git_repo:
-            raise Exception("Git branch selected but repo not selected!")
 
     def manage_parameters(self):
         super().manage_parameters()
@@ -35,10 +31,6 @@ class RundirRunner(AbstractRunner):
             else:
                 create_dir(self.rundir)
                 info(f"Using {self.rundir} as rundir")
-        if self.git_repo:
-            branch = f"-b {self.git_branch}" if self.git_branch else ""
-            info("Cloning repo", self.git_repo, branch)
-            execute_command(f"git clone {self.git_repo} -b {branch}")
         if self.ref_rundir:
             copy_folder(self.ref_rundir, self.rundir, True)
         if self.rundir_files:
