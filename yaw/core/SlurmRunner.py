@@ -1,13 +1,12 @@
 
 
-from .BashRunner import BashRunner
+from .BashRunnerRundir import BashRunnerRundir
 from .AbstractRunner import AbstractRunner
 from utils import *
 from dataclasses import dataclass
-from copy import deepcopy
 
 @dataclass
-class SlurmRunner(AbstractRunner):
+class SlurmRunner(BashRunnerRundir):
     type: str = "SlurmRunner"
     # REQUIRED:
     slurm_nodes: int = None
@@ -25,36 +24,35 @@ class SlurmRunner(AbstractRunner):
     WRAPPER_NAME="slurm_wrapper.slurm"
 
     def __post_init__(self):
-        self.req_param = deepcopy(self.req_param)
-        self.req_param.extend(["slurm_nodes", "slurm_mpi", "slurm_cpus"])
         super().__post_init__()
-        self.slurm_workdir = Path(self.rundir)
-
+        self.slurm_workdir = Path(self.rundir) # Pass rundir to SLURM script
 
     def manage_parameters(self):
         super().manage_parameters()
-        #TODO: Check correctness of slurm parameters!
 
-    def _inflate_runner(self):
-        slurm_directives = {k : v for k, v in self.__dict__.items() 
-                            if k.startswith("slurm_") and v }
+    def run(self):
+        self.inflate_runner()
+        if self.dry:
+            print("DRY MODE: Not executing anything!")
+        else:
+            execute_slurm_script(self.WRAPPER_NAME, self.args, self.rundir)
+
+    def inflate_runner(self):
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-                              slurm_directives,
+            self.log_name, self.__get_slurm_directives(),
             [
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
                 f"{self.bash_cmd}"
-            ], self.log_name
+            ]
         )
 
-    def run(self):
-        self._inflate_runner()
-        if self.dry:
-            print("DRY MODE: Not executing anything!")
-        else:
-            execute_slurm_script(self.WRAPPER_NAME, self.args,
-                                 self.rundir)
+    # PARAMETER METHODS:
+    @classmethod
+    def get_required_params(self) -> list[str]:
+        return super().get_required_params() + ["slurm_nodes", "slurm_mpi", "slurm_cpus"]
 
+    # YAML GENERATION METHODS:
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         parameters_info = super()._inflate_yaml_template_info()
@@ -71,3 +69,7 @@ class SlurmRunner(AbstractRunner):
             ("slurm_other_cmds", "other slurm commands"),
         ])
         return parameters_info
+
+    def __get_slurm_directives(self) -> dict:
+        return {k : v for k, v in self.__dict__.items() 
+                    if k.startswith("slurm_") and v }

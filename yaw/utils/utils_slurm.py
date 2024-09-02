@@ -12,9 +12,9 @@ slurm_syntax = {
     "workdir" : "-D"
 }
 
-def generate_slurm_script(f_path: Path,
+def generate_slurm_script(f_path: Path, log_file: str,
                           slurm_directives : dict[str, any],
-                          cmds : list[str], log_file: str):
+                          cmds : list[str]):
     formatted_directives = ""
     for directive, val in slurm_directives.items():
         aux = directive.replace("slurm_","")

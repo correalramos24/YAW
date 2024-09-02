@@ -1,7 +1,6 @@
 from core import SlurmRunner
 from utils import *
 from dataclasses import dataclass
-from copy import deepcopy
 
 @dataclass
 class NemoRunner(SlurmRunner):
@@ -16,27 +15,20 @@ class NemoRunner(SlurmRunner):
     PATH_TO_NEMO=Path('BLD','bin','nemo.exe')
 
     def __post_init__(self):
-        self.req_param = deepcopy(self.req_param)
-        self.req_param.extend(["nemo_root", "nemo_cfg"])
         super().__post_init__()
         self.nemo_root = Path(self.nemo_root)
 
     def manage_parameters(self):
         super().manage_parameters()
-        # 1. Check file presence:
+        # COPY NEMO BIN TO RUNDIR:
         bin_nemo = Path(self.nemo_root, 'cfgs', self.nemo_cfg, self.PATH_TO_NEMO)
         check_file_exists_exception(bin_nemo)
-        if self.env_file: 
-            check_file_exists_exception(self.env_file)
-        # 2. Copy them to the rundir:
         copy_file(bin_nemo, Path(self.rundir, 'nemo.exe'))
         
     def _inflate_runner(self):
-        slurm_directives = {k : v for k, v in self.__dict__.items() 
-                            if k.startswith("slurm_") and v }
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-                              slurm_directives, 
-                              [
+            self.log_name, self.__get_slurm_directives(), 
+            [
                 "# loading and saving the source:",
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
@@ -46,10 +38,14 @@ class NemoRunner(SlurmRunner):
                 f"sed -i \"s/nn_itend[ \\t]*=.*/nn_itend={self.steps}/\" namelist_cfg",
                 "# Running the model:",
                 f"srun ./nemo.exe $@"
-            ], self.log_name
+            ]
         )
 
-
+    # PARAMETER METHODS:
+    @classmethod
+    def get_required_params(self) -> list[str]:
+        return super().get_required_params() + ["nemo_root", "nemo_cfg"]
+    
     @classmethod
     def _inflate_yaml_template_info(cls):
         parameters_info = super()._inflate_yaml_template_info()

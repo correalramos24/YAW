@@ -1,5 +1,5 @@
 from utils import *
-from . import AbstractRunner, BashRunner, SlurmRunner
+from . import AbstractRunner, BashRunner, SlurmRunner, BashRunnerRundir
 from nemo import NemoCompiler, NemoRunner
 
 from pathlib import Path
@@ -11,6 +11,7 @@ class RunnerManager:
 
     runners: dict = {
         "BashRunner": BashRunner,
+        "BashRunnerRundir": BashRunnerRundir,
         "SlurmRunner": SlurmRunner,
         "NemoCompiler": NemoCompiler,
         "NemoRunner" : NemoRunner,

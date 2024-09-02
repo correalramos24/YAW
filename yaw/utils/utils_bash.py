@@ -1,11 +1,19 @@
 from pathlib import Path
-import subprocess
-import os
-import re
+import subprocess, os, re
 from .utils_print import *
+from .utils_py import *
 
+def expand_bash_env_vars(value:  str|list[str]) -> str|list[str]:
+    """Convert the bash variables ($VAR or ${VAR}) to the value.
+    """
+    if is_a_str(value) and "$" in value:
+        log("Expanding bash env var at", value)
+        return __expand_env_variables(value)
+    if is_a_list(value) and value[0] and "$" in ''.join(value):
+        log("Searching bash env vars at", stringfy(value))
+        return [__expand_env_variables(val) for val in value]
 
-def expand_env_variables(line: str) -> str:
+def __expand_env_variables(line: str) -> str:
     pattern = r'\$(\w+)|\$\{(\w+)\}'
     def replace_variable(match):
         var_name = match.group(1) or match.group(2)
