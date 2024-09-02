@@ -1,16 +1,18 @@
 #####################################-YAW-######################################
-## TEMPLATE FOR NemoCompiler RUNNER## Required parameters:type rundiryour_recipe_name:
+## TEMPLATE FOR NemoCompiler RUNNER
+## Required parameters:type nemo_root arch_name cfg_name
+your_recipe_name:
  # SETUP
   type: NemoCompiler
-  mode: #cartesian | zip (default)
-  dry: #Dry run, only generate running directory
+  mode: #Type of multi-parameter: cartesian or zip (default)
+  dry: #Dry run, only manage parameters, not run anything
  # BASIC PARAMETERS
-  rundir: #Rundir path to execute the runner.
   log_name: #Log file to dump the STDOUT and STDERR
   env_file: #Environment file to use
  # CFG PARAMETERS
+  nemo_root: #Root of the NEMO installation (contains makenemo)
   arch_name: #Arch name to use in the compilation or to generate
-  cfg_name: #CFG for the compilation
+  nemo_cfg: #CFG name for the compilation
   ref_cfg: #Reference CFG for the compilation
   modules: #Modules to use in the compilation
   add_keys: #Add keys to the compilation
