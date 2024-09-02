@@ -50,7 +50,7 @@ class RunnerManager:
                         self.step_names.append(name)
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
-                    #traceback.print_exc()
+                    traceback.print_exc()
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
                     self.step_names.append(name)
@@ -103,10 +103,11 @@ class RunnerManager:
         variations = []
         for variation in variations_values:
             aux = {"root_step": step_name, **unique_params}
-            variation_rundir = '_'.join(stringfy(value) for value in variation)
             for param, value in zip(variation_params, variation):
                 aux[param] = value
-            aux["rundir"] = variation_rundir
+            if "rundir" in aux:
+                variation_rundir = aux["rundir"] + os.sep + '_'.join(stringfy(value) for value in variation)
+                aux["rundir"] = variation_rundir
             variations.append(aux)
 
         print(f"Requested {len(variations)} executions with multi-params combinations")

@@ -25,7 +25,7 @@ def stringfy(var) -> str:
             ret+= ',' +str(e)
         return ret
     else:
-        return var
+        return str(var)
     
 def convert_path_to_str(p: Path) -> str:
     return str(p.name).replace("/", "-")

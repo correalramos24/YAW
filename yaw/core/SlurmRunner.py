@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 
 @dataclass
-class SlurmRunner(BashRunner):
+class SlurmRunner(AbstractRunner):
     type: str = "SlurmRunner"
     # REQUIRED:
     slurm_nodes: int = None
@@ -15,6 +15,7 @@ class SlurmRunner(BashRunner):
     slurm_cpus: int = None
     
     # OPTIONAL PARAMETERS:
+    args : str = None
     slurm_queue : str = None
     slurm_account : str = None
     slurm_wait : bool = None
@@ -27,6 +28,7 @@ class SlurmRunner(BashRunner):
         self.req_param = deepcopy(self.req_param)
         self.req_param.extend(["slurm_nodes", "slurm_mpi", "slurm_cpus"])
         super().__post_init__()
+        self.slurm_workdir = Path(self.rundir)
 
 
     def manage_parameters(self):
@@ -38,13 +40,12 @@ class SlurmRunner(BashRunner):
                             if k.startswith("slurm_") and v }
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
                               slurm_directives,
-                              [
+            [
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
-                f"{self.bash_cmd} $@"
-            ]
-                              )
-        print()
+                f"{self.bash_cmd}"
+            ], self.log_name
+        )
 
     def run(self):
         self._inflate_runner()
@@ -52,11 +53,11 @@ class SlurmRunner(BashRunner):
             print("DRY MODE: Not executing anything!")
         else:
             execute_slurm_script(self.WRAPPER_NAME, self.args,
-                                 self.rundir, self.log_name)
+                                 self.rundir)
 
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
-        parameters_info = AbstractRunner._inflate_yaml_template_info()
+        parameters_info = super()._inflate_yaml_template_info()
         parameters_info.extend([
             ("comment", "SLURM PARAMETERS"),
             ("slurm_nodes", "Nodes"),

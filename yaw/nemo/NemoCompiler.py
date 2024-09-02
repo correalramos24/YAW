@@ -7,6 +7,7 @@ from copy import deepcopy
 class NemoCompiler(AbstractRunner):
     type : str = "NemoCompiler"
     # CFG Setup:
+    nemo_root : Path = None
     arch_name : str = None
     cfg_name  : str = None
     ref_cfg : str = None
@@ -29,12 +30,13 @@ class NemoCompiler(AbstractRunner):
 
     def __post_init__(self):
         self.req_param = deepcopy(self.req_param)
-        self.req_param.extend(["cfg_name", "ref_cfg"])
+        self.req_param.extend(["nemo_root","cfg_name", "ref_cfg"])
         super().__post_init__()
         self.__generate_arch =  self.cpp_compiler or self.c_compiler or \
                                 self.f_compiler or self.linker or \
                                 self.f_flags or self.ld_flags or \
                                 self.fpp_flags
+        self.nemo_root = Path(self.nemo_root)
         self.WRAPPER_NAME : str = f"compile_{self.cfg_name}.sh"
         if self.__generate_arch:
             pass
@@ -46,8 +48,8 @@ class NemoCompiler(AbstractRunner):
         if self.__generate_arch:
             info("Generating arch with name", self.arch_name)
 
-        check_file_exists_exception(Path(self.rundir, 'arch', 'arch-'+self.arch_name+'.fcm'))
-        check_file_exists_exception(Path(self.rundir, "makenemo"))
+        check_file_exists_exception(Path(self.nemo_root, 'arch', 'arch-'+self.arch_name+'.fcm'))
+        check_file_exists_exception(Path(self.nemo_root, "makenemo"))
 
 
     def _inflate_runner(self):
@@ -56,7 +58,7 @@ class NemoCompiler(AbstractRunner):
                 f"-n {self.cfg_name} -d \'{self.modules}\' " \
                 f"add_key \'{self.add_keys}\' del_key \'{self.del_keys}\'"
         
-        generate_bash_script(Path(self.rundir, self.compile_wrapper),
+        generate_bash_script(Path(self.nemo_root, self.WRAPPER_NAME),
             [
                 load_env_cmd,
                 "printenv &> env.log",
@@ -71,10 +73,10 @@ class NemoCompiler(AbstractRunner):
             return
         if self.clean_config:
             self._inflate_runner()
-            execute_command(f"echo \"y\" | ./makenemo -n {self.cfg_name} clean_config", self.rundir)
+            execute_command(f"echo \"y\" | ./makenemo -n {self.cfg_name} clean_config", self.nemo_root)
 
         info("Submitting compilation!")
-        execute_script(self.compile_wrapper, None, self.rundir, self.log_name)
+        execute_script(self.WRAPPER_NAME, None, self.nemo_root, self.log_name)
 
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
@@ -99,4 +101,7 @@ class NemoCompiler(AbstractRunner):
             ("ld_flags", "Flags for the linker"),
             ("fpp_flags", "Flags for the pre-processor"),
         ])
+        parameters_info = [(key, "nemo root") if key == "rundir" else (key, value) for key, value in parameters_info]
+        parameters_info = [tupla for tupla in parameters_info if tupla[0] != "ref_run_dir"]
+        parameters_info = [tupla for tupla in parameters_info if tupla[0] != "rundir_files"]
         return parameters_info

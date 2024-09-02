@@ -35,7 +35,7 @@ class NemoRunner(SlurmRunner):
         slurm_directives = {k : v for k, v in self.__dict__.items() 
                             if k.startswith("slurm_") and v }
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-                              slurm_directives,
+                              slurm_directives, 
                               [
                 "# loading and saving the source:",
                 f"source {self.env_file}" if self.env_file else "",
@@ -45,15 +45,16 @@ class NemoRunner(SlurmRunner):
                 f"sed -i 's/[[:space:]]*nn_stock[[:space:]]*=[[:space:]]*.*/nn_stock=-1/' \"namelist_cfg\"",
                 f"sed -i \"s/nn_itend[ \\t]*=.*/nn_itend={self.steps}/\" namelist_cfg",
                 "# Running the model:",
-                f"{self.bash_cmd} $@"
-            ]
+                f"srun ./nemo.exe $@"
+            ], self.log_name
         )
 
 
     @classmethod
     def _inflate_yaml_template_info(cls):
-        parameters_info = SlurmRunner._inflate_yaml_template_info()
+        parameters_info = super()._inflate_yaml_template_info()
         parameters_info.extend([
+            ("comment", "NEMO PARAMETERS"),
             ("nemo_root", "nemo installation root"),
             ("nemo_cfg" ,  "nemo cfg to be executed"),
             ("steps" , "model steps to be executed (10 by default)")
