@@ -1,7 +1,6 @@
 from core import AbstractRunner
 from utils import *
 from dataclasses import dataclass
-from copy import deepcopy
 
 @dataclass
 class NemoCompiler(AbstractRunner):
