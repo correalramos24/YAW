@@ -1,7 +1,8 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR BashRunner RUNNER
 ## Required parameters:type bash_cmd
-your_recipe_name:
+args: -lah
+simple_bash:
  # SETUP
   type: BashRunner
   mode: #Type of multi-parameter: cartesian or zip (default)
@@ -10,6 +11,5 @@ your_recipe_name:
   log_name: #Log file to dump the STDOUT and STDERR
   env_file: #Environment file to use
  # BASH PARAMETERS
-  bash_cmd: #Script to be executed (./s.sh) or bash command (ls)
-  args: #Script arguments
+  bash_cmd: ls
 #####################################-YAW-######################################

@@ -24,7 +24,11 @@ class RunnerManager:
         self.step_names : list[str] = []
         self.print_multi : bool = print_multi
         self.run_step_name : list[str] = run_step_names
-
+        self.runner_params : set[str]
+        self.runner_params = {param for runner in self.runners.values()
+                              for param in runner.get_parameters()}
+        self.generic_params = dict()
+    
     # PARSE:
     def parse_files(self):
         print("=" * 40 + "PARSING" + "=" * 40)
@@ -36,10 +40,15 @@ class RunnerManager:
         with open(input_file, "r") as f:
             content : dict = yaml.safe_load(f)
             for step_id, (name, content) in enumerate(content.items()):
-                step_t = content["type"]
-                step_str = f"{step_id} ({step_t} - {name})"
-                print(f"Building recipe {step_str} from {input_file}")
                 try:
+                    if self.is_generic_param(name):
+                        #TODO: PARSE all the file searching the generic params.
+                        print("Defining generic parameter", name, ":", content)
+                        self.generic_params[name] = content
+                        continue
+                    step_t = content["type"]
+                    step_str = f"{step_id} - {name}"
+                    print(f"Building recipe {step_str} from {input_file}")
                     if self._is_a_multi_recipie(step_t, **content):
                         variations = self._derive_multi_recipe(
                                 name, step_t, self.print_multi, **content)
@@ -47,15 +56,19 @@ class RunnerManager:
                             self.steps.append(self.runners[step_t](**variation))
                             self.step_names.append(name)
                     else:
-                        self.steps.append(self.runners[step_t](**content))
+                        aux_dict = content | self.generic_params
+                        self.steps.append(self.runners[step_t](**aux_dict))
                         self.step_names.append(name)
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
-                    traceback.print_exc()
+                    #traceback.print_exc()
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
                     self.step_names.append(name)
                 print("-" * 87)
+
+    def is_generic_param(self, name):
+        return name in self.runner_params
 
     @staticmethod
     def _is_a_multi_recipie(step_type : str, **params) -> bool:
