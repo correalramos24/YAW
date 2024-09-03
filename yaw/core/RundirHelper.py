@@ -12,7 +12,7 @@ class RundirHelper(AbstractRunner):
     type: str = "RundirHelper"
     rundir : Path = None
     ref_rundir : Path = None
-    files_rundir : list[Path] = None
+    rundir_files : list[Path] = None
 
     def __post_init__(self):
         super().__post_init__()
