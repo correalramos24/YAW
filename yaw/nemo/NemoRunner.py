@@ -25,9 +25,9 @@ class NemoRunner(SlurmRunner):
         check_file_exists_exception(bin_nemo)
         copy_file(bin_nemo, Path(self.rundir, 'nemo.exe'))
         
-    def _inflate_runner(self):
+    def inflate_runner(self):
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-            self.log_name, self.__get_slurm_directives(), 
+            self.log_name, self._get_slurm_directives(), 
             [
                 "# loading and saving the source:",
                 f"source {self.env_file}" if self.env_file else "",
