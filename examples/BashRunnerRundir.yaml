@@ -4,16 +4,12 @@
 your_recipe_name:
  # SETUP
   type: BashRunnerRundir
-  mode: #Type of multi-parameter: cartesian or zip (default)
-  dry: #Dry run, only manage parameters, not run anything
  # BASIC PARAMETERS
-  log_name: #Log file to dump the STDOUT and STDERR
-  env_file: #Environment file to use
+  log_name: ls.log
  # RUNDIR PARAMETERS
-  rundir: #Rundir path to execute the runner.
-  ref_rundir: #Reference rundir to use, (copy all to rundir)
-  rundir_files: #List of files to copy to the rundir
+  rundir: $HOME/YAW-RUNDIR
+  force: True
  # BASH PARAMETERS
-  bash_cmd: #Script to be executed (./s.sh) or bash command (ls)
-  args: #Script arguments
+  bash_cmd: ls
+  args: -la
 #####################################-YAW-######################################

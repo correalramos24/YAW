@@ -5,8 +5,8 @@ from pathlib import Path
 from utils import *
 
 @dataclass
-class BashRunnerRundir(BashRunner, RundirHelper):
+class BashRunnerRundir(RundirHelper, BashRunner):
     type: str = "BashRunnerRundir"
-    
 
-    
+    def run(self):
+        super().run(self.rundir)

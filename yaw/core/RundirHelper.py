@@ -23,18 +23,16 @@ class RundirHelper(AbstractRunner):
             if self.rundir_files else None
         if not self.ref_rundir and not self.rundir_files:
             warning("Not selected ref_rundir or rundir_files")
-
+        if self.force:
+            warning("FORCE MODE ENABLED!")
     def manage_parameters(self):
         super().manage_parameters()
-        print(self.force)
         if self.rundir:
-            if check_path_exists(self.rundir) and not self.force:
-                raise Exception(f"{self.rundir} already exists, ABORTING!")
-            elif not self.force:
+            info(f"Using {self.rundir} as rundir")
+            if not check_path_exists(self.rundir):
                 create_dir(self.rundir)
-                info(f"Using {self.rundir} as rundir")
-            else:
-                warning("Force mode enable!")
+            elif check_path_exists(self.rundir) and not self.force:
+                raise Exception(f"{self.rundir} already exists, ABORTING!")
         if self.ref_rundir:
             copy_folder(self.ref_rundir, self.rundir, True)
         if self.rundir_files:
