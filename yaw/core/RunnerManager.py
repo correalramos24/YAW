@@ -28,7 +28,9 @@ class RunnerManager:
         self.runner_params = {param for runner in self.runners.values()
                               for param in runner.get_parameters()}
         self.generic_params = dict()
-    
+        if self.step_names:
+            info("Executing only", stringfy(self.step_names), "step(s)")
+            
     # PARSE:
     def parse_files(self):
         print("=" * 40 + "PARSING" + "=" * 40)
