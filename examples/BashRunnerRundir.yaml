@@ -1,0 +1,19 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunnerRundir RUNNER
+## Required parameters:type rundir bash_cmd
+your_recipe_name:
+ # SETUP
+  type: BashRunnerRundir
+  mode: #Type of multi-parameter: cartesian or zip (default)
+  dry: #Dry run, only manage parameters, not run anything
+ # BASIC PARAMETERS
+  log_name: #Log file to dump the STDOUT and STDERR
+  env_file: #Environment file to use
+ # RUNDIR PARAMETERS
+  rundir: #Rundir path to execute the runner.
+  ref_rundir: #Reference rundir to use, (copy all to rundir)
+  rundir_files: #List of files to copy to the rundir
+ # BASH PARAMETERS
+  bash_cmd: #Script to be executed (./s.sh) or bash command (ls)
+  args: #Script arguments
+#####################################-YAW-######################################
