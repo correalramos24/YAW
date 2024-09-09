@@ -59,8 +59,6 @@ class RundirHelper(AbstractRunner):
             ("rundir", "Rundir path to execute the runner."),
             ("force", "Overwrite previous content of rundir"),
             ("ref_rundir", "Reference rundir to use, (copy all to rundir)"),
-            ("rundir_files", "List of files to copy to the rundir"),
-            ("git_repo", "Git repository to fill the rundir"),
-            ("git_branch", "Git branch for git_repo")
+            ("rundir_files", "List of files to copy to the rundir")
         ])
         return params_info
