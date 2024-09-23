@@ -14,7 +14,6 @@ class SlurmRunner(BashRunnerRundir):
     slurm_cpus: int = None
     
     # OPTIONAL PARAMETERS:
-    args : str = None
     slurm_queue : str = None
     slurm_account : str = None
     slurm_wait : bool = None
