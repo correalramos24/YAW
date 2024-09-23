@@ -5,7 +5,7 @@ your_recipe_name:
  # SETUP
   type: BashRunnerRundir
  # BASIC PARAMETERS
-  log_name: ls.log
+  log_name: 
  # RUNDIR PARAMETERS
   rundir: $HOME/YAW-RUNDIR
   force: True

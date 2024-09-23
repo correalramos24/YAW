@@ -41,6 +41,10 @@ def execute_script(script, args, rundir, log_file=None):
         args_str = "without args"
     else: 
         args_str = "with " + args
+
+    if not rundir:
+        rundir = os.getcwd()
+
     if log_file:
         info(f"Executing {script} {args_str} at {rundir}, writing STDOUT to {log_file}")
         file_desc = open(log_file, mode="w")
