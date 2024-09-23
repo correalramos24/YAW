@@ -25,7 +25,6 @@ Add the `bin` folder to the path of your system and call `yaw` to execute the ap
 ## Example
 TBD
 
-
 ## Extending the functionalities
 
 YAW is designed following a modular design, despite is hardly recommended to 

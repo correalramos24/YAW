@@ -27,5 +27,10 @@ def parse_user_args():
     parser.add_argument('--version', help="Print YAW version", action='store_true')
 
     # Parse the arguments:
+
+    if parser.parse_args().version:
+        print(f"VERSION: {VERSION}")
+        exit(0)
+
     return parser.parse_args()
 
