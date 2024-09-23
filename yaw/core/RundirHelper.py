@@ -11,8 +11,9 @@ class RundirHelper(AbstractRunner):
     """
     type: str = "RundirHelper"
     rundir : Path = None
+    force  : bool = False
     ref_rundir : Path = None
-    files_rundir : list[Path] = None
+    rundir_files : list[Path] = None
 
     def __post_init__(self):
         super().__post_init__()
@@ -25,12 +26,15 @@ class RundirHelper(AbstractRunner):
 
     def manage_parameters(self):
         super().manage_parameters()
+        print(self.force)
         if self.rundir:
-            if check_path_exists(self.rundir):
+            if check_path_exists(self.rundir) and not self.force:
                 raise Exception(f"{self.rundir} already exists, ABORTING!")
-            else:
+            elif not self.force:
                 create_dir(self.rundir)
                 info(f"Using {self.rundir} as rundir")
+            else:
+                warning("Force mode enable!")
         if self.ref_rundir:
             copy_folder(self.ref_rundir, self.rundir, True)
         if self.rundir_files:
@@ -55,6 +59,7 @@ class RundirHelper(AbstractRunner):
         params_info.extend([
             ("comment", "RUNDIR PARAMETERS"),
             ("rundir", "Rundir path to execute the runner."),
+            ("force", "Overwrite previous content of rundir"),
             ("ref_rundir", "Reference rundir to use, (copy all to rundir)"),
             ("rundir_files", "List of files to copy to the rundir"),
             ("git_repo", "Git repository to fill the rundir"),

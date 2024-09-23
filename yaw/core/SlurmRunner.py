@@ -38,7 +38,7 @@ class SlurmRunner(BashRunnerRundir):
 
     def inflate_runner(self):
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-            self.log_name, self.__get_slurm_directives(),
+            self.log_name, self._get_slurm_directives(),
             [
                 f"source {self.env_file}" if self.env_file else "",
                 "printenv &> env.log",
@@ -69,6 +69,6 @@ class SlurmRunner(BashRunnerRundir):
         ])
         return parameters_info
 
-    def __get_slurm_directives(self) -> dict:
+    def _get_slurm_directives(self) -> dict:
         return {k : v for k, v in self.__dict__.items() 
                     if k.startswith("slurm_") and v }

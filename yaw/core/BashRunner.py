@@ -12,7 +12,6 @@ class BashRunner(AbstractRunner):
     WRAPPER_NAME = "bash_wrapper.sh"
 
     def __post_init__(self):
-        self.rundir = os.getcwd()
         super().__post_init__()
 
     def manage_parameters(self):
@@ -24,11 +23,11 @@ class BashRunner(AbstractRunner):
             print("DRY MODE: Not executing anything!")
         else:
             execute_script(self.WRAPPER_NAME, self.args,
-                           self.rundir, self.log_name)
+                           os.getcwd(), self.log_name)
     
     def inflate_runner(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
-        generate_bash_script(Path(self.rundir, self.WRAPPER_NAME),
+        generate_bash_script(Path(os.getcwd(), self.WRAPPER_NAME),
             [
             load_env_cmd,
             "printenv &> env.log",
