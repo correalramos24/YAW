@@ -26,7 +26,14 @@ def stringfy(var) -> str:
         return ret
     else:
         return str(var)
-    
+
+def listify(var: object) -> list:
+    if is_a_list(var) or not var: 
+        return var
+    else:
+        return [var]
+
+
 def convert_path_to_str(p: Path) -> str:
     return str(p.name).replace("/", "-")
 

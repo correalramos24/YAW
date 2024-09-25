@@ -63,7 +63,7 @@ class RunnerManager:
                         self.step_names.append(name)
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
-                    #traceback.print_exc()
+                    traceback.print_exc()
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
                     self.step_names.append(name)
