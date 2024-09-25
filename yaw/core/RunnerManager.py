@@ -92,7 +92,7 @@ class RunnerManager:
         ]
 
         # 2. CHECK MODE FOR VARIATION GENERATION:
-        if safe_check_key_dict(params, "mode"):
+        if safe_check_key_dict(params, "mode") == "cartesian":
             # 2A. CARTESIAN
             join_op = product
             info("Cartesian mode for multi-parameter(s):", ' '.join(param for param, _ in multi_params))
