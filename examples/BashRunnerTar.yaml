@@ -1,0 +1,17 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunnerRundir RUNNER
+## Required parameters:type bash_cmd rundir
+use_tar_and_git:
+ # SETUP
+  type: BashRunnerRundir
+ # BASH PARAMETERS
+  bash_cmd: ls 
+  args: -la 20240614
+ # RUNDIR PARAMETERS
+  rundir: $HOME/RUNDIR/YAW/ALFA
+  force: True
+  tar_gz_files: 
+    - "/home/vcorreal/Documents/PROJECTS/DE_340_PHASE2/DestinE-utils/installation/ifs-bundle/20240614.tar.gz"
+  git_repo: ssh://git@git.ecmwf.int/de/ifs-bundle.git
+  git_branch: DE_CY48R1.0_climateDT_20240723
+#####################################-YAW-######################################
