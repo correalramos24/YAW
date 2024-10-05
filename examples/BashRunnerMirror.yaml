@@ -1,0 +1,11 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunner RUNNER
+## Required parameters:type bash_cmd
+example1:
+ # SETUP
+  type: BashRunner
+ # BASH PARAMETERS
+  bash_cmd: ls 
+  args: -la
+  mirror: 4
+#####################################-YAW-######################################

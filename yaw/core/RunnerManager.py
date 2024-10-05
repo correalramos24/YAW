@@ -69,9 +69,15 @@ class RunnerManager:
         return name in self.runner_params
     
     def get_variations(self, **params):
+        mirrors = safe_check_key_dict_int(params, "mirror", 1)
         if self.__is_a_multi_recipie(**params):
+            if mirrors > 1:
+                warning("Mirror execution not allowed with multi-parameters!")
             info("Deriving multi-parameter...")
             return self.__derive_multi_recipe(self.print_multi, **params)
+        elif mirrors > 1:
+            print(f"Generating {mirrors} mirror(s) steps...")
+            return [params] * mirrors
         else:
             return [params]
 

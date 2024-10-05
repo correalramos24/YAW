@@ -18,7 +18,7 @@ class AbstractRunner:
     dry: bool = False
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
-
+    mirror : int = None
     YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
 
     def __post_init__(self):
@@ -118,6 +118,7 @@ class AbstractRunner:
             ("comment", "BASIC PARAMETERS"), 
             ("log_name", "Log file to dump the STDOUT and STDERR"), 
             ("env_file", "Environment file to use"),
+            ("mirror", "Execute several time the same step")
         ]
     
     # EXPAND BASH VARIABLES:

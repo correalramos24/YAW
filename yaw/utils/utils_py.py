@@ -5,6 +5,16 @@ def safe_check_key_dict(d: dict, key: object) -> object:
         return d[key]
     else:
         return None
+    
+def safe_check_key_dict_int(d: dict, key: object, default_value: int) -> int:
+    if key in d.keys():
+        try:
+            return int(d[key])
+        except ValueError:
+            return default_value
+    else:
+        return None
+
 
 
 def is_a_list(var) -> bool:
