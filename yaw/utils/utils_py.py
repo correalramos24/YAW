@@ -13,8 +13,7 @@ def safe_check_key_dict_int(d: dict, key: object, default_value: int) -> int:
         except ValueError:
             return default_value
     else:
-        return None
-
+        return default_value
 
 
 def is_a_list(var) -> bool:

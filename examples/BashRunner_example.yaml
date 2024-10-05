@@ -1,0 +1,24 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunner RUNNER
+## Required parameters:type bash_cmd
+example:
+ # SETUP
+  type: BashRunner
+ # BASIC PARAMETERS
+  log_name: example
+  env_file: #Environment file to use
+  rundir: $HOME/YAW-TESTING
+ # BASH PARAMETERS
+  bash_cmd: ls
+  args: -la
+example:
+ # SETUP
+  type: BashRunner
+ # BASIC PARAMETERS
+  log_name: example
+  env_file: #Environment file to use
+  rundir: # Points to rundir from where you execute YAW
+ # BASH PARAMETERS
+  bash_cmd: ls
+  args: -la
+#####################################-YAW-######################################

@@ -11,8 +11,7 @@ class RundirHelper(AbstractRunner):
     a rundir.
     """
     type: str = "RundirHelper"
-    rundir : Path = None
-    force  : bool = False
+    overwrite   : bool =  False
     ref_rundir : Path = None
     rundir_files : list[Path] = None
     tar_gz_files : list[Path] = None
@@ -21,7 +20,6 @@ class RundirHelper(AbstractRunner):
 
     def __post_init__(self):
         super().__post_init__()
-        self.rundir = Path(self.rundir) if self.rundir else None
         self.ref_rundir = Path(self.ref_rundir) if self.ref_rundir else None
 
         self.rundir_files = listify(self.rundir_files)
@@ -35,17 +33,9 @@ class RundirHelper(AbstractRunner):
             warning("Not selected ref_rundir or rundir_files")
         if self.git_branch and not self.git_repo:
             raise Exception("Git branch selected but repo not selected!")
-        if self.force:
-            warning("FORCE MODE ENABLED!")
 
     def manage_parameters(self):
         super().manage_parameters()
-        if self.rundir:
-            info(f"Using {self.rundir} as rundir")
-            if not check_path_exists(self.rundir):
-                create_dir(self.rundir)
-            elif check_path_exists(self.rundir) and not self.force:
-                raise Exception(f"{self.rundir} already exists, ABORTING!")
         if self.ref_rundir:
             copy_folder(self.ref_rundir, self.rundir, True)
         if self.rundir_files:
@@ -60,7 +50,8 @@ class RundirHelper(AbstractRunner):
             branch = f"-b {self.git_branch}" if self.git_branch else ""
             info("Cloning repo", self.git_repo, branch)
             execute_command(f"git clone {self.git_repo} {branch}", self.rundir)
-
+        if self.overwrite:
+            warning("OVERWRITE MODE ENABLED!")
     # PARAMETER METHODS:
     @classmethod
     def get_required_params(self):
@@ -79,12 +70,11 @@ class RundirHelper(AbstractRunner):
         params_info = super()._inflate_yaml_template_info()
         params_info.extend([
             ("comment", "RUNDIR PARAMETERS"),
-            ("rundir", "Rundir path to execute the runner."),
-            ("force", "Overwrite previous content of rundir"),
             ("ref_rundir", "Reference rundir to use, (copy all to rundir)"),
             ("rundir_files", "List of files to copy to the rundir"),
             ("tar_gz_files", "List of tar.gz. files to uncompress into the rundir"),
             ("git_repo", "Git repository to fill the rundir"),
-            ("git_branch", "Git branch for git_repo")
+            ("git_branch", "Git branch for git_repo"),
+            ("overwrite", "Overwrite previous content of rundir")
         ])
         return params_info

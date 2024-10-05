@@ -15,6 +15,7 @@ class AbstractRunner:
     type: str = None
     log_name: str = None
     env_file: Path = None
+    rundir  : Path = None
     dry: bool = False
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
@@ -31,7 +32,17 @@ class AbstractRunner:
         self.__check_req_parameters()
         self.__init_bash_env_variables()
 
-        self.env_file = Path(self.env_file) if self.env_file else None    
+        self.env_file = Path(self.env_file) if self.env_file else None
+        self.rundir = Path(self.rundir) if self.rundir else None
+
+    def __initialize_rundir(self):
+        if self.rundir:
+            info("Rundir pointing to", self.rundir)
+            if not check_path_exists(self.rundir):
+                create_dir(self.rundir)
+        else:
+            self.rundir = Path(os.getcwd())
+            info("Initializing rundir to the current path", self.rundir)
 
     def __check_req_parameters(self):
         req_params = self.get_required_params()
@@ -48,12 +59,12 @@ class AbstractRunner:
         if self.log_name:
             info(f"Using {self.log_name}, appending STDOUT and STDERR")
         else:
-            warning("Not using a log, appending all to STDOUT")
-
+            info("Not using a log, appending all to STDOUT")
         if self.env_file:
             check_file_exists_exception(self.env_file)
         else:
-            warning("Running without env!")
+            warning("Running without env!")            
+        self.__initialize_rundir()
 
     def run(self):
         """Execute the runner
@@ -118,6 +129,7 @@ class AbstractRunner:
             ("comment", "BASIC PARAMETERS"), 
             ("log_name", "Log file to dump the STDOUT and STDERR"), 
             ("env_file", "Environment file to use"),
+            ("rundir", "Rundir path to execute the runner."),
             ("mirror", "Execute several time the same step")
         ]
     
