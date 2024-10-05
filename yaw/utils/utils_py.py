@@ -1,10 +1,10 @@
 from pathlib import Path
 
-def safe_check_key_dict(d: dict, key: object) -> object:
+def safe_check_key_dict(d: dict, key: object, default: object = None) -> object:
     if key in d.keys():
         return d[key]
     else:
-        return None
+        return default
     
 def safe_check_key_dict_int(d: dict, key: object, default_value: int) -> int:
     if key in d.keys():

@@ -1,13 +1,21 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR BashRunner RUNNER
 ## Required parameters:type bash_cmd
+bash_cmd: ls
 example1:
- # SETUP
   type: BashRunner
- # BASH PARAMETERS
-  bash_cmd: ls 
-  args: -la
-  mirror: 4
-  log_name: yaw.log
-  rundir: $HOME/YAW-TEST
+  log_name: 
+    - la_log
+    - lsh_log
+  args: 
+    - -la
+    - -lsh
+example2:
+  type: BashRunner
+  log_name: 
+    - la_log
+    - lsh_log
+  args: 
+    - -la
+    - -lsh
 #####################################-YAW-######################################

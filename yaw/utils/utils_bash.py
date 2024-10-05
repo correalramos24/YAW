@@ -35,7 +35,7 @@ def generate_bash_script(f_path: Path, cmds : list[str]):
 """)
         log(f"Created", f_path)
 
-def execute_script(script, args, rundir, log_file=None):
+def execute_script(script: str, args: str|None, rundir: Path, log_file=None):
     if not args: 
         args = ""
         args_str = "without args"

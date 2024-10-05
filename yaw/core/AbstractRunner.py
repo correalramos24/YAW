@@ -14,6 +14,7 @@ class AbstractRunner:
     # BASIC PARAMETERS:
     type: str = None
     log_name: str = None
+    log_at_rundir: bool = True
     env_file: Path = None
     rundir  : Path = None
     dry: bool = False
@@ -58,18 +59,23 @@ class AbstractRunner:
         """
         if self.log_name:
             info(f"Using {self.log_name}, appending STDOUT and STDERR")
-        else:
-            info("Not using a log, appending all to STDOUT")
         if self.env_file:
             check_file_exists_exception(self.env_file)
         else:
-            warning("Running without env!")            
+            info("Running without env!")
         self.__initialize_rundir()
 
     def run(self):
         """Execute the runner
         """
         print("This is an empty runner!")
+
+    @property
+    def log_path(self):
+        if self.log_at_rundir:
+            return Path(self.rundir, self.log_name)
+        else:
+            return Path(self.log_name)
 
     # PARAMETER METHODS:
 
@@ -128,6 +134,7 @@ class AbstractRunner:
             ("dry", "Dry run, only manage parameters, not run anything"),
             ("comment", "BASIC PARAMETERS"), 
             ("log_name", "Log file to dump the STDOUT and STDERR"), 
+            ("log_at_rundir", "Place the log file at the rundir"),
             ("env_file", "Environment file to use"),
             ("rundir", "Rundir path to execute the runner."),
             ("mirror", "Execute several time the same step")

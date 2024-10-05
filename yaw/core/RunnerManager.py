@@ -77,7 +77,15 @@ class RunnerManager:
             return self.__derive_multi_recipe(self.print_multi, **params)
         elif mirrors > 1:
             print(f"Generating {mirrors} mirror(s) steps...")
-            return [params] * mirrors
+            rundir = safe_check_key_dict(params, "rundir", os.getcwd())
+            ret = []
+            for i in range(mirrors):
+                aux = params.copy()
+                aux["rundir"] = str(Path(rundir, f"mirror-{i}"))
+                aux["log_at_rundir"] = True
+                ret.append(aux)
+            
+            return ret
         else:
             return [params]
 

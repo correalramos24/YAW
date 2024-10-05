@@ -17,19 +17,17 @@ class BashRunner(AbstractRunner):
     def manage_parameters(self):
         super().manage_parameters()
 
-    def run(self, run_dir=None):
-        self.inflate_runner(run_dir)
+    def run(self):
+        self.inflate_runner()
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
             execute_script(self.WRAPPER_NAME, self.args,
-                           run_dir, self.log_name)
+                           self.rundir, self.log_path)
     
-    def inflate_runner(self, run_dir=None):
-        if not run_dir: 
-            run_dir = os.getcwd()
+    def inflate_runner(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
-        generate_bash_script(Path(run_dir, self.WRAPPER_NAME),
+        generate_bash_script(Path(self.rundir, self.WRAPPER_NAME),
             [
             load_env_cmd,
             "printenv &> env.log",
