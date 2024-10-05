@@ -12,12 +12,6 @@ class BashRunner(AbstractRunner):
     args: str = None
     script_name : str = "bash_wrapper.sh"
 
-    def __post_init__(self):
-        super().__post_init__()
-
-    def manage_parameters(self):
-        super().manage_parameters()
-
     def run(self):
         self.inflate_runner()
         if self.dry:
