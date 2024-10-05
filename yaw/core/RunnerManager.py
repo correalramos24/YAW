@@ -18,13 +18,14 @@ class RunnerManager:
     }
 
     def __init__(self, input_files: list[Path], 
-                 run_step_names : list[str], print_multi : bool):
-        self.input_files = input_files
-        self.steps : list[AbstractRunner|None] = []
-        self.step_names : list[str] = []
-        self.print_multi : bool = print_multi
-        self.run_step_name : list[str] = run_step_names
-        self.generic_params = dict()
+        run_step_names : list[str], print_multi : bool
+    ):
+        self.input_files        : list[Path] = input_files
+        self.steps              : list[AbstractRunner|None] = []
+        self.step_names         : list[str] = []
+        self.print_multi        : bool = print_multi
+        self.run_step_name      : list[str] = run_step_names
+        self.generic_params     : dict = dict()     # At YAW level
         if self.step_names:
             info("Executing only", stringfy(self.step_names), "step(s)")
 
@@ -32,6 +33,7 @@ class RunnerManager:
     def runner_params(self) -> set[str]:
         return {param for runner in self.runners.values()
                     for param in runner.get_parameters()}
+
     @property
     def multi_value_parameters(self) -> set[str]:
         return {
@@ -40,22 +42,23 @@ class RunnerManager:
         }
 
     # PARSE:
-    def parse_files(self):
+    def parse_files(self) -> None:
         print("=" * 40 + "PARSING" + "=" * 40)
         [self.__parse_file(f) for f in self.input_files]
         print("=" * 87)
 
     def __parse_file(self, input_file) -> None:
         info("Parsing recipe", input_file)
+        recipie_gen_params = self.__get_generic_parameters(input_file)
         with open(input_file, "r") as f:
             content : dict = yaml.safe_load(f)
             for step_id, (name, content) in enumerate(content.items()):
                 try:
-                    step_t = content["type"]
-                    step_str = f"{step_id} - {name}"
+                    step_t, step_str = content["type"], f"{step_id} - {name}"
                     print(f"Building recipe {step_str} from {input_file}")
-                    variations = self.get_variations(**content)
-                    for variation in variations:
+                    for variation in self.get_variations(**content):
+                        #TODO: Add YAW generic parameters
+                        #TODO: ADD recipie generic parameters
                         self.steps.append(self.runners[step_t](**variation))
                         self.step_names.append(name)
                 except Exception as e:
@@ -65,9 +68,15 @@ class RunnerManager:
                     self.step_names.append(name)
                 print("-" * 87)
 
-    def is_generic_param(self, name):
-        return name in self.runner_params
-    
+    @staticmethod
+    def __get_generic_parameters(self, recipie_file: Path) -> dict:
+        info("Searching for generic parameters...")
+        ret = {}
+        with open(recipie_file, "r") as f:
+            pass
+
+        return ret
+          
     def get_variations(self, **params):
         mirrors = safe_check_key_dict_int(params, "mirror", 1)
         if self.__is_a_multi_recipie(**params):
