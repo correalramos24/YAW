@@ -24,46 +24,42 @@ class RunnerManager:
         self.step_names : list[str] = []
         self.print_multi : bool = print_multi
         self.run_step_name : list[str] = run_step_names
-        self.runner_params : set[str]
-        self.runner_params = {param for runner in self.runners.values()
-                              for param in runner.get_parameters()}
         self.generic_params = dict()
         if self.step_names:
             info("Executing only", stringfy(self.step_names), "step(s)")
-            
+
+    @property
+    def runner_params(self) -> set[str]:
+        return {param for runner in self.runners.values()
+                    for param in runner.get_parameters()}
+    @property
+    def multi_value_parameters(self) -> set[str]:
+        return {
+            param for runner in self.runners.values()
+            for param in runner.get_multi_value_params()
+        }
+
     # PARSE:
     def parse_files(self):
         print("=" * 40 + "PARSING" + "=" * 40)
-        [self._parse_file(f) for f in self.input_files]
+        [self.__parse_file(f) for f in self.input_files]
         print("=" * 87)
 
-    def _parse_file(self, input_file) -> None:
-        print("Parsing recipe", input_file)
+    def __parse_file(self, input_file) -> None:
+        info("Parsing recipe", input_file)
         with open(input_file, "r") as f:
             content : dict = yaml.safe_load(f)
             for step_id, (name, content) in enumerate(content.items()):
                 try:
-                    if self.is_generic_param(name):
-                        #TODO: PARSE all the file searching the generic params.
-                        print("Defining generic parameter", name, ":", content)
-                        self.generic_params[name] = content
-                        continue
                     step_t = content["type"]
                     step_str = f"{step_id} - {name}"
                     print(f"Building recipe {step_str} from {input_file}")
-                    if self._is_a_multi_recipie(step_t, **content):
-                        variations = self._derive_multi_recipe(
-                                name, step_t, self.print_multi, **content)
-                        for variation in variations:
-                            self.steps.append(self.runners[step_t](**variation))
-                            self.step_names.append(name)
-                    else:
-                        aux_dict = content | self.generic_params
-                        self.steps.append(self.runners[step_t](**aux_dict))
+                    variations = self.get_variations(**content)
+                    for variation in variations:
+                        self.steps.append(self.runners[step_t](**variation))
                         self.step_names.append(name)
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
-                    traceback.print_exc()
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
                     self.step_names.append(name)
@@ -71,62 +67,61 @@ class RunnerManager:
 
     def is_generic_param(self, name):
         return name in self.runner_params
+    
+    def get_variations(self, **params):
+        if self.__is_a_multi_recipie(**params):
+            info("Deriving multi-parameter...")
+            return self.__derive_multi_recipe(self.print_multi, **params)
+        else:
+            return [params]
 
-    @staticmethod
-    def _is_a_multi_recipie(step_type : str, **params) -> bool:
-        multi_value = RunnerManager.runners[step_type].get_multi_value_params()
+    def __is_a_multi_recipie(self, **params) -> bool:
         return len([
             param for param, val in params.items()
             if is_a_list(val) and not "__" in param and
-            not param in multi_value
+            not param in self.multi_value_parameters
         ]) >= 1
 
-    @staticmethod
-    def _derive_multi_recipe(step_name: str, step_type : str, print_combs: bool, **params) -> list[dict]:
-        info("Deriving multi-parameter for step", step_name)
-        # 1. GET MULTI-PARAMETERS
-        multi_value = RunnerManager.runners[step_type].get_multi_value_params()
+    def __derive_multi_recipe(self, print_combs: bool, **params) -> list[dict]:
+        
+        # 1. GET MULTI-PARAMETERS 
         multi_params = [ (param, val) for param, val in params.items()
                         if is_a_list(val) and not "__" in str(param) and
-                        not param in multi_value
+                        not param in self.multi_value_parameters
         ]
 
         # 2. CHECK MODE FOR VARIATION GENERATION:
+        multi_param_str= ' '.join(param for param, _ in multi_params)
         if safe_check_key_dict(params, "mode") == "cartesian":
-            # 2A. CARTESIAN
             join_op = product
-            info("Cartesian mode for multi-parameter(s):", ' '.join(param for param, _ in multi_params))
-        else:
-            # 2B. ZIP MODE
+            print("Cartesian mode for multi-parameter(s):", multi_param_str)
+        else: # ZIP MODE -> DEFAULT
             join_op = zip
-            info("Using zip mode for multi-parameter(s):", ' '.join(param for param, _ in multi_params))
+            print("Using zip mode for multi-parameter(s):", multi_param_str)
             # Check params len: all multi-params needs to be the same!
-            b_lens = [
+            b_length = [
                 len(params[param]) == len(params[multi_params[0][0]])
-                for param, value in multi_params
+                for param, _ in multi_params
             ]
 
-            if not all(b_lens):
+            if not all(b_length):
                 critical("Invalid size for multi-parameters",
                          str([len(params[param]) for param, _ in multi_params]))
 
         # 3. GENERATE COMBINATIONS
         variation_params = [param for param, _ in multi_params]
         unique_params = {
-            param: value for param, value in params.items() if param not in variation_params
+            param: value for param, value in params.items() 
+            if param not in variation_params
         }
-        variations_values = list(join_op(*[params[param] for param, _ in multi_params]))
-        variations = []
-        for variation in variations_values:
-            aux = {"root_step": step_name, **unique_params}
-            for param, value in zip(variation_params, variation):
-                aux[param] = value
-            if "rundir" in aux:
-                variation_rundir = aux["rundir"] + os.sep + '_'.join(stringfy(value) for value in variation)
-                aux["rundir"] = variation_rundir
-            variations.append(aux)
-
-        print(f"Requested {len(variations)} executions with multi-params combinations")
+        variations_values = list(
+            join_op(*[params[param] for param, _ in multi_params])
+        )
+        variations = [
+            {**unique_params, **dict(zip(variation_params, variation))}
+            for variation in variations_values
+        ]
+        info(f"Found {len(variations)} multi-params combinations")
 
         if print_combs:
             print("# Unique parameters:")
@@ -145,18 +140,22 @@ class RunnerManager:
             self.run_step_name = self.step_names
         print("=" * 40 + "RUNNING" + "=" * 40)
         for i, (name, step) in enumerate(zip(self.step_names, self.steps)):
-            try:
-                if step and name in self.run_step_name:
-                    print(f"Executing step {i} {name}")
+            if step and name in self.run_step_name:
+                try:
+                    print(f"Checking step {i} ({name})")
+                    step.manage_parameters()
+                except Exception as e:
+                    error(f"While checking recipe {i} ->", str(e))
+                try:
+                    print(f"Executing step {i} ({name})")
                     step.manage_parameters()
                     step.run()
-                elif step and name not in self.run_step_name :
-                    print(f"Recipie {i} - {name} skipped due cmd line")
-                else:
-                    print(f"Recipe {i} - {name} is empty, check recipie -> SKIP")
-            except Exception as e:
-                error(f"While executing recipe {i} ->", str(e))
-                print(traceback.format_exc())
+                except Exception as e:
+                    error(f"While executing recipe {i} ->", str(e))
+            elif step and name not in self.run_step_name :
+                print(f"Recipie {i} - {name} skipped due cmd line")
+            else:
+                print(f"Recipe {i} - {name} is empty, check recipie -> SKIP")
             print("-" * 87)
         print("=" * 87)
 
@@ -167,6 +166,7 @@ class RunnerManager:
             raise Exception("Bad runner type", runner_name)
         else:
             cls.runners[runner_name].generate_yaml_template()
+
     @classmethod
     def get_runners(cls) -> list[str]:
         return [str(k) for k in cls.runners.keys()]

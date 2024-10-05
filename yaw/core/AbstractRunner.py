@@ -18,7 +18,6 @@ class AbstractRunner:
     dry: bool = False
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
-    root_step: str = None
 
     YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
 

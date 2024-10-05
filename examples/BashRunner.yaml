@@ -1,7 +1,7 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR BashRunner RUNNER
 ## Required parameters:type bash_cmd
-your_recipe_name:
+example1:
  # SETUP
   type: BashRunner
  # BASH PARAMETERS
