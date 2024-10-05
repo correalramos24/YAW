@@ -17,7 +17,6 @@ class AbstractRunner:
     log_at_rundir: bool = True
     env_file: Path = None
     rundir  : Path = None
-    dry: bool = False
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
     mirror : int = None
@@ -133,7 +132,6 @@ class AbstractRunner:
         return [
             ("comment", "SETUP"), ("type", "Type of runner"),
             ("mode", "Type of multi-parameter: cartesian or zip (default)"),
-            ("dry", "Dry run, only manage parameters, not run anything"),
             ("comment", "BASIC PARAMETERS"), 
             ("log_name", "Log file to dump the STDOUT and STDERR"), 
             ("log_at_rundir", "Place the log file at the rundir"),

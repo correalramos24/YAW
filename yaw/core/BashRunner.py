@@ -11,6 +11,7 @@ class BashRunner(AbstractRunner):
     bash_cmd: str = None
     args: str = None
     script_name : str = "bash_wrapper.sh"
+    dry: bool = False
 
     def run(self):
         self.inflate_runner()
@@ -44,6 +45,7 @@ class BashRunner(AbstractRunner):
             ("wrapper", "execute your command with a wrapper"),
             ("bash_cmd", "Script to be executed (./s.sh) or bash command (ls)"),
             ("args", "Script arguments"),
-            ("script_name", "wrapper name")
+            ("script_name", "wrapper name"),
+            ("dry", "Dry run, only manage parameters, not run anything"),
         ])
         return parameters_info
