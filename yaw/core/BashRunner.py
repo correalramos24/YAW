@@ -7,9 +7,10 @@ from utils import *
 @dataclass
 class BashRunner(AbstractRunner):
     type: str = "BashRunner"
+    wrapper: str = None
     bash_cmd: str = None
     args: str = None
-    wrapper : str = "bash_wrapper.sh"
+    script_name : str = "bash_wrapper.sh"
 
     def __post_init__(self):
         super().__post_init__()
@@ -22,15 +23,16 @@ class BashRunner(AbstractRunner):
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
-            execute_script(self.wrapper, self.args, self.rundir, self.log_path)
+            execute_script(self.script_name, self.args, self.rundir, self.log_path)
     
     def inflate_runner(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
-        generate_bash_script(Path(self.rundir, self.wrapper),
+        wrapper_cmd = f"{self.wrapper}" if self.wrapper else ""
+        generate_bash_script(Path(self.rundir, self.script_name),
             [
             load_env_cmd,
             "printenv &> env.log",
-            f"{self.bash_cmd} $@"
+            f"{wrapper_cmd} {self.bash_cmd} $@"
             ]
         )
         
@@ -45,8 +47,9 @@ class BashRunner(AbstractRunner):
         parameters_info = super()._inflate_yaml_template_info()
         parameters_info.extend([
             ("comment", "BASH PARAMETERS"),
+            ("wrapper", "execute your command with a wrapper"),
             ("bash_cmd", "Script to be executed (./s.sh) or bash command (ls)"),
             ("args", "Script arguments"),
-            ("wrapper", "wrapper name")
+            ("script_name", "wrapper name")
         ])
         return parameters_info

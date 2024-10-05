@@ -1,0 +1,12 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunner RUNNER
+## Required parameters:type bash_cmd
+wrapper_example:
+ # SETUP
+  type: BashRunner
+  rundir: $HOME/YAW-TEST
+ # BASH PARAMETERS
+  wrapper: time
+  bash_cmd: sleep
+  args: 2
+#####################################-YAW-######################################

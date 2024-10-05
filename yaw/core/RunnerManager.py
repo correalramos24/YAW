@@ -160,12 +160,13 @@ class RunnerManager:
                     step.manage_parameters()
                 except Exception as e:
                     error(f"While checking recipe {i} ->", str(e))
+                    traceback.print_exception(e)
                 try:
                     print(f"Executing step {i} ({name})")
-                    step.manage_parameters()
                     step.run()
                 except Exception as e:
                     error(f"While executing recipe {i} ->", str(e))
+                    traceback.print_exception(e)
             elif step and name not in self.run_step_name :
                 print(f"Recipie {i} - {name} skipped due cmd line")
             else:

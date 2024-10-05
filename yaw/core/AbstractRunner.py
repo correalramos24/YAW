@@ -72,7 +72,9 @@ class AbstractRunner:
 
     @property
     def log_path(self):
-        if self.log_at_rundir:
+        if not self.log_name:
+            return None
+        if self.log_at_rundir :
             return Path(self.rundir, self.log_name)
         else:
             return Path(self.log_name)

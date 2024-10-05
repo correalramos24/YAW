@@ -39,8 +39,8 @@ def execute_script(script: str, args: str|None, rundir: Path, log_file=None):
     if not args: 
         args = ""
         args_str = "without args"
-    else: 
-        args_str = "with " + args
+    else:
+        args_str = "with " + str(args)
 
     if not rundir:
         rundir = os.getcwd()
