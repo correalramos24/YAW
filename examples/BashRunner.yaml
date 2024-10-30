@@ -12,4 +12,15 @@ example1:
   args: 
     - -la
     - -lsh
+example2:
+ # SETUP
+  type: BashRunner
+  mode: #Type of multi-parameter: cartesian or zip (default)
+ # BASIC PARAMETERS
+  log_name: example2.log
+ # BASH PARAMETERS
+  wrapper: time
+  bash_cmd: ls
+  args: -la
+  track_env: ls_env.env
 #####################################-YAW-######################################
