@@ -10,7 +10,7 @@ def safe_check_key_dict_int(d: dict, key: object, default_value: int) -> int:
     if key in d.keys():
         try:
             return int(d[key])
-        except ValueError:
+        except Exception:
             return default_value
     else:
         return default_value

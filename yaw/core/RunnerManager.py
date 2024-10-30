@@ -66,7 +66,7 @@ class RunnerManager:
                 print("-" * 87)
 
     @staticmethod
-    def __get_generic_parameters(self, recipie_file: Path) -> dict:
+    def __get_generic_parameters(recipie_file: Path) -> dict:
         info("Searching for generic parameters...")
         ret = {}
         with open(recipie_file, "r") as f:

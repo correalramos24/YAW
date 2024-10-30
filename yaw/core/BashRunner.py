@@ -10,23 +10,35 @@ class BashRunner(AbstractRunner):
     wrapper: str = None
     bash_cmd: str = None
     args: str = None
-    script_name : str = "bash_wrapper.sh"
+    script_name : str = None
     dry: bool = False
+    track_env : str = None
 
-    def run(self):
+    def __post_init__(self):
+        if not self.script_name:
+            self.script_name = "bash_wrapper.sh"
+
+    def run(self) -> bool:
         self.inflate_runner()
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
-            execute_script(self.script_name, self.args, self.rundir, self.log_path)
+            r = execute_script(self.script_name, self.args, 
+                               self.rundir, self.log_path)
+            if not r:
+                print("Executed sucesfully", r)
+            else:
+                print("Return code != 0", r)
+        return r == 0
     
     def inflate_runner(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
+        trck_env_cmd = f"printenv &> {self.track_env}" if self.track_env else ""
         wrapper_cmd = f"{self.wrapper}" if self.wrapper else ""
         generate_bash_script(Path(self.rundir, self.script_name),
             [
             load_env_cmd,
-            "printenv &> env.log",
+            trck_env_cmd,
             f"{wrapper_cmd} {self.bash_cmd} $@"
             ]
         )
@@ -47,5 +59,6 @@ class BashRunner(AbstractRunner):
             ("args", "Script arguments"),
             ("script_name", "wrapper name"),
             ("dry", "Dry run, only manage parameters, not run anything"),
+            ('track_env', "File name to store the env of a run")
         ])
         return parameters_info
