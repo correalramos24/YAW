@@ -49,6 +49,7 @@ class RunnerManager:
         recipie_gen_params = self.__get_generic_parameters(input_file)
         with open(input_file, "r") as f:
             content : dict = yaml.safe_load(f)
+            print("-" * 87)
             for step_id, (name, content) in enumerate(content.items()):
                 try:
                     step_t, step_str = content["type"], f"{step_id} - {name}"
@@ -75,23 +76,9 @@ class RunnerManager:
         return ret
           
     def get_variations(self, **params):
-        mirrors = safe_check_key_dict_int(params, "mirror", 1)
         if self.__is_a_multi_recipie(**params):
-            if mirrors > 1:
-                warning("Mirror execution not allowed with multi-parameters!")
             info("Deriving multi-parameter...")
             return self.__derive_multi_recipe(self.print_multi, **params)
-        elif mirrors > 1:
-            print(f"Generating {mirrors} mirror(s) steps...")
-            rundir = safe_check_key_dict(params, "rundir", os.getcwd())
-            ret = []
-            for i in range(mirrors):
-                aux = params.copy()
-                aux["rundir"] = str(Path(rundir, f"mirror-{i}"))
-                aux["log_at_rundir"] = True
-                ret.append(aux)
-            
-            return ret
         else:
             return [params]
 
