@@ -2,8 +2,8 @@
 ## TEMPLATE FOR BashRunner RUNNER
 ## Required parameters:type bash_cmd
 bash_cmd: ls
+type: BashRunner
 example1:
-  type: BashRunner
   log_name: 
     - la_log
     - lsh_log
@@ -11,7 +11,6 @@ example1:
     - -la
     - -lsh
 example2:
-  type: BashRunner
   log_name: 
     - la_log
     - lsh_log

@@ -49,14 +49,17 @@ class RunnerManager:
         recipie_gen_params = self.__get_generic_parameters(input_file)
         with open(input_file, "r") as f:
             content : dict = yaml.safe_load(f)
+            # Discard generic parameters:
+            content = {param : value for param, value in content.items()
+                       if param not in recipie_gen_params.keys()}
             print("-" * 87)
             for step_id, (name, content) in enumerate(content.items()):
                 try:
+                    #TODO: Add YAW generic parameters
+                    content.update(recipie_gen_params)
                     step_t, step_str = content["type"], f"{step_id} - {name}"
                     print(f"Building recipe {step_str} from {input_file}")
-                    for variation in self.get_variations(**content):
-                        #TODO: Add YAW generic parameters
-                        #TODO: ADD recipie generic parameters
+                    for variation in self.get_variations(**content):    
                         self.steps.append(self.runners[step_t](**variation))
                         self.step_names.append(name)
                 except Exception as e:
@@ -66,13 +69,19 @@ class RunnerManager:
                     self.step_names.append(name)
                 print("-" * 87)
 
-    @staticmethod
-    def __get_generic_parameters(recipie_file: Path) -> dict:
-        info("Searching for generic parameters...")
+    def __get_generic_parameters(self, recipie_file: Path) -> dict:
+        info(f"Searching for generic parameters @ {recipie_file}...")
+        info(f"Using {self.runner_params} to search parameters...")
         ret = {}
         with open(recipie_file, "r") as f:
-            pass
-
+            content : dict = yaml.safe_load(f)
+            param_names = set(content.keys())
+            generic_params = self.runner_params & param_names
+            ret = {param: content[param] for param in generic_params}
+        if len(ret):
+            print(f"Generic parameters @ {recipie_file}: {ret}")
+        else:
+            print(f"Generic parameters @ {recipie_file}: None")
         return ret
           
     def get_variations(self, **params):
