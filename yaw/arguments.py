@@ -26,6 +26,8 @@ def parse_user_args():
 
     parser.add_argument('--version', help="Print YAW version", action='store_true')
 
+    parser.add_argument('--info', help="Add info messages", action='store_true')
+
     # Parse the arguments:
 
     if parser.parse_args().version:

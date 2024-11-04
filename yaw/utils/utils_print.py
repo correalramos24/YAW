@@ -1,12 +1,19 @@
 
-VERBOSE_LEVEL=3
+verbose_level    = 3
+enable_info_flag = False
+
+def enable_info(e: bool ):
+    global enable_info_flag 
+    enable_info_flag = e
 
 def log(*msg_args):
-    if VERBOSE_LEVEL >1 : return
+    if verbose_level >1 : return
     print("LOG:", *msg_args)
 
 def info(*msg_args):
-    print("INFO:", *msg_args)
+    global enable_info_flag
+    if enable_info_flag:
+        print("INFO:", *msg_args)
 
 def warning(*msg_args: str):
     print("WARNING!", *msg_args)
