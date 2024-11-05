@@ -29,7 +29,8 @@ class RunnerManager:
 
     @property
     def runner_params(self) -> set[str]:
-        return {param for runner in self.runners.values()
+        aux = list(self.runners.values()) + [AbstractRunner]
+        return {param for runner in aux
                     for param in runner.get_parameters()}
 
     @property
