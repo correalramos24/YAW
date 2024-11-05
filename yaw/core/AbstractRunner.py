@@ -64,7 +64,7 @@ class AbstractRunner:
             info("Running without env!")
         self.__initialize_rundir()
 
-    def run(self):
+    def run(self) -> bool:
         """Execute the runner
         """
         print("This is an empty runner!")
@@ -82,6 +82,9 @@ class AbstractRunner:
 
     @classmethod
     def get_parameters(cls) -> list[str]:
+        for aux in cls.__dict__.keys():
+            print(aux)
+        print("##")
         return [str(param) for param in cls.__dict__.keys() if
             not param.startswith("_") and not param.isupper() and
             not callable(getattr(cls, param))

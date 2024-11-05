@@ -25,6 +25,7 @@ class RunnerManager:
         self.generic_params     : dict = dict()     # At YAW level
         if self.step_names:
             info("Executing only", stringfy(self.step_names), "step(s)")
+        self.result : dict[str, any] = {}
 
     @property
     def runner_params(self) -> set[str]:
@@ -59,9 +60,9 @@ class RunnerManager:
                     content.update(recipie_gen_params)
                     step_t, step_str = content["type"], f"{step_id} - {name}"
                     print(f"Building recipe {step_str} from {input_file}")
-                    for variation in self.get_variations(**content):    
+                    for var_id, variation in enumerate(self.get_variations(**content)):    
                         self.steps.append(self.runners[step_t](**variation))
-                        self.step_names.append(name)
+                        self.step_names.append(name+f"_{var_id}")
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
                     print("Excluding step", step_id, "with name", name)
@@ -150,32 +151,43 @@ class RunnerManager:
 
     # RUN:
     def run_steps(self):
+        print("=" * 40 + "RUNNING" + "=" * 40)
         if self.run_step_name:
             print("Only executting steps with name", stringfy(self.run_step_name))
         else:
             self.run_step_name = self.step_names
-        print("=" * 40 + "RUNNING" + "=" * 40)
         for i, (name, step) in enumerate(zip(self.step_names, self.steps)):
             if step and name in self.run_step_name:
+                # A) CHECK PARAMETERS
                 try:
-                    print(f"Checking step {i} ({name})")
+                    info(f"Checking step {i} ({name})")
                     step.manage_parameters()
                 except Exception as e:
                     error(f"While checking recipe {i} ->", str(e))
                     traceback.print_exception(e)
+                    self.result[name] = "Check recipie parameters"
+                # B) EXECUTE STEP
                 try:
+                    print("-" * 87)
                     print(f"Executing step {i} ({name})")
-                    step.run()
+                    ret = step.run()
+                    self.result[name] = "OK" if ret else "ERR"
                 except Exception as e:
                     error(f"While executing recipe {i} ->", str(e))
+                    self.result[name] = "YAW internal error"
                     traceback.print_exception(e)
             elif step and name not in self.run_step_name :
-                print(f"Recipie {i} - {name} skipped due cmd line")
+                info(f"Recipie {i} - {name} skipped due cmd line")
+                self.result[name] = "skipped due cmd line --steps"
             else:
-                print(f"Recipe {i} - {name} is empty, check recipie -> SKIP")
-            print("-" * 87)
+                info(f"Recipe {i} - {name} is empty, check recipie -> SKIP")
+                self.result[name] = "check recipie -> SKIP"
         print("=" * 87)
 
+        print("=" * 41 + "STATS" + "=" * 41)
+        for name, ret in self.result.items():
+            print(name, "->", ret)
+        print("=" * 87)
     # GENERATION:
     @classmethod
     def generate_template(cls, runner_name):

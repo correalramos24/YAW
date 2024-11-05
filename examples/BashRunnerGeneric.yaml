@@ -3,6 +3,7 @@
 ## Required parameters:type bash_cmd
 bash_cmd: ls
 type: BashRunner
+log_name:
 example1:
   log_name: 
     - la_log
