@@ -1,0 +1,29 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunnerRundir RUNNER
+## Required parameters:type bash_cmd rundir
+log_at_rundir: False
+bash_cmd: ls
+args:
+  - -la
+  - -ls
+  - -lsh
+
+example1:
+ # SETUP
+  type: BashRunnerRundir
+ # BASIC PARAMETERS
+  log_name: "ls.log"
+  env_file:
+    - $HOME/env-intel
+    - $HOME/env-gcc
+    - $HOME/env-cray
+  rundir: $HOME/YAW-RUNDIR
+  
+ # RUNDIR PARAMETERS
+  ref_rundir: $HOME/Documents/PROJECTS/YAW/misc
+
+example2:
+  type: BashRunner
+  log_name: ls_2.log
+  log_at_rundir: True
+#####################################-YAW-######################################
