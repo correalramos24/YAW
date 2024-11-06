@@ -25,11 +25,17 @@ def parse_user_args():
                         help="Print combinations of multi-parameters")
 
     parser.add_argument('--version', help="Print YAW version", action='store_true')
+    parser.add_argument('--dev-version', help="Print YAW version, detailed", action='store_true')
 
     parser.add_argument('--info', help="Add info messages", action='store_true')
 
     # Parse the arguments:
-
+    if parser.parse_args().dev_version:
+        br = execute_command_get_ouput("git rev-parse --abbrev-ref HEAD")
+        cm = execute_command_get_ouput("git rev-parse --short HEAD")
+        tg = execute_command_get_ouput("git describe --tags --abbrev=0")
+        print(f"VERSION: {VERSION} ({tg}) => BRANCH: {br} @ COMMIT: {cm}")
+        exit(0)
     if parser.parse_args().version:
         print(f"VERSION: {VERSION}")
         exit(0)
