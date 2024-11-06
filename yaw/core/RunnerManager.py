@@ -61,11 +61,12 @@ class RunnerManager:
                     content.update(recipie_gen_params)
                     step_t, step_str = content["type"], f"{step_id} - {name}"
                     print(f"Building recipe {step_str} from {input_file}")
-                    for var_id, variation in enumerate(self.get_variations(**content)):    
+                    for var_id, variation in enumerate(self.get_variations(**content)):
                         self.steps.append(self.runners[step_t](**variation))
                         self.step_names.append(name+f"_{var_id}")
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
+                    traceback.print_exception(e)
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
                     self.step_names.append(name)
@@ -73,7 +74,7 @@ class RunnerManager:
 
     def __get_generic_parameters(self, recipie_file: Path) -> dict:
         info(f"Searching for generic parameters @ {recipie_file}...")
-        info(f"Using {self.runner_params} to search parameters...")
+        info2(f"Using {self.runner_params} to search parameters...")
         ret = {}
         with open(recipie_file, "r") as f:
             content : dict = yaml.safe_load(f)
@@ -109,7 +110,9 @@ class RunnerManager:
         ]
 
         # 2. CHECK MODE FOR VARIATION GENERATION:
-        multi_param_str= ' '.join(param for param, _ in multi_params)
+        multi_param_names=[param for param, _ in multi_params]
+        multi_param_str= ' '.join(multi_param_names)
+
         if safe_check_key_dict(params, "mode") == "cartesian":
             join_op = product
             print("Cartesian mode for multi-parameter(s):", multi_param_str)
@@ -136,7 +139,8 @@ class RunnerManager:
             join_op(*[params[param] for param, _ in multi_params])
         )
         variations = [
-            {**unique_params, **dict(zip(variation_params, variation))}
+            {**unique_params, **dict(zip(variation_params, variation)),
+             "multi_params": multi_param_names}
             for variation in variations_values
         ]
         info(f"Found {len(variations)} multi-params combinations")
@@ -167,6 +171,7 @@ class RunnerManager:
                     error(f"While checking recipe {i} ->", str(e))
                     traceback.print_exception(e)
                     self.result[name] = "Check recipie parameters"
+                    continue
                 # B) EXECUTE STEP
                 try:
                     print("-" * 87)

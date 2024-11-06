@@ -60,3 +60,13 @@ def execute_command(cmd: str, rundir: Path):
     subprocess.run(f"{cmd}", cwd=rundir,
             shell=True, text=True,
            stderr=subprocess.STDOUT)
+    
+
+def execute_command_get_ouput(cmd: str, rundir: Path = None):
+    try:
+        if not rundir: rundir = os.getcwd()
+        ret = subprocess.check_output(
+            cmd, stderr=subprocess.STDOUT,shell=True).strip().decode('utf-8')
+        return ret
+    except:
+        return "ERROR"

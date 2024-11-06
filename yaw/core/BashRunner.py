@@ -15,6 +15,7 @@ class BashRunner(AbstractRunner):
     track_env : str = None
 
     def __post_init__(self):
+        super().__post_init__()
         if not self.script_name:
             self.script_name = "bash_wrapper.sh"
 

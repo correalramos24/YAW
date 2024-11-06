@@ -2,6 +2,7 @@
 from utils import *
 from pathlib import Path
 from dataclasses import dataclass
+from itertools import product
 
 
 @dataclass
@@ -17,9 +18,10 @@ class AbstractRunner:
     log_at_rundir: bool = True
     env_file: Path = None
     rundir  : Path = None
+    mirror : int = None
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
-    mirror : int = None
+    multi_params : list = None #Keep track of the multiparams of other runners
     YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
 
     def __post_init__(self):
@@ -35,14 +37,7 @@ class AbstractRunner:
         self.env_file = Path(self.env_file) if self.env_file else None
         self.rundir = Path(self.rundir) if self.rundir else None
 
-    def __initialize_rundir(self):
-        if self.rundir:
-            info("Rundir pointing to", self.rundir)
-            if not check_path_exists(self.rundir):
-                create_dir(self.rundir)
-        else:
-            self.rundir = Path(os.getcwd())
-            info("Initializing rundir to the current path", self.rundir)
+        if self.mirror: raise Exception("Yet to implement")
 
     def __check_req_parameters(self):
         req_params = self.get_required_params()
@@ -56,13 +51,24 @@ class AbstractRunner:
     def manage_parameters(self):
         """Generate the environment for the run stage.
         """
+        if self.multi_params: 
+            self.__manage_multi_recipie()
+        # INIT LOG
         if self.log_name:
             info(f"Using {self.log_name}, appending STDOUT and STDERR")
+        # INIT ENV
         if self.env_file:
             check_file_exists_exception(self.env_file)
         else:
             info("Running without env!")
-        self.__initialize_rundir()
+        # INIT RUNDIR
+        if self.rundir:
+            info("Rundir pointing to", self.rundir)
+            if not check_path_exists(self.rundir):
+                create_dir(self.rundir)
+        else:
+            self.rundir = Path(os.getcwd())
+            info("Initializing rundir to the current path", self.rundir)
 
     def run(self) -> bool:
         """Execute the runner
@@ -73,7 +79,7 @@ class AbstractRunner:
     def log_path(self):
         if not self.log_name:
             return None
-        if self.log_at_rundir :
+        if self.log_at_rundir and self.log_name:
             return Path(self.rundir, self.log_name)
         else:
             return Path(self.log_name)
@@ -94,6 +100,24 @@ class AbstractRunner:
     @classmethod
     def get_multi_value_params(cls) -> set[str]:
         return set()
+
+    def __manage_multi_recipie(self) -> None:
+        aux = stringfy(self.multi_params)
+        values = [stringfy(v) for k, v in self.__dict__.items() 
+                                if k in self.multi_params]
+        print("Tunning parameters because multirecipie of params:", aux)
+        print("Values for multiparams:", stringfy(values))
+        
+        if self.rundir and not "rundir" in self.multi_params:
+            info(f"Adding {aux} to rundir name")
+            self.rundir = Path(self.rundir, '_'.join(values))
+        if self.log_name and not self.log_at_rundir and not "log_name" in self.multi_params:
+            info(f"Adding {aux} to log_name")
+            if '.' in self.log_name:
+                last_point = self.log_name.rfind('.')
+                self.log_name = self.log_name[:last_point] + '_'.join(values) + self.log_name[last_point:]
+            else:
+                self.log_name += '_'.join(values)
 
     # YAML GENERATION METHODS:
 
@@ -134,7 +158,7 @@ class AbstractRunner:
             ("mode", "Type of multi-parameter: cartesian or zip (default)"),
             ("comment", "BASIC PARAMETERS"), 
             ("log_name", "Log file to dump the STDOUT and STDERR"), 
-            ("log_at_rundir", "Place the log file at the rundir"),
+            ("log_at_rundir", "#Place the log file at the rundir.Default True"),
             ("env_file", "Environment file to use"),
             ("rundir", "Rundir path to execute the runner."),
             ("mirror", "Execute several time the same step")
@@ -144,9 +168,12 @@ class AbstractRunner:
     def __init_bash_env_variables(self) -> None:
         """Convert the bash variables ($VAR or ${VAR}) to the value.
         """
-        no_empty_params = {k : v for k, v in self.__dict__.items() if v}
+        no_empty_params = {k : v for k, v in self.__dict__.items() 
+                        if v and is_a_str(v) and "$" in v}
         for param, value in no_empty_params.items():
             expanded_value = expand_bash_env_vars(value)
             if expanded_value:
                 self.__dict__[param] = expanded_value
+            else:
+                raise Exception("Unable to find env variable for", value)
 

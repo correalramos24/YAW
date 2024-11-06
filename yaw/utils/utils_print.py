@@ -1,6 +1,7 @@
 
 verbose_level    = 3
 enable_info_flag = False
+enable_ultra_info= False
 
 def enable_info(e: bool ):
     global enable_info_flag 
@@ -14,6 +15,11 @@ def info(*msg_args):
     global enable_info_flag
     if enable_info_flag:
         print("INFO:", *msg_args)
+
+def info2(*msg_args):
+    global enable_ultra_info
+    if enable_ultra_info:
+        print("INFO2:", *msg_args)
 
 def warning(*msg_args: str):
     print("WARNING!", *msg_args)
