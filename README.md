@@ -1,49 +1,51 @@
 # YAW
 
-**Y**et **a**nother **w**orkflow. Workflow to automate repetitive process, build with Python and Bash.
+**Y**et **a**nother **w**orkflow. Workflow to automate repetitive processes, build with Python and Bash.
 
-Version: v0.96.0
+Version: v0.96.0 - Alpha
 
 - [YAW](#yaw)
-  - [Description](#description)
+  - [Introduction](#introduction)
   - [Installation](#installation)
   - [Usage](#usage)
-  - [Example](#example)
+  - [Examples](#examples)
   - [Extending the functionalities](#extending-the-functionalities)
     - [UML overview - Runners](#uml-overview---runners)
     - [Creating your runner](#creating-your-runner)
 
 
-## Description
-YAW parses recipie files (in YAML) which contais several steps. Each step contains several parameters that tune the execution of the step.
-The most important parameter is the _type_, which uses a pre-defined workflow for different tasks.
+## Introduction
+YAW parses recipe files (in YAML format) and executes each step described in the recipe. Each step contains several parameters that tune the execution of the step.
 
 ![YAW](https://github.com/user-attachments/assets/97c26c4e-9ba8-40cf-9f20-03c87646e4de)
 
-The most powerfull capability of this tool is the ability of generate recipe variations; if the recipe contains a multivalue parameter (list)
-YAW automatically generates all the combinations (cartesian mode) or joins by order the different values(zip mode)
+The most powerful capability of this tool is the ability to generate recipe variations; if the recipe contains a multivalue parameter (list)
+YAW automatically generates all the combinations (cartesian mode) or joins by order of the different values(zip mode). This allows systematical executions
+with only writing a YAML file. There are several "runners" available to run steps using bash, manage a running directory, or submit the execution using SLURM.
 
 ## Installation
 Add the `bin` folder to the path of your system and call `yaw` to execute the application.
 
 ## Usage
-1. Generate recipe template: Use `--generate <recipie type>` to generate and empty template.
+1. Generate recipe template: Use `--generate <recipie type>` to generate an empty template.
 
-2. Run recipies: Use `yaw <recipe file(s)>` to run the recipies. YAW will firts parse
-the recipies and the run them sequentailly.
+2. Run recipies: Use `yaw <recipe file(s)>` to run the recipies. YAW will first parse the recipes and then run them sequentially.
 
+3. Check the results: Check the output from the command line to see the execution results.
 
-## Example
+## Examples
 TBD
 
 ## Extending the functionalities
 
-despite is recommended to tune your functionalities using your bash scripts you can also extend YAW
-core to support **new types of recipie**. This section will briefly summarize the modular desing, to make it easy to extend the functionalities of this application.
+Despite being recommended to tune your functionalities using your bash scripts you can also extend YAW
+core to support **new types of recipie**. This section will briefly summarize the modular design,
+to make it easy to extend the functionalities of this application.
 
 ### UML overview - Runners
 
-A runner is the basic object used by YAW to execute the steps of a recipie. The `RundirManager` contains all the logic to parse the recipies and execute them; if you want to include a new runner you need to include it and added to the `runners` dictionari.
+A runner is the basic object used by YAW to execute the steps of a recipe. The `RundirManager` contains all the logic to 
+parse the recipes and execute them; if you want to include a new runner you need to include it and added to the `runners` dictionary.
 
 ![alt text](misc/UML.png)
 
