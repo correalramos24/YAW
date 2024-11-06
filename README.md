@@ -2,7 +2,7 @@
 
 **Y**et **a**nother **w**orkflow. Workflow to automate repetitive process, build with Python and Bash.
 
-Version: v1.0
+Version: v0.96.0
 
 - [YAW](#yaw)
   - [Description](#description)
