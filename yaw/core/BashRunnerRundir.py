@@ -7,5 +7,5 @@ from utils import *
 class BashRunnerRundir(RundirHelper, BashRunner):
     type: str = "BashRunnerRundir"
 
-    def run(self):
-        super().run(self.rundir)
+    def run(self) -> bool:
+        return super().run()
