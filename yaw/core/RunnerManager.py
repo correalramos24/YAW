@@ -1,5 +1,6 @@
 from utils import *
 from . import AbstractRunner, BashRunner, SlurmRunner, BashRunnerRundir
+from destine import CompileIfsBundle
 
 from pathlib import Path
 import yaml, traceback
@@ -11,7 +12,8 @@ class RunnerManager:
     runners: dict = {
         "BashRunner": BashRunner,
         "BashRunnerRundir": BashRunnerRundir,
-        "SlurmRunner": SlurmRunner
+        "SlurmRunner": SlurmRunner,
+        "CompileIfsBundle": CompileIfsBundle
     }
 
     def __init__(self, input_files: list[Path], 
