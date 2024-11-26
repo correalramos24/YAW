@@ -24,7 +24,7 @@ class SlurmRunner(BashRunnerRundir):
 
     def __post_init__(self):
         super().__post_init__()
-        self.slurm_workdir = Path(self.rundir) # Pass rundir to SLURM script
+        #self.slurm_workdir = Path(self.rundir) # Pass rundir to SLURM script
 
     def manage_parameters(self):
         super().manage_parameters()
