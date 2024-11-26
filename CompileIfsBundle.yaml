@@ -1,0 +1,20 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR CompileIfsBundle RUNNER
+## Required parameters:type arch
+your_recipe_name:
+ # SETUP
+  type: CompileIfsBundle
+  mode: #Type of multi-parameter: cartesian or zip (default)
+ # BASIC PARAMETERS
+  log_name: #Log file to dump the STDOUT and STDERR
+  log_at_rundir: ##Place the log file at the rundir.Default True
+  env_file: #Environment file to use
+  rundir: #Rundir path to execute the runner.
+  mirror: #Execute several time the same step
+ # IFS-Bundle parameters
+  dry: #Dry mode: Only generate script
+  arch: #IFS-Bundle arch (path format not starting with /)
+  build_dir: #build directory name. Default: build
+  script_name: #wrapper name
+  recompile: #Force recompile (True/False). Default: False
+#####################################-YAW-######################################
