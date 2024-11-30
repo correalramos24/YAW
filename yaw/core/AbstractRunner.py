@@ -19,6 +19,7 @@ class AbstractRunner:
     env_file: Path = None
     rundir  : Path = None
     mirror : int = None
+    dry: bool = False
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
     multi_params : list = None #Keep track of the multiparams of other runners
@@ -161,6 +162,7 @@ class AbstractRunner:
             ("log_at_rundir", "#Place the log file at the rundir.Default True"),
             ("env_file", "Environment file to use"),
             ("rundir", "Rundir path to execute the runner."),
+            ("dry", "Dry run, only manage parameters, not run anything"),
             ("mirror", "Execute several time the same step")
         ]
     

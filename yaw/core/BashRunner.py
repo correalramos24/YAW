@@ -59,7 +59,6 @@ class BashRunner(AbstractRunner):
             ("bash_cmd", "Script to be executed (./s.sh) or bash command (ls)"),
             ("args", "Script arguments"),
             ("script_name", "wrapper name"),
-            ("dry", "Dry run, only manage parameters, not run anything"),
             ('track_env', "File name to store the env of a run")
         ])
         return parameters_info
