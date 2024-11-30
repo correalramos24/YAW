@@ -13,12 +13,15 @@ class AbstractRunner:
     """
 
     # BASIC PARAMETERS:
+    recipie_name : str
     type: str = None
     log_name: str = None
     log_at_rundir: bool = True
     env_file: Path = None
     rundir  : Path = None
     mirror : int = None
+    dry: bool = False
+    overwrite : bool =  False
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
     multi_params : list = None #Keep track of the multiparams of other runners
@@ -50,30 +53,34 @@ class AbstractRunner:
 
     def manage_parameters(self):
         """Generate the environment for the run stage.
-        """
+        """        
         if self.multi_params: 
-            self.__manage_multi_recipie()
+            self.manage_multi_recipie()
         # INIT LOG
         if self.log_name:
-            info(f"Using {self.log_name}, appending STDOUT and STDERR")
+            info(f"Redirecting STDOUT and STDERR to log {self.log_name}")
         # INIT ENV
         if self.env_file:
             check_file_exists_exception(self.env_file)
         else:
-            info("Running without env!")
+            warning("Running without env!")
+        if self.overwrite:
+            warning("OVERWRITE MODE ENABLED!")
         # INIT RUNDIR
-        if self.rundir:
-            info("Rundir pointing to", self.rundir)
-            if not check_path_exists(self.rundir):
-                create_dir(self.rundir)
-        else:
+        if not self.rundir:
             self.rundir = Path(os.getcwd())
             info("Initializing rundir to the current path", self.rundir)
+        else:
+            if not check_path_exists(self.rundir):
+                create_dir(self.rundir)
+            elif check_path_exists(self.rundir) and not self.overwrite:
+                raise Exception("Directory already exists, need overwrite: True")
+
 
     def run(self) -> bool:
         """Execute the runner
         """
-        print("This is an empty runner!")
+        raise Exception("Abstract runner called!")
 
     @property
     def log_path(self):
@@ -101,12 +108,11 @@ class AbstractRunner:
     def get_multi_value_params(cls) -> set[str]:
         return set()
 
-    def __manage_multi_recipie(self) -> None:
+    def manage_multi_recipie(self) -> None:
         aux = stringfy(self.multi_params)
         values = [stringfy(v) for k, v in self.__dict__.items() 
                                 if k in self.multi_params]
-        print("Tunning parameters because multirecipie of params:", aux)
-        print("Values for multiparams:", stringfy(values))
+        print("Tunning parameters from multirecipie!", aux)
         
         if self.rundir and not "rundir" in self.multi_params:
             info(f"Adding {aux} to rundir name")
@@ -161,7 +167,9 @@ class AbstractRunner:
             ("log_at_rundir", "#Place the log file at the rundir.Default True"),
             ("env_file", "Environment file to use"),
             ("rundir", "Rundir path to execute the runner."),
-            ("mirror", "Execute several time the same step")
+            ("dry", "Dry run, only manage parameters, not run anything"),
+            ("mirror", "Execute several time the same step"),
+            ("overwrite", "Overwrite previous content of the rundir")
         ]
     
     # EXPAND BASH VARIABLES:

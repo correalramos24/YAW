@@ -11,7 +11,7 @@ class BashRunner(AbstractRunner):
     bash_cmd: str = None
     args: str = None
     script_name : str = None
-    dry: bool = False
+    
     track_env : str = None
 
     def __post_init__(self):
@@ -19,8 +19,15 @@ class BashRunner(AbstractRunner):
         if not self.script_name:
             self.script_name = "bash_wrapper.sh"
 
+    def manage_multi_recipie(self):
+        super().manage_multi_recipie()
+        
+        if self.script_name and not "script_name" in self.multi_params:
+            info(f"Adding {self.recipie_name} to script_name")
+            self.script_name = f"{self.recipie_name}_{self.script_name}"
+
     def run(self) -> bool:
-        self.inflate_runner()
+        self.inflate_bash_script()
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
@@ -32,7 +39,7 @@ class BashRunner(AbstractRunner):
                 print("Return code != 0", r)
         return r == 0
     
-    def inflate_runner(self):
+    def inflate_bash_script(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
         trck_env_cmd = f"printenv &> {self.track_env}" if self.track_env else ""
         wrapper_cmd = f"{self.wrapper}" if self.wrapper else ""
@@ -59,7 +66,6 @@ class BashRunner(AbstractRunner):
             ("bash_cmd", "Script to be executed (./s.sh) or bash command (ls)"),
             ("args", "Script arguments"),
             ("script_name", "wrapper name"),
-            ("dry", "Dry run, only manage parameters, not run anything"),
             ('track_env', "File name to store the env of a run")
         ])
         return parameters_info
