@@ -11,7 +11,7 @@ class BashRunner(AbstractRunner):
     bash_cmd: str = None
     args: str = None
     script_name : str = None
-    dry: bool = False
+    
     track_env : str = None
 
     def __post_init__(self):
