@@ -1,5 +1,5 @@
 from .BashRunner import BashRunner
-from .RundirHelper import RundirRunner
+from .RundirRunner import RundirRunner
 from dataclasses import dataclass
 from utils import *
 

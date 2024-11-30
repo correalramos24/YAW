@@ -11,7 +11,6 @@ class RundirRunner(AbstractRunner):
     a rundir.
     """
     type: str = "RundirHelper"
-    overwrite   : bool =  False
     ref_rundir : Path = None
     rundir_files : list[Path] = None
     tar_gz_files : list[Path] = None
@@ -50,8 +49,6 @@ class RundirRunner(AbstractRunner):
             branch = f"-b {self.git_branch}" if self.git_branch else ""
             info("Cloning repo", self.git_repo, branch)
             execute_command(f"git clone {self.git_repo} {branch}", self.rundir)
-        if self.overwrite:
-            warning("OVERWRITE MODE ENABLED!")
     # PARAMETER METHODS:
     @classmethod
     def get_required_params(self):
@@ -74,7 +71,6 @@ class RundirRunner(AbstractRunner):
             ("rundir_files", "List of files to copy to the rundir"),
             ("tar_gz_files", "List of tar.gz. files to uncompress into the rundir"),
             ("git_repo", "Git repository to fill the rundir"),
-            ("git_branch", "Git branch for git_repo"),
-            ("overwrite", "Overwrite previous content of rundir")
+            ("git_branch", "Git branch for git_repo")
         ])
         return params_info
