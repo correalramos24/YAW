@@ -19,6 +19,13 @@ class BashRunner(AbstractRunner):
         if not self.script_name:
             self.script_name = "bash_wrapper.sh"
 
+    def manage_multi_recipie(self):
+        super().manage_multi_recipie()
+        
+        if self.script_name and not "script_name" in self.multi_params:
+            info(f"Adding {self.recipie_name} to script_name")
+            self.script_name = f"{self.recipie_name}_{self.script_name}"
+
     def run(self) -> bool:
         self.inflate_bash_script()
         if self.dry:

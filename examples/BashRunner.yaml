@@ -1,9 +1,10 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR BashRunner RUNNER
 ## Required parameters:type bash_cmd
+script_name: "my_script.yaw_sh"
+type: BashRunner
 example1:
- # SETUP
-  type: BashRunner
+ 
  # BASH PARAMETERS
   bash_cmd: ls 
   log_name: 
@@ -13,8 +14,6 @@ example1:
     - -la
     - -lsh
 example2:
- # SETUP
-  type: BashRunner
   mode: #Type of multi-parameter: cartesian or zip (default)
  # BASIC PARAMETERS
   log_name: example2.log

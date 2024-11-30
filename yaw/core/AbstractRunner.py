@@ -13,6 +13,7 @@ class AbstractRunner:
     """
 
     # BASIC PARAMETERS:
+    recipie_name : str
     type: str = None
     log_name: str = None
     log_at_rundir: bool = True
@@ -51,17 +52,17 @@ class AbstractRunner:
 
     def manage_parameters(self):
         """Generate the environment for the run stage.
-        """
+        """        
         if self.multi_params: 
-            self.__manage_multi_recipie()
+            self.manage_multi_recipie()
         # INIT LOG
         if self.log_name:
-            info(f"Using {self.log_name}, appending STDOUT and STDERR")
+            info(f"Redirecting STDOUT and STDERR to log {self.log_name}")
         # INIT ENV
         if self.env_file:
             check_file_exists_exception(self.env_file)
         else:
-            info("Running without env!")
+            warning("Running without env!")
         # INIT RUNDIR
         if self.rundir:
             info("Rundir pointing to", self.rundir)
@@ -102,12 +103,11 @@ class AbstractRunner:
     def get_multi_value_params(cls) -> set[str]:
         return set()
 
-    def __manage_multi_recipie(self) -> None:
+    def manage_multi_recipie(self) -> None:
         aux = stringfy(self.multi_params)
         values = [stringfy(v) for k, v in self.__dict__.items() 
                                 if k in self.multi_params]
-        print("Tunning parameters because multirecipie of params:", aux)
-        print("Values for multiparams:", stringfy(values))
+        print("Tunning parameters from multirecipie!", aux)
         
         if self.rundir and not "rundir" in self.multi_params:
             info(f"Adding {aux} to rundir name")
