@@ -67,7 +67,7 @@ class RunnerManager:
                         self.step_names.append(name+f"_{var_id}")
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
-                    traceback.print_exception(e)
+                    #traceback.print_exception(e)
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
                     self.step_names.append(name)
@@ -83,9 +83,7 @@ class RunnerManager:
             generic_params = self.runner_params & param_names
             ret = {param: content[param] for param in generic_params}
         if len(ret):
-            print(f"Generic parameters @ {recipie_file}: {ret}")
-        else:
-            print(f"Generic parameters @ {recipie_file}: None")
+            info(f"Generic parameters @ {recipie_file}: {ret}")
         return ret
           
     def get_variations(self, **params):
@@ -170,8 +168,8 @@ class RunnerManager:
                     step.manage_parameters()
                 except Exception as e:
                     error(f"While checking recipe {i} ->", str(e))
-                    traceback.print_exception(e)
-                    self.result[name] = "Check recipie parameters"
+                    #traceback.print_exception(e)
+                    self.result[name] = "Error checking recipie"
                     continue
                 # B) EXECUTE STEP
                 try:

@@ -21,6 +21,7 @@ class AbstractRunner:
     rundir  : Path = None
     mirror : int = None
     dry: bool = False
+    overwrite : bool =  False
     # INFO DERIVED FROM A MULTI-RECIPE:
     mode: str = None
     multi_params : list = None #Keep track of the multiparams of other runners
@@ -63,14 +64,18 @@ class AbstractRunner:
             check_file_exists_exception(self.env_file)
         else:
             warning("Running without env!")
+        if self.overwrite:
+            warning("OVERWRITE MODE ENABLED!")
         # INIT RUNDIR
-        if self.rundir:
-            info("Rundir pointing to", self.rundir)
-            if not check_path_exists(self.rundir):
-                create_dir(self.rundir)
-        else:
+        if not self.rundir:
             self.rundir = Path(os.getcwd())
             info("Initializing rundir to the current path", self.rundir)
+        else:
+            if not check_path_exists(self.rundir):
+                create_dir(self.rundir)
+            elif check_path_exists(self.rundir) and not self.overwrite:
+                raise Exception("Directory already exists, need overwrite: True")
+
 
     def run(self) -> bool:
         """Execute the runner
@@ -163,7 +168,8 @@ class AbstractRunner:
             ("env_file", "Environment file to use"),
             ("rundir", "Rundir path to execute the runner."),
             ("dry", "Dry run, only manage parameters, not run anything"),
-            ("mirror", "Execute several time the same step")
+            ("mirror", "Execute several time the same step"),
+            ("overwrite", "Overwrite previous content of the rundir")
         ]
     
     # EXPAND BASH VARIABLES:

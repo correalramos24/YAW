@@ -1,15 +1,18 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR BashRunnerRundir RUNNER
 ## Required parameters:type rundir bash_cmd
-your_recipe_name:
+type: BashRunnerRundir
+bash_cmd: ls
+args: -la
+example_bash_runner_rundir:
+  rundir: $HOME/YAW-RUNDIR
+  overwrite: True
+
+example_bash_runner_rundir2:
  # SETUP
   type: BashRunnerRundir
- # BASIC PARAMETERS
-  log_name: 
  # RUNDIR PARAMETERS
   rundir: $HOME/YAW-RUNDIR
-  force: True
- # BASH PARAMETERS
-  bash_cmd: ls
-  args: -la
+  overwrite: 
+
 #####################################-YAW-######################################
