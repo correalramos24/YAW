@@ -20,7 +20,7 @@ class BashRunner(AbstractRunner):
             self.script_name = "bash_wrapper.sh"
 
     def run(self) -> bool:
-        self.inflate_runner()
+        self.inflate_wrapper()
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
@@ -32,7 +32,7 @@ class BashRunner(AbstractRunner):
                 print("Return code != 0", r)
         return r == 0
     
-    def inflate_runner(self):
+    def inflate_wrapper(self):
         load_env_cmd = f"source {self.env_file}" if self.env_file else ""
         trck_env_cmd = f"printenv &> {self.track_env}" if self.track_env else ""
         wrapper_cmd = f"{self.wrapper}" if self.wrapper else ""

@@ -30,13 +30,13 @@ class SlurmRunner(BashRunnerRundir):
         super().manage_parameters()
 
     def run(self):
-        self.inflate_runner()
+        self.inflate_wrapper()
         if self.dry:
             print("DRY MODE: Not executing anything!")
         else:
             execute_slurm_script(self.WRAPPER_NAME, self.args, self.rundir)
 
-    def inflate_runner(self):
+    def inflate_wrapper(self):
         generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
             self.log_name, self._get_slurm_directives(),
             [

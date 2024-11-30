@@ -74,7 +74,7 @@ class AbstractRunner:
     def run(self) -> bool:
         """Execute the runner
         """
-        print("This is an empty runner!")
+        raise Exception("Abstract runner called!")
 
     @property
     def log_path(self):

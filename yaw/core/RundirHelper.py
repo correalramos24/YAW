@@ -6,7 +6,7 @@ from pathlib import Path
 import tarfile
 
 @dataclass
-class RundirHelper(AbstractRunner):
+class RundirRunner(AbstractRunner):
     """Contain the minimum parameters to run something with
     a rundir.
     """
