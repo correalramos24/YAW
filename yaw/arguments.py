@@ -4,7 +4,7 @@ from core.RunnerManager import RunnerManager
 from utils import *
 
 # Version:
-VERSION="v0.96.0"
+VERSION="v0.96.5"
 
 def parse_user_args():
     # Declare the flags:
