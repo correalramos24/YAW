@@ -1,62 +1,55 @@
 
 from .AbstractRunner import AbstractRunner
-from dataclasses import dataclass
 from pathlib import Path
 from utils import *
 
-@dataclass
 class BashRunner(AbstractRunner):
-    type: str = "BashRunner"
-    wrapper: str = None
-    bash_cmd: str = None
-    args: str = None
-    script_name : str = None
-    
-    track_env : str = None
 
-    def __post_init__(self):
-        super().__post_init__()
-        if not self.script_name:
-            self.script_name = "bash_wrapper.sh"
+    def __init__(self, **parameters):
+        super().__init__(**parameters)
+        self.wrapper = self._get_parameter_value("wrapper")
+        self.track_env = self._get_parameter_value("track_env")
+        self.script_name = self._get_parameter_value("script_name", "bash_wraper.sh")
 
     def manage_multi_recipie(self):
         super().manage_multi_recipie()
-        
         if self.script_name and not "script_name" in self.multi_params:
             info(f"Adding {self.recipie_name} to script_name")
             self.script_name = f"{self.recipie_name}_{self.script_name}"
 
-    def run(self) -> bool:
-        self.inflate_bash_script()
-        if self.dry:
-            print("DRY MODE: Not executing anything!")
-        else:
-            r = execute_script(self.script_name, self.args, 
-                               self.rundir, self.log_path)
-            if not r:
-                print("Executed sucesfully", r)
-            else:
-                print("Return code != 0", r)
-        return r == 0
-    
-    def inflate_bash_script(self):
-        load_env_cmd = f"source {self.env_file}" if self.env_file else ""
-        trck_env_cmd = f"printenv &> {self.track_env}" if self.track_env else ""
+    def run(self):
+        #1. Generate bash script:
         wrapper_cmd = f"{self.wrapper}" if self.wrapper else ""
-        generate_bash_script(Path(self.rundir, self.script_name),
-            [
-            load_env_cmd,
-            trck_env_cmd,
-            f"{wrapper_cmd} {self.bash_cmd} $@"
+        generate_bash_script(Path(self.rundir, self.script_name),[
+            f"source {self.env_file}" if self.env_file else "",
+            f"printenv &> {self.track_env}" if self.track_env else "",
+            f"{wrapper_cmd} {self._get_parameter_value("bash_cmd")} $@"
             ]
         )
-        
-    # PARAMETER METHODS:
+        #2. Execute:
+        if self.dry: print("DRY MODE: Not executing anything!")
+        else:
+            r = execute_script( self.script_name, self._get_parameter_value("args"),
+                                self.rundir, self.log_path)
+            if not r: print("Executed sucesfully", r)
+            else: print("Return code != 0", r)
+            return r == 0
+
+    #===============================PARAMETER METHODS===========================
     @classmethod
-    def get_required_params(self) -> list[str]:
+    def get_runner_type(cls) -> str:
+        return "BashRunner"
+
+    @classmethod
+    def get_parameters(cls) -> list[str]:
+        return super().get_parameters() + \
+            ["wrapper", "bash_cmd", "args", "script_name", "track_env"]
+
+    @classmethod
+    def get_required_params(cls) -> list[str]:
         return super().get_required_params() + ["bash_cmd"]
 
-    # YAML GENERATION METHODS:
+    # =========================YAML GENERATION METHODS==========================
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         parameters_info = super()._inflate_yaml_template_info()

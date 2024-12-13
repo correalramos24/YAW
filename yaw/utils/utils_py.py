@@ -6,6 +6,12 @@ def safe_check_key_dict(d: dict, key: object, default: object = None) -> object:
     else:
         return default
     
+def safe_check_key_dict_builder(d: dict, key: object, builder, default: object = None) -> object:
+    if key in d.keys():
+        return builder(d[key])
+    else:
+        return default
+    
 def safe_check_key_dict_int(d: dict, key: object, default_value: int) -> int:
     if key in d.keys():
         try:
