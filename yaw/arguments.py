@@ -1,6 +1,7 @@
 import argparse
 
 from core.RunnerManager import RunnerManager
+from yaw_ascii import *
 from utils import *
 
 # Version:
@@ -35,9 +36,11 @@ def parse_user_args():
         cm = execute_command_get_ouput("git rev-parse --short HEAD")
         tg = execute_command_get_ouput("git describe --tags --abbrev=0")
         print(f"VERSION: {VERSION} ({tg}) => BRANCH: {br} @ COMMIT: {cm}")
+        print(logo_ascii)
         exit(0)
     if parser.parse_args().version:
         print(f"VERSION: {VERSION}")
+        print(logo_ascii_big)
         exit(0)
 
     return parser.parse_args()
