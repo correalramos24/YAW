@@ -10,9 +10,24 @@ example_bash_runner_rundir:
 
 example_bash_runner_rundir2:
  # SETUP
-  type: BashRunnerRundir
  # RUNDIR PARAMETERS
   rundir: $HOME/YAW-RUNDIR
-  overwrite: 
+  overwrite: True
 
+example_bash_runner_rundir3:
+  rundir: $HOME/YAW-INSTALLATION
+  git_repo: https://github.com/correalramos24/YAW.git
+  git_branch: v0.96.0
+
+example_bash_runner_rundir4:
+  rundir: $HOME/YAW-EXAMPLE
+  ref_rundir: /home/vcorreal/Documents/PROJECTS/YAW/misc
+
+example_bash_runner_rundir5:
+  overwrite: True
+  rundir: $HOME/YAW-EXAMPLE2
+  rundir_files:
+    - /home/vcorreal/Documents/PROJECTS/YAW/misc/yaw.png
+    - /home/vcorreal/Documents/PROJECTS/YAW/misc/YAW.png
+    - /home/vcorreal/Documents/PROJECTS/YAW/misc/UML.png
 #####################################-YAW-######################################

@@ -1,71 +1,45 @@
 
 from utils import *
 from pathlib import Path
-from dataclasses import dataclass
-from itertools import product
+from abc import ABC, abstractmethod
 
-
-@dataclass
-class AbstractRunner:
-    """Contains the minimum parameters to run "something". Build
+class AbstractRunner(ABC):
+    """
+    Contains the minimum parameters to run "something". Build
     from a YAML recipe. It also defines required parameters as execution
     parameters that cannot be null value (None)
     """
-
-    # BASIC PARAMETERS:
-    recipie_name : str
-    type: str = None
-    log_name: str = None
-    log_at_rundir: bool = True
-    env_file: Path = None
-    rundir  : Path = None
-    mirror : int = None
-    dry: bool = False
-    overwrite : bool =  False
-    # INFO DERIVED FROM A MULTI-RECIPE:
-    mode: str = None
-    multi_params : list = None #Keep track of the multiparams of other runners
     YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
-
-    def __post_init__(self):
-        """Check the required arguments, expand bash variables
-        and manage class types.
-
-        Raises:
+    
+    def __init__(self, **parameters):
+        """
+        Initialize runner. 
+        Check the required arguments, expand bash variables and manage class types.
+        Raises: 
             Exception: If some bad parameter found
         """
-        self.__check_req_parameters()
+        self.parameters = parameters
+        self.__check_req_parameters(parameters)
         self.__init_bash_env_variables()
 
-        self.env_file = Path(self.env_file) if self.env_file else None
-        self.rundir = Path(self.rundir) if self.rundir else None
+        self.recipie_name = self._get_parameter_value("recipie_name")
+        self.dry = self._get_parameter_value("dry", False)
 
-        if self.mirror: raise Exception("Yet to implement")
+        self.log_name = self._get_parameter_value("log_name")
+        self.log_at_rundir = self._get_parameter_value("log_at_rundir")
+        self.env_file = self._get_parameter_value("env_file")
 
-    def __check_req_parameters(self):
-        req_params = self.get_required_params()
-        req_not_fill = \
-            list(filter(lambda param : not self.__dict__[param], req_params)
-        )
-        if len(req_not_fill) > 0:
-            raise Exception("Required argument(s) "
-                            f"{stringfy(req_not_fill)} not found")
+        self.rundir = self._get_path_parameter("rundir")
+        self.overwrite = self._get_parameter_value("overwrite", False)
+
+        self.multi_params = self._get_parameter_value("multi_params", False)
 
     def manage_parameters(self):
-        """Generate the environment for the run stage.
-        """        
-        if self.multi_params: 
+        """
+        Generate the environment for the run stage.
+        """
+        if self.multi_params:
             self.manage_multi_recipie()
-        # INIT LOG
-        if self.log_name:
-            info(f"Redirecting STDOUT and STDERR to log {self.log_name}")
-        # INIT ENV
-        if self.env_file:
-            check_file_exists_exception(self.env_file)
-        else:
-            warning("Running without env!")
-        if self.overwrite:
-            warning("OVERWRITE MODE ENABLED!")
         # INIT RUNDIR
         if not self.rundir:
             self.rundir = Path(os.getcwd())
@@ -76,14 +50,43 @@ class AbstractRunner:
             elif check_path_exists(self.rundir) and not self.overwrite:
                 raise Exception("Directory already exists, need overwrite: True")
 
+        # INIT ENV
+        if self.env_file:
+            info("Using environment", self.env_file)
+        else:
+            warning("Environment not set!")
 
-    def run(self) -> bool:
-        """Execute the runner
-        """
-        raise Exception("Abstract runner called!")
+        # INIT LOG
+        if self.log_name:
+            info("Redirecting STDOUT and STDERR to", self.log_name, "log")
+            if self.log_at_rundir:
+                self.log_path = Path(self.rundir, self.log_name)
+            else:
+                self.log_path = Path(self.log_name)
+        else: 
+            self.log_path = None
 
-    @property
-    def log_path(self):
+    def manage_multi_recipie(self):
+        aux = stringfy(self.multi_params)
+        values = [stringfy(v) for k, v in self.__dict__.items() if k in self.multi_params]
+        print("Tunning parameters from multirecipie!", aux)
+
+        if self.rundir and not "rundir" in self.multi_params:
+            info(f"Adding {aux} to rundir name")
+            self.rundir = Path(self.rundir, '_'.join(values))
+        if self.log_name and not self.log_at_rundir and not "log_name" in self.multi_params:
+            info(f"Adding {aux} to log_name")
+        if '.' in self.log_name:
+            last_point = self.log_name.rfind('.')
+            self.log_name = self.log_name[:last_point] + '_'.join(values) + self.log_name[last_point:]
+        else:
+            self.log_name += '_'.join(values)
+
+    @abstractmethod
+    def run(self):
+        pass
+
+    def get_log_path(self):
         if not self.log_name:
             return None
         if self.log_at_rundir and self.log_name:
@@ -91,51 +94,72 @@ class AbstractRunner:
         else:
             return Path(self.log_name)
 
-    # PARAMETER METHODS:
+    #===============================PARAMETER METHODS===========================
+    @classmethod
+    def get_runner_type(cls) -> str:
+        raise Exception("ABC!")
 
     @classmethod
     def get_parameters(cls) -> list[str]:
-        return [str(param) for param in cls.__dict__.keys() if
-            not param.startswith("_") and not param.isupper() and
-            not callable(getattr(cls, param))
+        return ["mode", "recipie_name", "type", "log_name",
+                "log_at_rundir", "env_file", "rundir", 
+                "mirror", "dry", "overwrite", "multi_params"
         ]
 
     @classmethod
-    def get_required_params(self) -> list[str]:
+    def get_required_params(cls) -> list[str]:
+        """
+        Return the required parameters
+        """
         return ["type"]
+    
+    @classmethod
+    def get_optional_params(cls) -> list[str]:
+        return [param for param in cls.get_parameters() if 
+                param not in cls.get_required_params()]
 
     @classmethod
     def get_multi_value_params(cls) -> set[str]:
+        """
+        Return the parameters that are multivalued
+        """
         return set()
 
-    def manage_multi_recipie(self) -> None:
-        aux = stringfy(self.multi_params)
-        values = [stringfy(v) for k, v in self.__dict__.items() 
-                                if k in self.multi_params]
-        print("Tunning parameters from multirecipie!", aux)
-        
-        if self.rundir and not "rundir" in self.multi_params:
-            info(f"Adding {aux} to rundir name")
-            self.rundir = Path(self.rundir, '_'.join(values))
-        if self.log_name and not self.log_at_rundir and not "log_name" in self.multi_params:
-            info(f"Adding {aux} to log_name")
-            if '.' in self.log_name:
-                last_point = self.log_name.rfind('.')
-                self.log_name = self.log_name[:last_point] + '_'.join(values) + self.log_name[last_point:]
+    @classmethod
+    def __check_req_parameters(cls, params):
+        req_params = cls.get_required_params()
+        req_not_fill = \
+            list(filter(lambda param : not safe_check_key_dict(params, param), req_params)
+        )
+        if len(req_not_fill) > 0:
+            str_not_fill = stringfy(req_not_fill)
+            raise Exception(f"Required argument(s) {str_not_fill} not found")
+
+    #===========================EXPAND BASH VARIABLES===========================
+    def __init_bash_env_variables(self) -> None:
+        """Convert the bash variables ($VAR or ${VAR}) to the value.
+        """
+        no_empty_params = {k : v for k, v in self.parameters.items() 
+                        if v and is_a_str(v) and "$" in v}
+        for param, value in no_empty_params.items():
+            expanded_value = expand_bash_env_vars(value)
+            if expanded_value:
+                self.parameters[param] = expanded_value
             else:
-                self.log_name += '_'.join(values)
+                raise Exception("Unable to find env variable for", value)
 
-    # YAML GENERATION METHODS:
-
+    # =========================YAML GENERATION METHODS==========================
     @classmethod
     def generate_yaml_template(cls) -> None:
         """
         Generate a YAML template for the runner
         """
-        with open(cls.type + ".yaml", mode="w") as tmpl:
-            tmpl.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.type} RUNNER\n")
+        with open(cls.get_runner_type() + ".yaml", mode="w") as tmpl:
+            tmpl.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.get_runner_type()} RUNNER\n")
             tmpl.write("## Required parameters:")
             tmpl.write(' '.join(cls.get_required_params()) + "\n")
+            ##tmpl.write("## Optional parameters:")
+            ##tmpl.write(' '.join(cls.get_optional_params()) + "\n")
             tmpl.write(f"your_recipe_name:\n")
             tmpl.write(cls.__generate_yaml_template_content())
             tmpl.write(cls.YAML_DELIM)
@@ -149,7 +173,7 @@ class AbstractRunner:
         parameters_info = cls._inflate_yaml_template_info()
         for parameter, comment in parameters_info:
             if parameter == "type":
-                ret += f"  {parameter}: {cls.type}\n"
+                ret += f"  {parameter}: {cls.get_runner_type()}\n"
             elif parameter == "comment":
                 ret += f" # {comment}\n"
             else:
@@ -170,18 +194,13 @@ class AbstractRunner:
             ("dry", "Dry run, only manage parameters, not run anything"),
             ("mirror", "Execute several time the same step"),
             ("overwrite", "Overwrite previous content of the rundir")
-        ]
-    
-    # EXPAND BASH VARIABLES:
-    def __init_bash_env_variables(self) -> None:
-        """Convert the bash variables ($VAR or ${VAR}) to the value.
-        """
-        no_empty_params = {k : v for k, v in self.__dict__.items() 
-                        if v and is_a_str(v) and "$" in v}
-        for param, value in no_empty_params.items():
-            expanded_value = expand_bash_env_vars(value)
-            if expanded_value:
-                self.__dict__[param] = expanded_value
-            else:
-                raise Exception("Unable to find env variable for", value)
+        ]        
+
+    #=============================PRIVATE METHODS===============================
+    def _get_parameter_value(self, key: str, default_val: object = None) -> str:
+        return safe_check_key_dict(self.parameters, key, default_val)
+
+    def _get_path_parameter(self, key) -> Path:
+        return safe_check_key_dict_builder(self.parameters, key, Path, None)
+
 
