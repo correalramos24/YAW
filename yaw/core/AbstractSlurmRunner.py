@@ -37,7 +37,7 @@ class AbstractSlurmRunner(AbstractRunner):
         parameters_info = super()._inflate_yaml_template_info()
         parameters_info.extend([
             ("comment", "SLURM PARAMETERS"),
-            ("wrapper_name", "slurm script wrapper name. slurm_yaw.slurm by def.")
+            ("wrapper_name", "slurm script wrapper name. slurm_yaw.slurm by def."),
             ("slurm_nodes", "Nodes"),
             ("slurm_mpi", "Tasks per node"),
             ("slurm_cpus", "Cpus per task"),
