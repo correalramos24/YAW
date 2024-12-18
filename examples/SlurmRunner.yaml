@@ -1,14 +1,42 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR SlurmRunner RUNNER
 ## Required parameters:type slurm_nodes slurm_mpi slurm_cpus
-example33:
- # SETUP
-  type: SlurmRunner
-  wrapper_name: example_slurm
- # SLURM PARAMETERS
-  slurm_nodes: 1
+type: SlurmRunner
+wrapper_name: yaw_example.slurm
+slurm_queue: gp_debug
+slurm_account: bsc32
+
+example_a:
+  slurm_nodes: 
+    - 1
+    - 2
+    - 4
+    - 8
   slurm_mpi: 12
   slurm_cpus: 4
+
+example_b:
+  slurm_nodes: 
+    - 1
+    - 2
+    - 4
+  slurm_mpi:
+    - 12
+    - 24
+    - 48
+  slurm_cpus:
+    - 12
+    - 6
+    - 3
   slurm_queue: gp_debug
   slurm_account: bsc32
+
+example_c:
+  slurm_nodes:
+    - 1 
+    - 2
+  rundir: 
+    - $HOME/YAW-SLURM-1
+    - $HOME/YAW-SLURM-2
+
 #####################################-YAW-######################################

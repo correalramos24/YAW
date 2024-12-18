@@ -72,15 +72,16 @@ class AbstractRunner(ABC):
         print("Tunning parameters from multirecipie!", aux)
 
         if self.rundir and not "rundir" in self.multi_params:
-            info(f"Adding {aux} to rundir name")
+            info(f"Adding {aux} to rundir name ({values})")
             self.rundir = Path(self.rundir, '_'.join(values))
         if self.log_name and not self.log_at_rundir and not "log_name" in self.multi_params:
-            info(f"Adding {aux} to log_name")
-        if '.' in self.log_name:
-            last_point = self.log_name.rfind('.')
-            self.log_name = self.log_name[:last_point] + '_'.join(values) + self.log_name[last_point:]
-        else:
-            self.log_name += '_'.join(values)
+            info(f"Adding {aux} to log_name ({values})")
+        if self.log_name:
+            if '.' in self.log_name:
+                last_point = self.log_name.rfind('.')
+                self.log_name = self.log_name[:last_point] + '_'.join(values) + self.log_name[last_point:]
+            else:
+                self.log_name += '_'.join(values)
 
     @abstractmethod
     def run(self):

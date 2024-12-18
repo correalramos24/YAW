@@ -14,6 +14,24 @@ class AbstractSlurmRunner(AbstractRunner):
         self.slurm_directives = {k : v for k, v in self.parameters.items()
                                  if k.startswith("slurm_") and v}
 
+        self.slurm_nodes    = self._get_parameter_value("slurm_nodes") 
+        self.slurm_mpi      = self._get_parameter_value("slurm_mpi")
+        self.slurm_cpus     = self._get_parameter_value("slurm_cpus")
+
+
+    def manage_multi_recipie(self):
+        super().manage_multi_recipie()
+        aux = stringfy(self.multi_params)
+        values = [stringfy(v) for k, v in self.__dict__.items() if k in self.multi_params]
+
+        if not self.rundir:
+            info(f"rundir not set => adding derive info ({aux}) to wrapper name")
+            if '.' in self.wrapper_name:
+                last_point = self.wrapper_name.rfind('.')
+                self.wrapper_name = self.wrapper_name[:last_point] + '_'.join(values) + self.wrapper_name[last_point:]
+            else:
+                self.wrapper_name += '_'.join(values)
+
     #===============================PARAMETER METHODS===========================
 
     @classmethod
@@ -24,7 +42,8 @@ class AbstractSlurmRunner(AbstractRunner):
     def get_parameters(cls) -> list[str]:
         return super().get_parameters() + \
             ["slurm_nodes", "slurm_mpi", "slurm_cpus", "slurm_queue", "slurm_account", 
-            "slurm_wait", "slurm_time_limit", "slurm_contiguous", "slurm_other_cmds"]
+            "slurm_wait", "slurm_time_limit", "slurm_contiguous", "slurm_other_cmds",
+            "wrapper_name"]
 
     @classmethod
     def get_required_params(cls) -> list[str]:
