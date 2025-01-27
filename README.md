@@ -24,6 +24,15 @@ YAW automatically generates all the combinations (cartesian mode) or joins by or
 with only writing a YAML file. There are several "runners" available to run steps using bash, manage a running directory, or submit the execution using SLURM.
 
 ## Installation
+Clone the repository with `--recursive` or initialize the submodules.
+````bash
+git clone git@github.com:correalramos24/YAW.git --recursive
+# OR
+git clone git@github.com:correalramos24/YAW.git
+cd YAW
+git submodule init
+git submodule update
+````
 Add the `bin` folder to the path of your system and call `yaw` to execute the application.
 
 ## Usage
