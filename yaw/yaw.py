@@ -10,7 +10,7 @@ def main():
     gen_template: str        = app_args.generate
     print_multi : bool       = app_args.print_combinations
     step_names  : list[str]  = app_args.steps
-    info_enable  : bool      = app_args.info
+    info_enable : bool       = app_args.info
 
     enable_info(info_enable)
     # 0. PARSE ARGUMENTS THAT OVERRIDES RECIPIES:
