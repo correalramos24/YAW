@@ -1,3 +1,3 @@
-[submodule "yaw/utils"]
-	path = yaw/utils
+[submodule "utils"]
+	path = utils
 	url = git@github.com:correalramos24/py_utils.git
