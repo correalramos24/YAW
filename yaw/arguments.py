@@ -40,7 +40,7 @@ def parse_user_args():
         exit(0)
     if parser.parse_args().version:
         print(f"VERSION: {VERSION}")
-        print(logo_ascii_big)
+        print(logo_ascii)
         exit(0)
 
     return parser.parse_args()
