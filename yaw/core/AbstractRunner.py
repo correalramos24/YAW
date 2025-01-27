@@ -130,7 +130,7 @@ class AbstractRunner(ABC):
     def __check_req_parameters(cls, params):
         req_params = cls.get_required_params()
         req_not_fill = \
-            list(filter(lambda param : not safe_check_key_dict(params, param), req_params)
+            list(filter(lambda param : not params.get(param), req_params)
         )
         if len(req_not_fill) > 0:
             str_not_fill = stringfy(req_not_fill)
@@ -199,9 +199,10 @@ class AbstractRunner(ABC):
 
     #=============================PRIVATE METHODS===============================
     def _get_parameter_value(self, key: str, default_val: object = None) -> str:
-        return safe_check_key_dict(self.parameters, key, default_val)
+        return self.parameters.get(key, default_val)
+
 
     def _get_path_parameter(self, key) -> Path:
-        return safe_check_key_dict_builder(self.parameters, key, Path, None)
+        return safe_get_key(self.parameters, key, Path, None)
 
 

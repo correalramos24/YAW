@@ -111,8 +111,9 @@ class RunnerManager:
         # 2. CHECK MODE FOR VARIATION GENERATION:
         multi_param_names=[param for param, _ in multi_params]
         multi_param_str= ' '.join(multi_param_names)
+        join_mode = params.get("mode", "zip")
 
-        if safe_check_key_dict(params, "mode") == "cartesian":
+        if join_mode == "cartesian":
             join_op = product
             print("Cartesian mode for multi-parameter(s):", multi_param_str)
         else: # ZIP MODE -> DEFAULT
