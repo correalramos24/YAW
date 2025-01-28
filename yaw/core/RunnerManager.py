@@ -183,4 +183,3 @@ class RunnerManager:
     def get_runners(cls) -> list[str]:
         return [str(k) for k in cls.runners.keys()]
 
-
