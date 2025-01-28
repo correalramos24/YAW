@@ -25,13 +25,11 @@ class RunnerManager:
         if self.run_step_name:
             info("Executing only", stringfy(self.run_step_name), "step(s)")
         self.result : dict[str, any] = {}
-
-    @property
+    
     def runner_params(self) -> set[str]:
         aux = list(self.runners.values()) + [AbstractRunner]
         return {param for runner in aux for param in runner.get_parameters()}
-
-    @property
+    
     def multi_value_parameters(self) -> set[str]:
         return {
             param for runner in self.runners.values()
@@ -48,15 +46,15 @@ class RunnerManager:
         info("Parsing recipe", input_file)
         with open(input_file, "r") as yaml_file:
             all_recipies_content = get_yaml_content(yaml_file)
-            generic_params = intersect_dict_keys(all_recipies_content, self.runner_params)
-            recipie_content = remove_keys(all_recipies_content, self.runner_params)
-            info2("Generic parameters found:", generic_params)
+            generic = intersect_dict_keys(all_recipies_content, self.runner_params())
+            content = remove_keys(all_recipies_content, self.runner_params())
+            info2("Generic parameters found:", generic)
             print("=" * 87)
-            for step_id, (name, content) in enumerate(recipie_content.items()):
+            for step_id, (name, content) in enumerate(content.items()):
                 step_str = f"{step_id}-{name}"
                 print(f"Building recipe {step_str} from {input_file}")
                 try:
-                    content.update(generic_params)
+                    content.update(generic)
                     step_type = content["type"]
                     for var_id, variation in enumerate(self.get_variations(**content)):
                         variation["recipie_name"] = name+f"_{var_id}"
@@ -67,11 +65,10 @@ class RunnerManager:
                     self.steps.append(None)
                 print("-" * 87)
 
-          
     def get_variations(self, **params):
         if self.__is_a_multi_recipie(**params):
             info("Deriving multi-parameter...")
-            return self.__derive_multi_recipe(self.print_multi, **params)
+            return self.__derive_multi_recipe(**params)
         else:
             return [params]
 
@@ -79,15 +76,14 @@ class RunnerManager:
         return len([
             param for param, val in params.items()
             if is_a_list(val) and not "__" in param and
-            not param in self.multi_value_parameters
+            not param in self.multi_value_parameters()
         ]) >= 1
 
-    def __derive_multi_recipe(self, print_combs: bool, **params) -> list[dict]:
-        
+    def __derive_multi_recipe(self, **params) -> list[dict]:
         # 1. GET MULTI-PARAMETERS 
         multi_params = [ (param, val) for param, val in params.items()
                         if is_a_list(val) and not "__" in str(param) and
-                        not param in self.multi_value_parameters
+                        not param in self.multi_value_parameters()
         ]
 
         # 2. CHECK MODE FOR VARIATION GENERATION:
@@ -127,7 +123,7 @@ class RunnerManager:
         ]
         info(f"Found {len(variations)} multi-params combinations")
 
-        if print_combs:
+        if self.print_multi:
             print("# Unique parameters:")
             print('\n'.join(f"{param}: {val}" for param, val in unique_params.items()))
 
