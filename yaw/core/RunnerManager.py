@@ -29,8 +29,7 @@ class RunnerManager:
     @property
     def runner_params(self) -> set[str]:
         aux = list(self.runners.values()) + [AbstractRunner]
-        return {param for runner in aux
-                    for param in runner.get_parameters()}
+        return {param for runner in aux for param in runner.get_parameters()}
 
     @property
     def multi_value_parameters(self) -> set[str]:
@@ -49,10 +48,9 @@ class RunnerManager:
         info("Parsing recipe", input_file)
         with open(input_file, "r") as yaml_file:
             all_recipies_content = get_yaml_content(yaml_file)
-            info2(f"Searching for generic parameters @ {input_file}...")
             generic_params = intersect_dict_keys(all_recipies_content, self.runner_params)
-            info2("Generic parameters found:", generic_params)
             recipie_content = remove_keys(all_recipies_content, self.runner_params)
+            info2("Generic parameters found:", generic_params)
             print("=" * 87)
             for step_id, (name, content) in enumerate(recipie_content.items()):
                 step_str = f"{step_id}-{name}"
