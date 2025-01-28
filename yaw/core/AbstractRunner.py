@@ -34,10 +34,14 @@ class AbstractRunner(ABC):
 
         self.multi_params = self._get_parameter_value("multi_params", False)
 
+    def get_name(self) -> str:
+        return self.recipie_name
+
     def manage_parameters(self):
         """
         Generate the environment for the run stage.
         """
+        info(f"Manage parameters for {self.recipie_name}...")
         if self.multi_params:
             self.manage_multi_recipie()
         # INIT RUNDIR

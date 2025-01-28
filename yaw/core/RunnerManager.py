@@ -2,7 +2,7 @@ from utils import *
 from . import AbstractRunner, BashRunner, SlurmRunner, BashRunnerRundir
 
 from pathlib import Path
-import yaml, traceback
+import traceback
 from itertools import product
 
 
@@ -19,7 +19,6 @@ class RunnerManager:
     ):
         self.input_files        : list[Path] = input_files
         self.steps              : list[AbstractRunner|None] = []
-        self.step_names         : list[str] = []
         self.print_multi        : bool = print_multi
         self.run_step_name      : list[str] = run_step_names
         self.generic_params     : dict = dict()     # At YAW level
@@ -48,43 +47,28 @@ class RunnerManager:
 
     def __parse_file(self, input_file) -> None:
         info("Parsing recipe", input_file)
-        recipie_gen_params = self.__get_generic_parameters(input_file)
-        with open(input_file, "r") as f:
-            content : dict = yaml.safe_load(f)
-            # Discard generic parameters:
-            content = {param : value for param, value in content.items()
-                       if param not in recipie_gen_params.keys()}
-            print("-" * 87)
-            for step_id, (name, content) in enumerate(content.items()):
+        with open(input_file, "r") as yaml_file:
+            all_recipies_content = get_yaml_content(yaml_file)
+            info2(f"Searching for generic parameters @ {input_file}...")
+            generic_params = intersect_dict_keys(all_recipies_content, self.runner_params)
+            info2("Generic parameters found:", generic_params)
+            recipie_content = remove_keys(all_recipies_content, self.runner_params)
+            print("=" * 87)
+            for step_id, (name, content) in enumerate(recipie_content.items()):
+                step_str = f"{step_id}-{name}"
+                print(f"Building recipe {step_str} from {input_file}")
                 try:
-                    #TODO: Add YAW generic parameters
-                    content.update(recipie_gen_params)
-                    step_t, step_str = content["type"], f"{step_id} - {name}"
-                    print(f"Building recipe {step_str} from {input_file}")
+                    content.update(generic_params)
+                    step_type = content["type"]
                     for var_id, variation in enumerate(self.get_variations(**content)):
                         variation["recipie_name"] = name+f"_{var_id}"
-                        self.steps.append(self.runners[step_t](**variation))
-                        self.step_names.append(name+f"_{var_id}")
+                        self.steps.append(self.runners[step_type](**variation))
                 except Exception as e:
                     error(f"While processing recipe {step_str}->", str(e))
-                    #traceback.print_exception(e)
                     print("Excluding step", step_id, "with name", name)
                     self.steps.append(None)
-                    self.step_names.append(name)
                 print("-" * 87)
 
-    def __get_generic_parameters(self, recipie_file: Path) -> dict:
-        info(f"Searching for generic parameters @ {recipie_file}...")
-        info2(f"Using {self.runner_params} to search parameters...")
-        ret = {}
-        with open(recipie_file, "r") as f:
-            content : dict = yaml.safe_load(f)
-            param_names = set(content.keys())
-            generic_params = self.runner_params & param_names
-            ret = {param: content[param] for param in generic_params}
-        if len(ret):
-            info(f"Generic parameters @ {recipie_file}: {ret}")
-        return ret
           
     def get_variations(self, **params):
         if self.__is_a_multi_recipie(**params):
@@ -159,18 +143,20 @@ class RunnerManager:
         print("=" * 40 + "RUNNING" + "=" * 40)
         if self.run_step_name:
             print("Only executting steps with name", stringfy(self.run_step_name))
-        else:
-            self.run_step_name = self.step_names
-        for i, (name, step) in enumerate(zip(self.step_names, self.steps)):
-            if step and name in self.run_step_name:
-                # A) CHECK PARAMETERS
-                try:                    
-                    info(f"Checking step {i} ({name})")
+        
+        for i, step in enumerate(self.steps):
+            if step:
+                name = step.get_name()
+                if self.run_step_name and name not in self.run_step_name: 
+                    info(f"Recipie {i} - {name} skipped due cmd line")
+                    self.result[name] = "skipped due cmd line --steps"
+                    continue
+                # A) MANAGE PARAMETERS
+                try:
                     step.manage_parameters()
                 except Exception as e:
                     error(f"While checking recipe {i} ->", str(e))
-                    #traceback.print_exception(e)
-                    self.result[name] = "Error checking recipie"
+                    self.result[name] = "Error checking recipie!"
                     continue
                 # B) EXECUTE STEP
                 try:
@@ -182,9 +168,6 @@ class RunnerManager:
                     self.result[name] = "YAW internal error"
                     traceback.print_exception(e)
                 print("-" * 87)
-            elif step and name not in self.run_step_name :
-                info(f"Recipie {i} - {name} skipped due cmd line")
-                self.result[name] = "skipped due cmd line --steps"
             else:
                 info(f"Recipe {i} - {name} is empty, check recipie -> SKIP")
                 self.result[name] = "check recipie -> SKIP"
