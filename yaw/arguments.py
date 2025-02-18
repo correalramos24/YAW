@@ -32,9 +32,11 @@ def parse_user_args():
 
     # Parse the arguments:
     if parser.parse_args().dev_version:
-        br = execute_command_get_ouput("git rev-parse --abbrev-ref HEAD")
-        cm = execute_command_get_ouput("git rev-parse --short HEAD")
-        tg = execute_command_get_ouput("git describe --tags --abbrev=0")
+        yaw_home = Path(__file__).parent
+        print("Yaw installed at", yaw_home)
+        br = execute_command_get_ouput("git rev-parse --abbrev-ref HEAD", yaw_home)
+        cm = execute_command_get_ouput("git rev-parse --short HEAD", yaw_home)
+        tg = execute_command_get_ouput("git describe --tags --abbrev=0", yaw_home)
         print(f"VERSION: {VERSION} ({tg}) => BRANCH: {br} @ COMMIT: {cm}")
         print(logo_ascii)
         exit(0)
