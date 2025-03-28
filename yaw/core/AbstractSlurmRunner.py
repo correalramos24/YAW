@@ -48,7 +48,7 @@ class AbstractSlurmRunner(AbstractRunner):
     @classmethod
     def get_required_params(cls) -> list[str]:
         ret = super().get_required_params()
-        return  ret + ["slurm_nodes", "slurm_mpi", "slurm_cpus"]
+        return  ret + ["slurm_nodes"]
 
     # =========================YAML GENERATION METHODS==========================
     @classmethod
