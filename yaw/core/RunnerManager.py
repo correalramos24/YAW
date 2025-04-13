@@ -1,6 +1,7 @@
 from utils import *
 from . import AbstractRunner, BashRunner, SlurmRunner, BashRunnerRundir
 from . import VoidRunner
+from nemo import NEMO5Runner
 
 from pathlib import Path
 import traceback
@@ -12,7 +13,9 @@ class RunnerManager:
     runners: dict = {
         "BashRunner": BashRunner,
         "BashRunnerRundir": BashRunnerRundir,
-        "SlurmRunner": SlurmRunner
+        "SlurmRunner": SlurmRunner,
+        "NEMO5Runner": NEMO5Runner,
+        
     }
 
     def __init__(self, input_files: list[Path], 
