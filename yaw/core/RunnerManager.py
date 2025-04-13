@@ -1,5 +1,6 @@
 from utils import *
 from . import AbstractRunner, BashRunner, SlurmRunner, BashRunnerRundir
+from . import VoidRunner
 
 from pathlib import Path
 import traceback
@@ -24,7 +25,6 @@ class RunnerManager:
         self.generic_params     : dict = dict()     # At YAW level
         if self.run_step_name:
             info("Executing only", stringfy(self.run_step_name), "step(s)")
-        self.result : dict[str, any] = {}
     
     def runner_params(self) -> set[str]:
         aux = list(self.runners.values()) + [AbstractRunner]
@@ -66,9 +66,10 @@ class RunnerManager:
                         variation["recipie_name"] = name+f"_{var_id}"
                         self.steps.append(self.runners[step_type](**variation))
                 except Exception as e:
-                    error(f"While processing recipe {step_str}->", str(e))
-                    print("Excluding step", step_id, "with name", name)
-                    self.steps.append(None)
+                    error(f"While parsing recipe {step_str}->", str(e))
+                    print("=> Excluding step with name", step_str)
+                    self.steps.append(VoidRunner(step_str))
+                    self.steps[-1].set_result(-1, f"Error parsing recipe ({str(e)})")
                 print("-" * 87)
 
     def get_variations(self, **params):
@@ -145,38 +146,39 @@ class RunnerManager:
             print("Only executting steps with name", stringfy(self.run_step_name))
         
         for i, step in enumerate(self.steps):
-            if step:
-                name = step.get_recipie_name()
+            if step.is_runable():
+                name = step.recipie_name()
                 if self.run_step_name and name not in self.run_step_name: 
                     info(f"Recipie {i} - {name} skipped due cmd line")
-                    self.result[name] = "skipped due cmd line --steps"
+                    step.set_result(0, "skipped due cmd line --steps")
                     continue
                 # A) MANAGE PARAMETERS
                 try:
                     step.manage_parameters()
                 except Exception as e:
                     error(f"While checking recipe {i} ->", str(e))
-                    traceback.print_exception(e)
-                    self.result[name] = "Error checking recipie!"
+                    step.set_result(-1, "Error checking recipie!")
                     continue
                 # B) EXECUTE STEP
                 try:
                     print(f"Executing step {i} ({name})")
-                    ret = step.run()
-                    self.result[name] = ret
+                    step.run()
                 except Exception as e:
                     error(f"While executing recipe {i} ->", str(e))
-                    self.result[name] = "YAW internal error"
-                    traceback.print_exception(e)
+                    step.set_result(-1, "YAW internal error ({str(e)})")
                 print("-" * 87)
             else:
                 info(f"Recipe {i} is empty, check recipie -> SKIP")
-                self.result["void"] = "check parsing step!"
+                
         print("=" * 87)
 
-        print("=" * 41 + "STATS" + "=" * 41)
-        for name, ret in self.result.items():
-            print(name, "->", ret)
+        print("=" * 40 + "RESULTS" + "=" * 40)
+        for i, step in enumerate(self.steps):
+            if step is None:
+                print(f"Step {i}: Undefined")
+            else:
+                print(f"Step {i}: {step.get_result()}")
+        
         print("=" * 87)
     # GENERATION:
     @classmethod

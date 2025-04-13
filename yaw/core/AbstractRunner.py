@@ -21,16 +21,38 @@ class AbstractRunner(ABC):
         self.parameters = parameters
         self.__check_req_parameters(parameters)
         self.__init_bash_env_variables()
-        
+                
+        # Multiple parameters:
+        if self._gp("multi_params") is not None: 
+            self.multi_params = stringfy(self._gp("multi_params"))
+            self.multi_values = [
+                stringfy(val) for param, val in self.parameters.items() if
+                param in self._gp("multi_params")
+            ]
+            self.all_same_rundir = not (self._gp("rundir") and 
+                                not "rundir" in self._gp("multi_params")
+            )
+        else:
+            self.all_same_rundir = False
+            
+        # Rundir or YAW current/invoked path:
+        self.invoked_path = not self._gp("rundir")
+        if self.invoked_path:
+            self._sp("rundir", Path(os.getcwd()))
+            self.runner_info("Init recipie rundir to the invoked path", self._gp("rundir"))
+            
         # Initialize runner results:
         self.runner_result = 0
-        self.runner_result_str = "READY"
+        self.runner_status = "READY"
 
-    def get_recipie_name(self) -> str:
+    def recipie_name(self) -> str:
         """
         Get the name of the recipe. It is used to identify the recipe type
         """
         return self._gp("recipie_name")
+    
+    def is_runable(self) -> bool:
+        return self.runner_status == "READY"
     
     @classmethod
     def get_params_dict(cls) -> dict[str, (object|None, str, str)]:
@@ -60,13 +82,14 @@ class AbstractRunner(ABC):
         Previous stage before run the runner. It manages the parameters
         and the environment.
         """
-        # MANAGE MULTI-PARAMS:
-        if self._gp("multi_params"):
-            self.manage_multi_recipie()
-        # INIT RUNDIR
-        if not self._gp("rundir"):
-            self._sp("rundir", Path(os.getcwd()))
-            info("Initializing rundir to the current path", self._gp("rundir"))
+        # MANAGE MULTI RECIPE(s)
+        self.manage_multi_recipie()
+        
+        # CREATE RUNDIR LOGIC
+        if self.invoked_path:
+            if not check_path_exists(self._gp("rundir")):
+                self.runner_info("Creating rundir", self._gp("rundir"))
+                create_dir(self._gp("rundir"))
         else:
             if not check_path_exists(self._gp("rundir")):
                 create_dir(self._gp("rundir"))
@@ -80,44 +103,38 @@ class AbstractRunner(ABC):
 
         # INIT ENV
         if self._gp("env_file"):
-            info("Using environment", self._gp("env_file"))
+            self.runner_info("Using environment", self._gp("env_file"))
         else:
-            warning("Environment not set!")
+            self.runner_info("Environment NOT set!")
 
         # INIT LOG
         if self._gp("log_name"):
-            info("Redirecting STDOUT and STDERR to", self._gp("log_name"), "log")
+            self.runner_info("Redirecting STDOUT and STDERR to", self._gp("log_name"), "log")
             if self._gp("log_at_rundir"):
                 self.log_path = Path(self._gp("rundir"), self._gp("log_name"))
             else:
                 self.log_path = Path(self._gp("log_name"))
         else: 
-            self.log_path = None
-
-    def manage_multi_recipie(self):
-        info(f"Manage parameters for {self._gp("recipie_name")}...")
-        aux = stringfy(self._gp("multi_params"))
-        # TODO: Add tests for this!
-        # TODO: Ensure that different files only add the 
-        #       difference into the variant rundir etc etc
-        values = [stringfy(v) for k, v in self.__dict__.items() if k in self._gp("multi_params")]
-        print("Tunning parameters from multirecipie!", aux)
-
-        if self._gp("rundir") and not "rundir" in self._gp("multi_params"):
-            info(f"Adding {aux} to rundir name ({values})")
-            self._sp("rundir", Path(self._gp("rundir"), '_'.join(values))) 
-        if self._gp("log_name") and not self._gp("log_at_rundir") and not "log_name" in self._gp("multi_params"):
-            info(f"Adding {aux} to log_name ({values})")
-        if self._gp("log_name"):
-            if '.' in self._gp("log_name"):
-                last_point = self._gp("log_name").rfind('.')
-                self.parameters["log_name"] = self._gp("log_name")[:last_point] + '_'.join(values) + self._gp("log_name")[last_point:]
-            else:
-                self.parameters["log_name"] += '_'.join(values)
+            self.log_path = None        
 
     @abstractmethod
-    def run(self) -> str:
+    def manage_multi_recipie(self):
+        """
+        Step to manage the multi-recipie values
+        Executed before manage_parameters
+        """
+        pass #ABC Method
+
+    @abstractmethod
+    def run(self):
         pass
+
+    def set_result(self, result: bool, res_str: str):
+        self.runner_result = result
+        self.runner_status = res_str
+
+    def get_result(self) -> str:
+        return f"{self.recipie_name()} #> {self.runner_status} ({self.runner_result})"
 
     def get_log_path(self):
         if not self._gp("log_name"):
@@ -158,20 +175,6 @@ class AbstractRunner(ABC):
         if len(req_not_fill) > 0:
             str_not_fill = stringfy(req_not_fill)
             raise Exception(f"Required argument(s) {str_not_fill} not found")
-
-    #===========================EXPAND BASH VARIABLES===========================
-    def __init_bash_env_variables(self) -> None:
-        """Convert the bash variables ($VAR or ${VAR}) to the value.
-        """
-        no_empty_params = {k : v for k, v in self.parameters.items() 
-                        if v and is_a_str(v) and "$" in v}
-        # TODO: Add support for relative paths (start with ./)
-        for param, value in no_empty_params.items():
-            expanded_value = expand_bash_env_vars(value)
-            if expanded_value:
-                self.parameters[param] = expanded_value
-            else:
-                raise Exception("Unable to find env variable for", value)
 
     # =========================YAML GENERATION METHODS==========================
     @classmethod
@@ -219,6 +222,11 @@ class AbstractRunner(ABC):
 
 
     #=============================PRIVATE METHODS===============================
+    def runner_print(self, *msg):
+        print(f"{self.recipie_name()} #>", *msg)
+    def runner_info(self, *msg):
+        info(f"{self.recipie_name()} #>", *msg)
+    
     def _gp(self, key: str) -> str:
         """
         Get parameter from the user. If the parameter is not found, it will
@@ -243,4 +251,17 @@ class AbstractRunner(ABC):
     def _get_path_parameter(self, key) -> Path:
         return safe_get_key(self.parameters, key, Path, None)
 
+    #===========================EXPAND BASH VARIABLES===========================
+    def __init_bash_env_variables(self) -> None:
+        """Convert the bash variables ($VAR or ${VAR}) to the value.
+        """
+        no_empty_params = {k : v for k, v in self.parameters.items() 
+                        if v and is_a_str(v) and "$" in v}
+        # TODO: Add support for relative paths (start with ./)
+        for param, value in no_empty_params.items():
+            expanded_value = expand_bash_env_vars(value)
+            if expanded_value:
+                self.parameters[param] = expanded_value
+            else:
+                raise Exception("Unable to find env variable for", value)
 

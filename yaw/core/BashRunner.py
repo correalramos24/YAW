@@ -23,31 +23,42 @@ class BashRunner(AbstractRunner):
         })
         return aux
 
+    def manage_parameters(self):
+        super().manage_parameters()
+        
+        
     def manage_multi_recipie(self):
-        super().manage_multi_recipie()
-        if self._gp("script_name") and not "script_name" in self.multi_params:
-            info(f"Adding {self.recipie_name} to script_name")
-            self.parameters["script_name"] =  f"{self.recipie_name}_{self.parameters["script_name"]}"
+        if not self.all_same_rundir:
+            self.runner_print("No need to tune parameters for multirecipie!")
+        else:
+            self.runner_print("Tunning parameters for multirecipie!")
+            self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
+            self.runner_info("Update rundir with recipie name", self._gp("rundir"))
+
 
     def run(self):
         #1. Generate bash script:
         wrapper_cmd = f"{self._gp("wrapper")} " if self._gp("wrapper") else ""
+        args_str = self._gp("args") if self._gp("args") else ""
         generate_bash_script(Path(self._gp("rundir"), self._gp("script_name")),[
             f"source {self._gp("env_file")}" if self._gp("env_file") else "",
             f"printenv &> {self._gp("track_env")}" if self._gp("track_env") else "",
-            f"{wrapper_cmd}{self._gp("bash_cmd")} $@"
+            f"{wrapper_cmd}{self._gp("bash_cmd")} {args_str}"
             ]
         )
         #2. Execute:
         if self._gp("dry"): 
             print("DRY MODE: Not executing anything!")
             ret = "DRY EXECUTION!"
-            r = 0
+            self.runner_result = "DRY"
         else:
-            r = execute_script( self._gp("script_name"), self._gp("args"),
-                                self._gp("rundir"), self._gp("log_path"))
-            if not r: ret = "Return code 0"
-            else: ret = "Return code !=0"
-        print(f"{ret} ({r})")
-        return ret
+            r = self.runner_result = execute_script( 
+                script = self._gp("script_name"), 
+                args = self._gp("args"),
+                rundir = self._gp("rundir"),
+                log_file = self.get_log_path()
+            )
+            if not r: self.runner_result_str = "OK"
+            else: self.runner_result_str = "Return code !=0"
+         
 
