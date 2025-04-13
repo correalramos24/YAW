@@ -4,19 +4,29 @@ from utils import *
 
 
 class NEMO5Runner(SlurmRunner):
-    def __init__(self, **parameters):
-        super().__init__(**parameters)
-        self.nemo_root = self._get_parameter_value("nemo5_root")
-        self.nemo_cfg  : Path = self._get_parameter_value("nemo5_run_cfg", None)
-        self.nemo_test : Path = self._get_parameter_value("nemo5_test_cfg", None)
-        self.resolution: str  = self._get_parameter_value("nemo5_resolution")        
-        self.ts        : int  = self._get_parameter_value("nemo5_timesteps", 0)
-        self.tiling_i  : int  = self._get_parameter_value("nemo5_tiling_i", 99999)
-        self.tiling_j  : int  = self._get_parameter_value("nemo5_tiling_j", 99999)
+    
+    @classmethod
+    def get_runner_name(cls) -> str:
+        return "NEMO5Runner"
+    
+    @classmethod
+    def get_params_dict(cls):
+        aux = super().get_params_dict()
+        aux.update({
+            "nemo5_root" : (None, "Root of the nemo source.", "R"),
+            "nemo5_run_cfg" : (None, "CFG to be executed", "O"),
+            "nemo5_test_cfg" : (None, "CFG to be executed from /tests", "O"),
+            "nemo5_resolution" : (None, f"Set resolution to be used: {cls.__supported_resolutions()}", "R"),
+            "nemo5_timesteps" : (1, "Simulation timesteps. Default 1", "O"),
+            "nemo5_tiling_i" : (99999, "Set tiling i", "O"),
+            "nemo5_tiling_j" : (99999, "Set tiling j", "O")
+        })
+        return aux
 
     def manage_parameters(self):
         super().manage_parameters()            
         
+        # COPY CFG FOLDER
         if self.nemo_cfg is not None:
             cfg_fldr  = Path(self.nemo_root, "cfgs", self.nemo_cfg)
         elif self.nemo_test is not None:
@@ -24,7 +34,6 @@ class NEMO5Runner(SlurmRunner):
         else:
             raise Exception("Either nemo5_run_cfg or nemo5_test_cfg must be set!")
         
-        # COPY REFERENCE FOLDER:        
         utils_files.copy_folder(Path(cfg_fldr, "EXP00"), self.rundir, self.overwrite, False)
 
         # SET INPUTS:
@@ -68,32 +77,8 @@ class NEMO5Runner(SlurmRunner):
             execute_slurm_script(self.wrapper_name, None, self.rundir)
             return True
 
-    @classmethod
-    def get_runner_type(cls) -> str:
-        return "NEMO5Runner"
-    
-    @classmethod
-    def get_required_params(cls) -> list[str]:
-        ret = super().get_required_params()
-        return  ret + ["rundir", "nemo5_root", "nemo5_resolution"]
     
     @staticmethod
     def __supported_resolutions() -> list[str]:
         return ["ORCA1", "ORCA025", "ORCA12"]
 
-
-    # =========================YAML GENERATION METHODS==========================
-    @classmethod
-    def _inflate_yaml_template_info(cls) -> list[(str, str)]:
-        parameters_info = super()._inflate_yaml_template_info()
-        parameters_info.extend([
-            ("comment", "NEMO5 PARAMETERS"),
-            ("nemo5_root", "Root of the nemo source."),
-            ("nemo5_run_cfg", "CFG to be executed. "),
-            ("nemo5_test_cfg", "CFG to be executed from /tests."),
-            ("nemo5_resolutions", "Set resolution to be used"),
-            ("nemo5_timesteps", "Simulation timesteps"),
-            ("nemo5_tiling_i", "Set tiling i"),
-            ("nemo5_tiling_j", "Set tiling j")
-        ])
-        return parameters_info
