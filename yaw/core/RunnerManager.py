@@ -38,11 +38,17 @@ class RunnerManager:
 
     # PARSE:
     def parse_files(self) -> None:
+        """
+        Parse all the input recipies
+        """
         print("=" * 40 + "PARSING" + "=" * 40)
         [self.__parse_file(f) for f in self.input_files]
         print("=" * 87)
 
     def __parse_file(self, input_file) -> None:
+        """
+        Parse a recepie file from input_file.
+        """
         info("Parsing recipe", input_file)
         with open(input_file, "r") as yaml_file:
             all_recipies_content = get_yaml_content(yaml_file)
@@ -140,7 +146,7 @@ class RunnerManager:
         
         for i, step in enumerate(self.steps):
             if step:
-                name = step.get_name()
+                name = step.get_recipie_name()
                 if self.run_step_name and name not in self.run_step_name: 
                     info(f"Recipie {i} - {name} skipped due cmd line")
                     self.result[name] = "skipped due cmd line --steps"
@@ -150,21 +156,22 @@ class RunnerManager:
                     step.manage_parameters()
                 except Exception as e:
                     error(f"While checking recipe {i} ->", str(e))
+                    traceback.print_exception(e)
                     self.result[name] = "Error checking recipie!"
                     continue
                 # B) EXECUTE STEP
                 try:
                     print(f"Executing step {i} ({name})")
                     ret = step.run()
-                    self.result[name] = "OK" if ret else "ERR"
+                    self.result[name] = ret
                 except Exception as e:
                     error(f"While executing recipe {i} ->", str(e))
                     self.result[name] = "YAW internal error"
                     traceback.print_exception(e)
                 print("-" * 87)
             else:
-                info(f"Recipe {i} - {name} is empty, check recipie -> SKIP")
-                self.result[name] = "check recipie -> SKIP"
+                info(f"Recipe {i} is empty, check recipie -> SKIP")
+                self.result["void"] = "check parsing step!"
         print("=" * 87)
 
         print("=" * 41 + "STATS" + "=" * 41)
