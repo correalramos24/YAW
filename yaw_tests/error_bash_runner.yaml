@@ -1,0 +1,19 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunner RUNNER
+## Required parameters:type bash_cmd
+bash_runner_test_void:
+  type: BashRunner
+  mode: #Type of multi-parameter: cartesian or zip (def)
+  log_name: #Log file to dump the STDOUT and STDERR.
+  log_at_rundir: #Place the log file at the rundir.
+  env_file: #Environment file to use
+  rundir: #Rundir path to execute the runner.
+  dry: #Dry run, only manage parameters, not run anything
+  mirror: #Execute several time the same step
+  overwrite: #Overwrite previous content of the rundir
+  wrapper: #execute your command with a wrapper
+  bash_cmd: #Script to execute (./s.sh) or command (ls)
+  args: #Script arguments
+  script_name: #Bash script name
+  track_env: #File name to store the env of a run
+#####################################-YAW-######################################
