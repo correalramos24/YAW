@@ -91,15 +91,7 @@ class AbstractRunner(ABC):
                 self.runner_info("Creating rundir", self._gp("rundir"))
                 create_dir(self._gp("rundir"))
         else:
-            if not check_path_exists(self._gp("rundir")):
-                create_dir(self._gp("rundir"))
-            elif check_path_exists(self._gp("rundir")) and not self._gp("overwrite"):
-                raise Exception("Directory already exists, need overwrite: True")
-                # Add a number extension at the end of the rundir
-            elif check_path_exists(self._gp("rundir")) and self._gp("overwrite"):
-                raise Exception("Not implemented yet")
-                # Remove content of the folder
-                # Re-create the directory
+            create_dir(self._gp("rundir"), self._gp("overwrite"))
 
         # INIT ENV
         if self._gp("env_file"):

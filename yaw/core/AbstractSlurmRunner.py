@@ -17,11 +17,11 @@ class AbstractSlurmRunner(AbstractRunner):
         aux =  super().get_params_dict()
         aux.update({
             "slurm_nodes": (None, "Number of nodes to use", "R"),
-            "slurm_mpi": (None, "Number of MPI tasks per node", "R"),
-            "slurm_cpus": (None, "Number of CPUs per task", "R"),
-            "slurm_queue": (None, "Queue to use", "O"),
-            "slurm_account": (None, "Slurm account to use", "O"),
-            "slurm_wait": (None, "Wallclock", "O"),
+            "slurm_mpi": (None, "Number of MPI tasks per node", "O"),
+            "slurm_cpus": (None, "Number of CPUs per task", "O"),
+            "slurm_queue": (None, "Queue to use", "R"),
+            "slurm_account": (None, "Slurm account to use", "R"),
+            "slurm_wait": (False, "Wait sbatch until job finishes", "O"),
             "slurm_time_limit": (None, "Time limit for the job (DD:HH:MM:SS)", "O"),
             "slurm_contiguous": (None, "place contiguous nodes?", "O"),
             "slr_other_cmds": (None, "Other slurm commands", "O"),
@@ -34,7 +34,7 @@ class AbstractSlurmRunner(AbstractRunner):
     def _get_slurm_directives(self):
         return {
             directive: value for directive, value 
-            in self.slurm_directives.items()
+            in self.parameters.items()
             if directive.startswith("slurm_") and value
         }
     

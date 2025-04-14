@@ -1,6 +1,6 @@
 from utils import *
 from . import AbstractRunner, BashRunner, SlurmRunner, BashRunnerRundir
-from . import VoidRunner
+from . import VoidRunner, BashSlurmRunner
 from nemo import NEMO5Runner
 
 from pathlib import Path
@@ -14,6 +14,7 @@ class RunnerManager:
         "BashRunner": BashRunner,
         "BashRunnerRundir": BashRunnerRundir,
         "SlurmRunner": SlurmRunner,
+        "BashSlurmRunner": BashSlurmRunner,
         "NEMO5Runner": NEMO5Runner,
         
     }
@@ -161,6 +162,7 @@ class RunnerManager:
                 except Exception as e:
                     error(f"While checking recipe {i} ->", str(e))
                     step.set_result(-1, "Error checking recipie!")
+                    traceback.print_exc()
                     continue
                 # B) EXECUTE STEP
                 try:
@@ -168,6 +170,7 @@ class RunnerManager:
                     step.run()
                 except Exception as e:
                     error(f"While executing recipe {i} ->", str(e))
+                    traceback.print_exc()
                     step.set_result(-1, "YAW internal error ({str(e)})")
                 print("-" * 87)
             else:

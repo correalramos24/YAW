@@ -1,0 +1,17 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR SlurmRunner RUNNER
+## Required parameters:type slurm_nodes slurm_mpi slurm_cpus
+your_recipe_name:
+  type: SlurmRunner
+  mode: #Type of multi-parameter: cartesian or zip (def)
+  log_name: yaw_slurm_runner.log
+  env_file: #Environment file to use
+  rundir: $ES_SCRATCH/YAW-TEST-RUNDIR 
+  overwrite: True #Overwrite the rundir if it exists
+  slurm_nodes: 1
+  slurm_mpi: 10
+  slurm_cpus: #Number of CPUs per task
+  slurm_queue: gp_debug #Slurm queue to use
+  slurm_account: bsc32
+ 
+#####################################-YAW-######################################

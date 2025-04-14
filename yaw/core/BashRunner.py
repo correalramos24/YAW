@@ -49,7 +49,6 @@ class BashRunner(AbstractRunner):
         #2. Execute:
         if self._gp("dry"): 
             print("DRY MODE: Not executing anything!")
-            ret = "DRY EXECUTION!"
             self.runner_result = "DRY"
         else:
             r = self.runner_result = execute_script( 
