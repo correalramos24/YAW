@@ -30,11 +30,15 @@ class BashRunner(AbstractRunner):
     def manage_multi_recipie(self):
         if not self.all_same_rundir:
             self.runner_print("No need to tune parameters for multirecipie!")
-        else:
+        elif self._gp("create_dir"):
             self.runner_print("Tunning parameters for multirecipie!")
             self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
             self.runner_info("Update rundir with recipie name", self._gp("rundir"))
-
+        else:
+            self.runner_print("Need to tune parameters for multirecipie!")
+            self._sp("log_name", f"{self.recipie_name()}_{self._gp('log_name')}")
+            self._sp("script_name", f"{self.recipie_name()}_{self._gp('script_name')}")
+            self._sp("track_env", f"{self.recipie_name()}_{self._gp('track_env')}")
 
     def run(self):
         #1. Generate bash script:
