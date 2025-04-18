@@ -13,6 +13,24 @@ class BashSlurmRunner(SlurmRunner, BashRunner):
     def get_runner_type(cls) -> str:
         return "BashSlurmRunner"
     
+    @classmethod
+    def get_params_dict(cls):
+        aux = super().get_params_dict()
+        aux.update({
+            "bash_or_slurm" : ("slurm", "Select bash or slurm to execute the script", "R")
+        })
+        return aux
+    
+    def manage_parameters(self):
+        if self._gp("bash_or_slurm") == "slurm":
+            self.runner_info("Using SLURM to execute the script")
+        elif self._gp("bash_or_slurm") == "bash":
+            self.runner_info("Using bash to execute the script")
+        else:
+            raise Exception("bash_or_slurm must be slurm or bash; not |" + self._gp("bash_or_slurm"))
+        super().manage_parameters()
+        
+    
     def run(self):
         info("Generatig SLURM script....")
         wrapper_cmd = f"{self._gp("wrapper")} " if self._gp("wrapper") else ""
@@ -32,7 +50,16 @@ class BashSlurmRunner(SlurmRunner, BashRunner):
             print("DRY MODE: Not executing anything!")
             self.runner_result = "DRY MODE TRUE"
             self.runner_status = "DRY"
-        else:
+        elif self._gp("bash_or_slurm").lower() == "slurm":
             execute_slurm_script(self._gp("slr_wrapper_name"), None, self._gp("rundir"))
             self.runner_result = "0"
             self.runner_status = "SUBMITTED"
+        elif self._gp("bash_or_slurm").lower() == "bash":
+            r = self.runner_result = execute_script( 
+                script = self._gp("slr_wrapper_name"), 
+                args = self._gp("args"),
+                rundir = self._gp("rundir"),
+                log_file = self.get_log_path()
+            )
+            if not r: self.runner_status = "OK"
+            else: self.runner_status = "Return code !=0"

@@ -66,9 +66,10 @@ class BashRunner(AbstractRunner):
             self.runner_info("Update rundir with recipie name", self._gp("rundir"))
         else:
             self.runner_print("Need to tune parameters for multirecipie!")
-            self._sp("log_name", f"{self.recipie_name()}_{self._gp('log_name')}")
             self._sp("script_name", f"{self.recipie_name()}_{self._gp('script_name')}")
             self._sp("track_env", f"{self.recipie_name()}_{self._gp('track_env')}")
+            if self._gp('log_name') is not None:
+                self._sp("log_name", f"{self.recipie_name()}_{self._gp('log_name')}")
 
     def run(self):
         #1. Generate bash script:
@@ -91,8 +92,8 @@ class BashRunner(AbstractRunner):
                 rundir = self._gp("rundir"),
                 log_file = self.get_log_path()
             )
-            if not r: self.runner_result_str = "OK"
-            else: self.runner_result_str = "Return code !=0"
+            if not r: self.runner_status = "OK"
+            else: self.runner_status = "Return code !=0"
       
 
     @classmethod
