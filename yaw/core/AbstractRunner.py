@@ -35,18 +35,20 @@ class AbstractRunner(ABC):
         self.__check_req_parameters(parameters)
         self.__init_bash_env_variables()
                 
-        # Multiple parameters:
-        if self._gp("multi_params") is not None: 
+        # Is recipie containgin multiple parameters?:
+        if self._gp("multi_params"):
             self.multi_params = stringfy(self._gp("multi_params"))
             self.multi_values = [
                 stringfy(val) for param, val in self.parameters.items() if
                 param in self._gp("multi_params")
             ]
-            self.all_same_rundir = (not "rundir" in self._gp("multi_params") or not self._gp("create_dir"))
-            
+        
+        # All the recipies run in the same dir?
+        if self._gp("create_dir"):
+            self.all_same_rundir = not ("rundir" in self._gp("multi_params"))
         else:
-            self.all_same_rundir = False
-            
+            self.all_same_rundir = True
+                
         # Rundir or YAW current/invoked path:
         self.invoked_path = not self._gp("rundir")
         if self.invoked_path:
