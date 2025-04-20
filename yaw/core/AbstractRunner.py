@@ -7,7 +7,7 @@ class AbstractRunner(ABC):
     """
     Contains the minimum parameters to run "something". Build
     from a YAML recipe. It also defines required parameters as execution
-    parameters that cannot be null value (None)
+    parameters that cannot be null value (None).
     
     Parameter description:
         - type: Type of the runner to be executed
@@ -20,7 +20,7 @@ class AbstractRunner(ABC):
                         If false the runner will use the path from the rundir. It must be created before execute YAW.
         - overwrite: Overwrite the rundir, deleting all the content before executing the runner.
         - dry: Don't run anything, just setup the run.
-        - mirror: Execute the same runner several times.    
+        - mirror: Execute the same runner several times.
     """
     YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
     
@@ -35,24 +35,25 @@ class AbstractRunner(ABC):
         self.__check_req_parameters(parameters)
         self.__init_bash_env_variables()
                 
-        # Multiple parameters:
-        if self._gp("multi_params") is not None: 
+        # Is recipie containgin multiple parameters?:
+        if self._gp("multi_params"):
             self.multi_params = stringfy(self._gp("multi_params"))
             self.multi_values = [
                 stringfy(val) for param, val in self.parameters.items() if
                 param in self._gp("multi_params")
             ]
-            self.all_same_rundir = not (self._gp("rundir") and 
-                                not "rundir" in self._gp("multi_params")
-            )
+        
+        # All the recipies run in the same dir?
+        if self._gp("create_dir"):
+            self.all_same_rundir = not ("rundir" in self._gp("multi_params"))
         else:
-            self.all_same_rundir = False
-            
+            self.all_same_rundir = True
+                
         # Rundir or YAW current/invoked path:
         self.invoked_path = not self._gp("rundir")
         if self.invoked_path:
             self._sp("rundir", Path(os.getcwd()))
-            self.runner_info("Init recipie rundir to the invoked path", self._gp("rundir"))
+            self.runner_info("Init recipie rundir to the invoked path", self._gp("rundir"))      
             
         # Initialize runner results:
         self.runner_result = 0
@@ -82,9 +83,9 @@ class AbstractRunner(ABC):
             "type": (None, "Type of runner", "R"),
             "mode": ("zip", "Type of multi-parameter: cartesian or zip (def)", "O"),
             "log_name": (None, "Log file to dump the STDOUT and STDERR.", "O"),
-            "log_at_rundir": (True, "Place the log file at the rundir.", "O"),
             "env_file": (None, "Environment file to use", "O"),
             "rundir": (None, "Rundir path to execute the runner.", "O"),
+            "create_dir": (True, "Create a rundir", "O"),
             "overwrite": (False, "Overwrite previous content of the rundir", "O"),
             "dry": (False, "Dry run, only manage parameters, not run anything", "O"),
             "mirror": (None, "Execute several time the same step", "O")
@@ -104,7 +105,12 @@ class AbstractRunner(ABC):
                 self.runner_info("Creating rundir", self._gp("rundir"))
                 create_dir(self._gp("rundir"))
         else:
-            create_dir(self._gp("rundir"), self._gp("overwrite"))
+            if self._gp("create_dir"):
+                create_dir(self._gp("rundir"))
+            else:
+                check_path_exists_exception(self._gp("rundir"))
+                self.runner_info("Using rundir @", self._gp("rundir"))
+                
 
         # INIT ENV
         if self._gp("env_file"):

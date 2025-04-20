@@ -6,6 +6,10 @@ class SlurmRunner(AbstractSlurmRunner):
     def manage_multi_recipie(self):
         #TODO: Add logic to add Nodes x MPI per node x cpu per node.
         super().manage_multi_recipie()
+        
+        if self.all_same_rundir:
+            self.runner_print("Need to tune parameters for multirecipie!")
+            self._sp("slr_wrapper_name", f"{self.recipie_name()}_{self._gp('slr_wrapper_name')}")
 
     def run(self):
         info("Generatig SLURM script....")
