@@ -8,6 +8,19 @@ class AbstractRunner(ABC):
     Contains the minimum parameters to run "something". Build
     from a YAML recipe. It also defines required parameters as execution
     parameters that cannot be null value (None)
+    
+    Parameter description:
+        - type: Type of the runner to be executed
+        - mode: Mode to combine multi_parameters (zip or cartesian)
+        - log_name: log name to redirect the output of the runner.
+        - env_file: env_file to be used in the runner
+        - rundir:   Select the rundir to execute the runner. 
+                    If not set, the rundir will be set to the path from where YAW was invoked.
+        - create_dir:   Create a new dir to execute the runner; if already exists it will raise an exception.
+                        If false the runner will use the path from the rundir. It must be created before execute YAW.
+        - overwrite: Overwrite the rundir, deleting all the content before executing the runner.
+        - dry: Don't run anything, just setup the run.
+        - mirror: Execute the same runner several times.    
     """
     YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
     
@@ -72,9 +85,9 @@ class AbstractRunner(ABC):
             "log_at_rundir": (True, "Place the log file at the rundir.", "O"),
             "env_file": (None, "Environment file to use", "O"),
             "rundir": (None, "Rundir path to execute the runner.", "O"),
-            "dry": (False, "Dry run, only manage parameters, not run anything", "O"),
-            "mirror": (None, "Execute several time the same step", "O"),
             "overwrite": (False, "Overwrite previous content of the rundir", "O"),
+            "dry": (False, "Dry run, only manage parameters, not run anything", "O"),
+            "mirror": (None, "Execute several time the same step", "O")
         }
 
     def manage_parameters(self):

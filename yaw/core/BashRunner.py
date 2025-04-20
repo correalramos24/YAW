@@ -6,6 +6,12 @@ from utils import *
 class BashRunner(AbstractRunner):
     """
     Run scripts or commands in bash.
+    Parameter description:
+        - wrapper: Add a wrapper bash command before the bash_cmd.
+        - bash_cmd: Command or script to be executed.
+        - args: bash_cmd arguments.
+        - script_name: Bash script name to add the bash_cmd and the args.
+        - track_env: Dump Bash env to track_env file.
     """
     @classmethod
     def get_runner_type(cls) -> str:
