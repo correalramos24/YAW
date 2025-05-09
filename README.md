@@ -118,3 +118,14 @@ class NemoRunner(SlurmRunner):
         ])
         return parameters_info
 ````
+
+
+### Using pytests
+
+There is support of use unittest. To use them you need to:
+
+````bash
+# Go to yaw folder
+source tests/test_env.sh
+python3 tests/test_your_test_name.py
+````

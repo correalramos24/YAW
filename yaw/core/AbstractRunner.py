@@ -42,6 +42,8 @@ class AbstractRunner(ABC):
                 stringfy(val) for param, val in self.parameters.items() if
                 param in self._gp("multi_params")
             ]
+        else:
+            self._sp("multi_params", [])
         
         # All the recipies run in the same dir?
         if self._gp("create_dir"):
@@ -106,7 +108,7 @@ class AbstractRunner(ABC):
                 create_dir(self._gp("rundir"))
         else:
             if self._gp("create_dir"):
-                create_dir(self._gp("rundir"))
+                create_dir(self._gp("rundir"), self._gp("overwrite"))
             else:
                 check_path_exists_exception(self._gp("rundir"))
                 self.runner_info("Using rundir @", self._gp("rundir"))

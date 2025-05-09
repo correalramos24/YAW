@@ -24,8 +24,10 @@ class AbstractSlurmRunner(AbstractRunner):
             "slurm_wait": (False, "Wait sbatch until job finishes", "O"),
             "slurm_time_limit": (None, "Time limit for the job (DD:HH:MM:SS)", "O"),
             "slurm_contiguous": (None, "place contiguous nodes?", "O"),
+            "slurm_job_name": ("yaw-job", "SLURM job name", "O"),
             "slr_other_cmds": (None, "Other slurm commands", "O"),
             "slr_wrapper_name": ("slurm_yaw.slurm", "slurm script wrapper name. slurm_yaw.slurm by def.", "O"),
+            
         })
         return aux
 
