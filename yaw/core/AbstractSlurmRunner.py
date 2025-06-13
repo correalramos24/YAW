@@ -9,10 +9,6 @@ class AbstractSlurmRunner(AbstractRunner):
     """
     
     @classmethod
-    def get_runner_type(cls) -> str:
-        return "SlurmRunner"
-
-    @classmethod
     def get_params_dict(cls):
         aux =  super().get_params_dict()
         aux.update({

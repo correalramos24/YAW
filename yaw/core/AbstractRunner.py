@@ -190,18 +190,12 @@ class AbstractRunner(ABC):
 
     # =========================YAML GENERATION METHODS==========================
     @classmethod
-    def get_runner_type(cls) -> str:
-        """Used for write the YAML template.
-        """
-        raise Exception("ABC!")
-
-    @classmethod
     def generate_yaml_template(cls) -> None:
         """
         Generate a YAML template for the runner
         """
-        with open(cls.get_runner_type() + ".yaml", mode="w") as tmpl:
-            tmpl.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.get_runner_type()} RUNNER\n")
+        with open(cls.__name__ + ".yaml", mode="w") as tmpl:
+            tmpl.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.__name__} RUNNER\n")
             tmpl.write("## Required parameters:")
             tmpl.write(' '.join(cls.get_required_params()) + "\n")
             ##tmpl.write("## Optional parameters:")

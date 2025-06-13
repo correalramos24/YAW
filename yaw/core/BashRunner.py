@@ -14,9 +14,6 @@ class BashRunner(AbstractRunner):
         - script_name: Bash script name to add the bash_cmd and the args.
         - track_env: Dump Bash env to track_env file.
     """
-    @classmethod
-    def get_runner_type(cls) -> str:
-        return "BashRunner"
 
     @classmethod
     def get_params_dict(cls):
