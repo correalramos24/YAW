@@ -149,13 +149,6 @@ class AbstractRunner(ABC):
         return f"{self.recipie_name()} #> {self.runner_status} ({self.runner_result})"
 
     #===============================PARAMETER METHODS===========================
-    def get_log_path(self):
-        if not self._gp("log_name"):
-            return None
-        if self._gp("log_at_rundir") and self._gp("log_name"):
-            return Path(self._gp("rundir"), self._gp("log_name"))
-        else:
-            return Path(self._gp("log_name"))
 
     @classmethod
     def get_parameters(cls) -> list[str]:
