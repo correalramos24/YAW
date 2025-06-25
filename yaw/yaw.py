@@ -14,7 +14,6 @@ def main():
 
     enable_info(info_enable)
     # 0. PARSE ARGUMENTS THAT OVERRIDES RECIPIES:
-    #TODO!
 
     manager = RunnerManager(input_files, step_names, print_multi)
 
@@ -30,8 +29,14 @@ def main():
     # 1. PARSE RECIPIE INPUT FILES:
     manager.parse_files()
 
-    # 2. RUN RECIPE(S)
+    # 2. DERIVE RECIPIES:
+    manager.derive_recipies()
+
+    # 3. RUN RECIPE(S)
     manager.run_steps()
+    
+    # 4. PRINT RESULTS:
+    manager.print_results()
 
 
 if __name__ == "__main__":

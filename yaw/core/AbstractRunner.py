@@ -3,7 +3,6 @@ from utils import *
 from pathlib import Path
 from abc import ABC, abstractmethod
 from itertools import product
-from os.path import expandvars
 
 class AbstractRunner(ABC):
     """
@@ -23,20 +22,12 @@ class AbstractRunner(ABC):
         if self._gp("verbose"): enable_info(True)
         self.__check_req_parameters(parameters)
         self.__expand_bash_vars()
-        
-        # All the recipies run in the same dir?
-        if self._gp("create_dir"):
-            self.all_same_rundir = is_a_list(self._gp("rundir"))
-        elif self._gp("rundir"):
-            self.all_same_rundir = True
-        else:
-            self.all_same_rundir = False
-                
-        # Rundir or YAW current/invoked path:
+
+        # Rundir or YAW invocation path:
         self.invoked_path = not self._gp("rundir")
         if self.invoked_path:
             self._sp("rundir", Path(os.getcwd()))
-            self.runner_info("Init recipie rundir to the invoked path", self._gp("rundir"))
+            self.runner_info("Recipie rundir @ curr. path", self._gp("rundir"))
             
         # Initialize runner results:
         self.runner_result = 0
@@ -48,8 +39,6 @@ class AbstractRunner(ABC):
         """
         return self._gp("recipie_name")
     
-    def is_runable(self) -> bool:
-        return self.runner_status == "READY"
     
     @classmethod
     def get_params_dict(cls) -> dict[str, (object|None, str, str)]:
@@ -70,12 +59,12 @@ class AbstractRunner(ABC):
             "env_file": (None, "Environment file to use", "O"),
             "rundir": (None, "Rundir path to execute the runner.", "O"),
             "create_dir": (True, "Create a rundir", "O"),
+            "same_rundir": (False, "All recipies run in the same rundir", "O"),
             "overwrite": (False, "Overwrite previous content of the rundir", "O"),
             "dry": (False, "Dry run, only manage parameters, not run anything", "O"),
             "mirror": (None, "Execute several time the same step", "O"),
             "recipie_name": (None, "Name of the recipe", "S"),
             "verbose": (False, "Enable verbosity", "S"),
-            "b_same_rundir": (False, "All recipies run in the same rundir", "S")
         }
 
     def manage_parameters(self):
@@ -83,15 +72,10 @@ class AbstractRunner(ABC):
         Previous stage before run the runner. It manages the parameters
         and the environment.
         """
-        # MANAGE MULTI RECIPE(s)
         self.manage_multi_recipie()
-        
-        # CREATE RUNDIR LOGIC
-        if self.invoked_path:
-            if not check_path_exists(self._gp("rundir")):
-                self.runner_info("Creating rundir", self._gp("rundir"))
-                create_dir(self._gp("rundir"))
-        else:
+        if self.invoked_path and self._gp("create_dir"):
+            self.runner_warn("Create rundir is set but no rundir defined!")
+        if not self.invoked_path:
             if self._gp("create_dir"):
                 create_dir(self._gp("rundir"), self._gp("overwrite"))
             else:
@@ -99,19 +83,14 @@ class AbstractRunner(ABC):
                 self.runner_info("Using rundir @", self._gp("rundir"))
         self.runner_info("Rundir set to", self._gp("rundir"))
 
-        # INIT ENV
         if self._gp("env_file"):
             self.runner_info("Using environment", self._gp("env_file"))
         else:
-            self.runner_info("Environment NOT set!")
+            self.runner_warn("Environment NOT set!")
 
-        # INIT LOG
         if self._gp("log_name"):
             self.runner_info("Redirecting STDOUT and STDERR to", self._gp("log_name"), "log")
-            if self._gp("log_at_rundir"):
-                self.log_path = Path(self._gp("rundir"), self._gp("log_name"))
-            else:
-                self.log_path = Path(self._gp("log_name"))
+            self.log_path = Path(self._gp("rundir"), self._gp("log_name"))
         else: 
             self.log_path = None        
 
@@ -126,13 +105,6 @@ class AbstractRunner(ABC):
     def run(self):
         pass
     
-    def get_log_path(self):
-        if not self._gp("log_name"):
-            return None
-        if self._gp("log_at_rundir") and self._gp("log_name"):
-            return Path(self._gp("rundir"), self._gp("log_name"))
-        else:
-            return Path(self._gp("log_name"))
     #======================RESULT METHODS=======================================
     def set_result(self, result: bool, res_str: str):
         self.runner_result = result
@@ -186,21 +158,16 @@ class AbstractRunner(ABC):
         }
         
         # 2. CHECK MODE FOR VARIATION GENERATION:
-        if self._gp("mode") == "cartesian":
-            join_op = product
-            self.runner_print("Deriving recipies using cartesian product.")
-        else: # ZIP MODE -> DEFAULT
-            join_op = zip
-            self.runner_print("Deriving recipies using zip mode.")
-            # Check params len: all multi-params needs to be the same!
-            b_length = [
-                len(self.parameters[param]) == len(self.parameters[multi_params[0][0]])
-                for param, _ in multi_params
-            ]
-
-            if not all(b_length):
-                Exception("Invalid size for multi-parameters",
-                    str([len(self.parameters[param]) for param, _ in multi_params]))
+        self.runner_info(f"Deriving recipies using {self._gp("mode")}.")
+        join_op = product if self._gp("mode") == "cartesian" else zip    
+        
+        # Check params len: all multi-params needs to be the same!
+        if self._gp("zip") and not all([
+            len(self.parameters[param]) == len(self.parameters[multi_params[0][0]])
+            for param, _ in multi_params
+        ]):
+            Exception("Invalid size for multi-parameters",
+                str([len(self.parameters[param]) for param, _ in multi_params]))
         
         # 3. GENERATE COMBINATIONS
         # TODO: Add support for mirror!
@@ -264,10 +231,9 @@ class AbstractRunner(ABC):
                 list(cls.get_params_dict().items())]
 
     #=============================PRIVATE METHODS===============================
-    def runner_print(self, *msg):
-        print(f"{self.recipie_name()} #>", *msg)
-    def runner_info(self, *msg):
-        info(f"{self.recipie_name()} #>", *msg)
+    def runner_print(self, *msg): print(f"{self.recipie_name()} #>", *msg)
+    def runner_info(self, *msg): info(f"{self.recipie_name()} #>", *msg)
+    def runner_warn(self, *msg): warning(f"{self.recipie_name()} #>", *msg)
     
     def _gp(self, key: str) -> str:
         """
@@ -276,7 +242,6 @@ class AbstractRunner(ABC):
         """
         user_value = self.parameters.get(key, None)
         if user_value is None and key in self.get_params_dict():
-            # Get pre-defined default value
             return self.get_params_dict()[key][0]
         else:
             return user_value
@@ -285,13 +250,8 @@ class AbstractRunner(ABC):
         """
         Update the parameter with the new value. It returns the new value.
         """
-        
         self.parameters[key] = new_val
         return self.parameters[key]
-
-
-    def _get_path_parameter(self, key) -> Path:
-        return safe_get_key(self.parameters, key, Path, None)
 
     #===========================EXPAND BASH VARIABLES===========================
     def __expand_bash_vars(self) -> None:

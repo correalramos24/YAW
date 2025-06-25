@@ -54,18 +54,21 @@ class BashRunner(AbstractRunner):
                     tar.extractall(path=self._gp("rundir"))
         
     def manage_multi_recipie(self):
-        if not self.all_same_rundir:
-            self.runner_print("No need to tune parameters for multirecipie!")
-        elif self._gp("create_dir"):
-            self.runner_print("Tunning parameters for multirecipie!")
-            self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
-            self.runner_info("Update rundir with recipie name", self._gp("rundir"))
+        if self._gp("same_rundir"):
+            self.runner_info("Using same rundir for all recipie(s)")
+            self.runner_info("==>Tunning parameters for multirecipie(s)!")
+            if self._gp("create_dir"):
+                self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
+                self.runner_info("Updated rundir with recipie name", self._gp("rundir"))
+            else:
+                self._sp("script_name", f"{self.recipie_name()}_{self._gp('script_name')}")
+                self._sp("track_env", f"{self.recipie_name()}_{self._gp('track_env')}")
+                if self._gp('log_name') is not None:
+                    self._sp("log_name", f"{self.recipie_name()}_{self._gp('log_name')}")
+                self.runner_info("Updated params with recipie name", self._gp("rundir"))
         else:
-            self.runner_print("Need to tune parameters for multirecipie!")
-            self._sp("script_name", f"{self.recipie_name()}_{self._gp('script_name')}")
-            self._sp("track_env", f"{self.recipie_name()}_{self._gp('track_env')}")
-            if self._gp('log_name') is not None:
-                self._sp("log_name", f"{self.recipie_name()}_{self._gp('log_name')}")
+            self.runner_info("Using different rundirs for each recipie(s)")
+            self.runner_info("==> No need to tune parameters!")
 
     def run(self):
         #1. Generate bash script:
@@ -77,6 +80,7 @@ class BashRunner(AbstractRunner):
             f"{wrapper_cmd}{self._gp("bash_cmd")} {args_str}"
             ]
         )
+        self.runner_info("Generated bash script:", self._gp("script_name"))
         #2. Execute:
         if self._gp("dry"): 
             self.runner_print("DRY MODE: Not executing anything!")
@@ -84,7 +88,7 @@ class BashRunner(AbstractRunner):
         else:
             r = self.runner_result = execute_script( 
                 script = self._gp("script_name"), args = self._gp("args"), 
-                rundir = self._gp("rundir"), log_file = self.get_log_path()
+                rundir = self._gp("rundir"), log_file = self.log_path
             )
             if not r: self.runner_status = "OK"
             else: self.runner_status = "Return code !=0"
