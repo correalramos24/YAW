@@ -1,0 +1,12 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR BashRunnerRundir RUNNER
+## Required parameters:type rundir bash_cmd
+rundir_tests:
+  type: BashRunnerRundir
+  rundir: $HOME/yaw_test_rundir
+  overwrite: true
+  bash_cmd: ls
+  args: "-la"
+  track_env: my_env
+  git_repo: https://github.com/correalramos24/YAW.git
+#####################################-YAW-######################################

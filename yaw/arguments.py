@@ -5,7 +5,7 @@ from yaw_ascii import *
 from utils import *
 
 # Version:
-VERSION="v0.97.250"
+VERSION="v0.99.0 - Alfa"
 
 def parse_user_args():
     # Declare the flags:

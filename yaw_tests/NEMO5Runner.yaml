@@ -1,0 +1,24 @@
+#####################################-YAW-######################################
+## TEMPLATE FOR NEMO5Runner RUNNER
+## Required parameters:type slurm_nodes slurm_mpi slurm_cpus nemo5_root nemo5_resolution
+simple_nemo5_bench_test:
+  type: NEMO5Runner
+  log_name: nemo-bench.log
+  env_file: $DOTF_HOME/envs/mn5/nemo5/intel-mpi.sh
+  rundir: $EHPC_01_SCRATCH/YAW-NEMO5-TEST-RUNDIR
+  dry: False
+  overwrite: True
+  slurm_nodes: 1 
+  slurm_mpi: 112 
+  slurm_cpus: 1 
+  slurm_queue: gp_debug 
+  slurm_account: bsc32 
+  slurm_time_limit: 00:10:00 
+  slr_wrapper_name: nemo_slurm.slurm 
+  nemo5_root: $ES_SCRATCH/APPS/ESIWACE-NEMO5-OPEMP
+  nemo5_test_cfg: BENCH_IMPI_OCE
+  nemo5_timesteps: 33
+  nemo5_resolution: orca1
+  nemo5_tiling_i: 99999
+  nemo5_tiling_j: 99999
+#####################################-YAW-######################################
