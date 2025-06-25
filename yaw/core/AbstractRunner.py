@@ -3,6 +3,7 @@ from utils import *
 from pathlib import Path
 from abc import ABC, abstractmethod
 from itertools import product
+from os.path import expandvars
 
 class AbstractRunner(ABC):
     """
@@ -23,7 +24,6 @@ class AbstractRunner(ABC):
         - dry: Don't run anything, just setup the run.
         - mirror: Execute the same runner several times.
     """
-    YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
     
     def __init__(self, **parameters):
         """
@@ -33,28 +33,14 @@ class AbstractRunner(ABC):
             Exception: If some bad parameter found
         """
         self.parameters = parameters
+        if self._gp("verbose"): enable_info(True)
         self.__check_req_parameters(parameters)
-        self.__init_bash_env_variables()
-        
-        if self._gp("verbose"):
-            enable_info(True)
-        
-        # Is recipie containgin multiple parameters?:
-        #if self._gp("multi_params"):
-        #    self.multi_params = stringfy(self._gp("multi_params"))
-        #    self.multi_values = [
-        #        stringfy(val) for param, val in self.parameters.items() if
-        #        param in self._gp("multi_params")
-        #    ]
-        #    self.runner_info("Multi-parameters found!")
-        #else:
-        #    self._sp("multi_params", [])
-        #    self.runner_info("No multi-parameters found!")
+        self.__expand_bash_vars()
         
         # All the recipies run in the same dir?
-        #if self._gp("create_dir"):
-        #    self.all_same_rundir = not ("rundir" in self._gp("multi_params"))
-        if self._gp("rundir"):
+        if self._gp("create_dir"):
+            self.all_same_rundir = is_a_list(self._gp("rundir"))
+        elif self._gp("rundir"):
             self.all_same_rundir = True
         else:
             self.all_same_rundir = False
@@ -101,7 +87,8 @@ class AbstractRunner(ABC):
             "dry": (False, "Dry run, only manage parameters, not run anything", "O"),
             "mirror": (None, "Execute several time the same step", "O"),
             "recipie_name": (None, "Name of the recipe", "S"),
-            "verbose": (False, "Enable verbosity", "S")
+            "verbose": (False, "Enable verbosity", "S"),
+            "b_same_rundir": (False, "All recipies run in the same rundir", "S")
         }
 
     def manage_parameters(self):
@@ -123,7 +110,7 @@ class AbstractRunner(ABC):
             else:
                 check_path_exists_exception(self._gp("rundir"))
                 self.runner_info("Using rundir @", self._gp("rundir"))
-                
+        self.runner_info("Rundir set to", self._gp("rundir"))
 
         # INIT ENV
         if self._gp("env_file"):
@@ -144,14 +131,21 @@ class AbstractRunner(ABC):
     @abstractmethod
     def manage_multi_recipie(self):
         """
-        Step to manage the multi-recipie values
-        Executed before manage_parameters
+        Step to manage the multi-recipie values.Executed before manage_parameters
         """
         pass #ABC Method
 
     @abstractmethod
     def run(self):
         pass
+    
+    def get_log_path(self):
+        if not self._gp("log_name"):
+            return None
+        if self._gp("log_at_rundir") and self._gp("log_name"):
+            return Path(self._gp("rundir"), self._gp("log_name"))
+        else:
+            return Path(self._gp("log_name"))
     #======================RESULT METHODS=======================================
     def set_result(self, result: bool, res_str: str):
         self.runner_result = result
@@ -161,20 +155,17 @@ class AbstractRunner(ABC):
         return f"{self.recipie_name()} #> {self.runner_status} ({self.runner_result})"
 
     #===============================PARAMETER METHODS===========================
-
     @classmethod
     def get_parameters(cls) -> list[str]:
         return list(cls.get_params_dict().keys())
 
     @classmethod
     def get_required_params(cls) -> list[str]:
-        return [param for param, info in cls.get_params_dict().items()
-                if info[2] == "R"]
+        return [p for p, info in cls.get_params_dict().items() if info[2] == "R"]
     
     @classmethod
     def get_optional_params(cls) -> list[str]:
-        return [param for param, info in cls.get_params_dict().items()
-                if info[2] == "O"]
+        return [p for p, info in cls.get_params_dict().items() if info[2] == "O"]
 
     @classmethod
     def get_multi_value_params(cls) -> set[str]:
@@ -182,28 +173,19 @@ class AbstractRunner(ABC):
 
     @classmethod
     def __check_req_parameters(cls, params):
-        """
-        Check all required parameters are filled. If not, raise an exception.
-        Also check if there are parameters not defined.
-        """
-        req_params = cls.get_required_params()
-        req_not_fill = \
-            list(filter(lambda param : not params.get(param), req_params)
-        )
-        if len(req_not_fill) > 0:
-            str_not_fill = stringfy(req_not_fill)
-            raise Exception(f"Required argument(s) {str_not_fill} not found")
+        # Check all required parameters are filled. If not, raise an exception:
+        missing = [p for p in cls.get_required_params() if not params.get(p)]
+        if missing:
+            raise Exception(f"Not found req argument(s) {stringfy(missing)}")
         
-        # Check if there are parameters not defined in the class
-        all_params = cls.get_parameters()
-        bad_params = [param for param in params.keys() if param not in all_params]
-        if len(bad_params) > 0:
-            str_bad_params = stringfy(bad_params)
-            raise Exception(f"Invalid parameter(s) {str_bad_params}")
+        # Check if there are parameters not defined in the class:
+        bad_params = [p for p in params.keys() if p not in cls.get_parameters()]
+        if any(bad_params):
+            raise Exception(f"Invalid parameter(s) {stringfy(bad_params)}")
 
     def derive_recipies(self) -> list["AbstractRunner"]:
         if not self.is_a_multirecipie(): return [self]
-        print(self.parameters)
+
         # 1. SORT PARAMETERS:
         multi_params = [ (param, val) for param, val in self.parameters.items()
             if is_a_list(val) and
@@ -250,30 +232,26 @@ class AbstractRunner(ABC):
         return [self.__class__(**variation) for variation in variations]
     
     def is_a_multirecipie(self) -> bool:
-        """
-        Check if the class is a multi-recipie. It is a multi-recipie if it has
-        the multi_params parameter defined.
-        """
-        return len([
-            param for param, val in self.parameters.items()
-            if is_a_list(val) and not "__" in param and
-            not param in self.get_multi_value_params()
-        ]) >= 1
+        return any(
+            is_a_list(val) and param not in self.get_multi_value_params()
+            for param, val in self.parameters.items()
+        )
     # =========================YAML GENERATION METHODS==========================
     @classmethod
     def generate_yaml_template(cls) -> None:
         """
         Generate a YAML template for the runner
         """
+        YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
         with open(cls.__name__ + ".yaml", mode="w") as tmpl:
-            tmpl.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.__name__} RUNNER\n")
+            tmpl.write(f"{YAML_DELIM}\n## TEMPLATE FOR {cls.__name__} RUNNER\n")
             tmpl.write("## Required parameters:")
             tmpl.write(' '.join(cls.get_required_params()) + "\n")
-            ##tmpl.write("## Optional parameters:")
-            ##tmpl.write(' '.join(cls.get_optional_params()) + "\n")
+            tmpl.write("## Optional parameters:")
+            tmpl.write(' '.join(cls.get_optional_params()) + "\n")
             tmpl.write(f"your_recipe_name:\n")
             tmpl.write(cls.__generate_yaml_template_content())
-            tmpl.write(cls.YAML_DELIM)
+            tmpl.write(YAML_DELIM)
 
     @classmethod
     def __generate_yaml_template_content(cls) -> str:
@@ -296,7 +274,6 @@ class AbstractRunner(ABC):
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
         return [(param, info[1]) for param, info in 
                 list(cls.get_params_dict().items())]
-
 
     #=============================PRIVATE METHODS===============================
     def runner_print(self, *msg):
@@ -329,7 +306,7 @@ class AbstractRunner(ABC):
         return safe_get_key(self.parameters, key, Path, None)
 
     #===========================EXPAND BASH VARIABLES===========================
-    def __init_bash_env_variables(self) -> None:
+    def __expand_bash_vars(self) -> None:
         """Convert the bash variables ($VAR or ${VAR}) to the value.
         """
         no_empty_params = {k : v for k, v in self.parameters.items() 
