@@ -43,14 +43,8 @@ class AbstractRunner(ABC):
     @classmethod
     def get_params_dict(cls) -> dict[str, (object|None, str, str)]:
         """
-        Define the parameters of the runner. The parameters are defined as a 
-        dictionary with the parameter name as key and a tuple with the 
-        default value, description and type of the parameter.
-        The type of the parameter is defined as:
-            - R: Required parameter
-            - O: Optional parameter
-            - S: Shadow parameter (for internal use)
-        The default value is None if not defined.
+        Define the parameters of the runner. Parameters are defined as:
+        R: Required parameter - O: Optional parameter - S: Shadow parameter
         """
         return {
             "type": (None, "Type of runner", "R"),
@@ -96,9 +90,6 @@ class AbstractRunner(ABC):
 
     @abstractmethod
     def manage_multi_recipie(self):
-        """
-        Step to manage the multi-recipie values.Executed before manage_parameters
-        """
         pass #ABC Method
 
     @abstractmethod
@@ -222,7 +213,6 @@ class AbstractRunner(ABC):
                 ret += f" # {comment}\n"
             else:
                 ret += f"  {parameter}: #{comment}\n"
-
         return ret
 
     @classmethod
