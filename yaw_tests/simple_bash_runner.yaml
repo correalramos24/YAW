@@ -1,11 +1,20 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR BashRunner RUNNER
 ## Required parameters:type bash_cmd
+bash_cmd: ls
+same_rundir: True
 bash_runner_test:
   type: BashRunner
   wrapper: time
   bash_cmd: ls
-  args: "-la"
+  args: 
+    - "-la"
+    - "-ls"
   script_name: yaw_test_example.sh
   track_env: yaw_env.log
+  create_dir: False
+
+err_bash_runner_test:
+  type: BashRunner
+  alfa: 1
 #####################################-YAW-######################################
