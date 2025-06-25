@@ -10,10 +10,6 @@ class BashSlurmRunner(SlurmRunner, BashRunner):
     """
 
     @classmethod
-    def get_runner_type(cls) -> str:
-        return "BashSlurmRunner"
-    
-    @classmethod
     def get_params_dict(cls):
         aux = super().get_params_dict()
         aux.update({

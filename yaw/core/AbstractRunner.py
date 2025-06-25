@@ -81,9 +81,9 @@ class AbstractRunner(ABC):
     @classmethod
     def get_params_dict(cls) -> dict[str, (object|None, str, str)]:
         """
-        Define the parameters of the runner. The parameters are defined as a dictionary
-        with the parameter name as key and a tuple with the default value,
-        description and type of the parameter.
+        Define the parameters of the runner. The parameters are defined as a 
+        dictionary with the parameter name as key and a tuple with the 
+        default value, description and type of the parameter.
         The type of the parameter is defined as:
             - R: Required parameter
             - O: Optional parameter
@@ -92,7 +92,7 @@ class AbstractRunner(ABC):
         """
         return {
             "type": (None, "Type of runner", "R"),
-            "mode": ("zip", "Type of multi-parameter: cartesian or zip (def)", "O"),
+            "mode": ("zip", "multi-parameter set: cartesian or zip (def)", "O"),
             "log_name": (None, "Log file to dump the STDOUT and STDERR.", "O"),
             "env_file": (None, "Environment file to use", "O"),
             "rundir": (None, "Rundir path to execute the runner.", "O"),
@@ -152,7 +152,7 @@ class AbstractRunner(ABC):
     @abstractmethod
     def run(self):
         pass
-
+    #======================RESULT METHODS=======================================
     def set_result(self, result: bool, res_str: str):
         self.runner_result = result
         self.runner_status = res_str
@@ -160,15 +160,8 @@ class AbstractRunner(ABC):
     def get_result(self) -> str:
         return f"{self.recipie_name()} #> {self.runner_status} ({self.runner_result})"
 
-    def get_log_path(self):
-        if not self._gp("log_name"):
-            return None
-        if self._gp("log_at_rundir") and self._gp("log_name"):
-            return Path(self._gp("rundir"), self._gp("log_name"))
-        else:
-            return Path(self._gp("log_name"))
+    #===============================PARAMETER METHODS===========================
 
-    #===============================PARAMETER METHODS===========================    
     @classmethod
     def get_parameters(cls) -> list[str]:
         return list(cls.get_params_dict().keys())
@@ -268,18 +261,12 @@ class AbstractRunner(ABC):
         ]) >= 1
     # =========================YAML GENERATION METHODS==========================
     @classmethod
-    def get_runner_type(cls) -> str:
-        """Used for write the YAML template.
-        """
-        raise Exception("ABC!")
-
-    @classmethod
     def generate_yaml_template(cls) -> None:
         """
         Generate a YAML template for the runner
         """
-        with open(cls.get_runner_type() + ".yaml", mode="w") as tmpl:
-            tmpl.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.get_runner_type()} RUNNER\n")
+        with open(cls.__name__ + ".yaml", mode="w") as tmpl:
+            tmpl.write(f"{cls.YAML_DELIM}\n## TEMPLATE FOR {cls.__name__} RUNNER\n")
             tmpl.write("## Required parameters:")
             tmpl.write(' '.join(cls.get_required_params()) + "\n")
             ##tmpl.write("## Optional parameters:")
@@ -347,7 +334,7 @@ class AbstractRunner(ABC):
         """
         no_empty_params = {k : v for k, v in self.parameters.items() 
                         if v and is_a_str(v) and "$" in v}
-        # TODO: Add support for relative paths (start with ./)
+
         for param, value in no_empty_params.items():
             expanded_value = expand_bash_env_vars(value)
             if expanded_value:

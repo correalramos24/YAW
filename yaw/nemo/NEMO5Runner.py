@@ -4,15 +4,8 @@ from utils import *
 
 
 class NEMO5Runner(SlurmRunner):
-    
-    @classmethod
-    def get_runner_name(cls) -> str:
-        return "NEMO5Runner"
-    
-    @classmethod
-    def get_runner_type(cls) -> str:
-        return "NEMO5Runner"
 
+    
     
     @classmethod
     def get_params_dict(cls):
