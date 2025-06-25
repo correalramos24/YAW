@@ -10,19 +10,6 @@ class AbstractRunner(ABC):
     Contains the minimum parameters to run "something". Build
     from a YAML recipe. It also defines required parameters as execution
     parameters that cannot be null value (None).
-    
-    Parameter description:
-        - type: Type of the runner to be executed
-        - mode: Mode to combine multi_parameters (zip or cartesian)
-        - log_name: log name to redirect the output of the runner.
-        - env_file: env_file to be used in the runner
-        - rundir:   Select the rundir to execute the runner. 
-                    If not set, the rundir will be set to the path from where YAW was invoked.
-        - create_dir:   Create a new dir to execute the runner; if already exists it will raise an exception.
-                        If false the runner will use the path from the rundir. It must be created before execute YAW.
-        - overwrite: Overwrite the rundir, deleting all the content before executing the runner.
-        - dry: Don't run anything, just setup the run.
-        - mirror: Execute the same runner several times.
     """
     
     def __init__(self, **parameters):
@@ -216,6 +203,7 @@ class AbstractRunner(ABC):
                     str([len(self.parameters[param]) for param, _ in multi_params]))
         
         # 3. GENERATE COMBINATIONS
+        # TODO: Add support for mirror!
         variations_values = list(
             join_op(*[self.parameters[param] for param, _ in multi_params])
         )

@@ -7,12 +7,6 @@ import tarfile
 class BashRunner(AbstractRunner):
     """
     Run scripts or commands in bash.
-    Parameter description:
-        - wrapper: Add a wrapper bash command before the bash_cmd.
-        - bash_cmd: Command or script to be executed.
-        - args: bash_cmd arguments.
-        - script_name: Bash script name to add the bash_cmd and the args.
-        - track_env: Dump Bash env to track_env file.
     """
 
     @classmethod
@@ -34,7 +28,7 @@ class BashRunner(AbstractRunner):
 
     def manage_parameters(self):
         super().manage_parameters()
-        
+
         if self._gp("git_branch") and not self._gp("git_repo"):
             raise Exception("Git branch selected but repo not selected!")
         
@@ -58,7 +52,6 @@ class BashRunner(AbstractRunner):
                 check_file_exists_exception(f)
                 with tarfile.open(f, "r:gz") as tar:
                     tar.extractall(path=self._gp("rundir"))
-        
         
     def manage_multi_recipie(self):
         if not self.all_same_rundir:
@@ -86,25 +79,19 @@ class BashRunner(AbstractRunner):
         )
         #2. Execute:
         if self._gp("dry"): 
-            print("DRY MODE: Not executing anything!")
+            self.runner_print("DRY MODE: Not executing anything!")
             self.runner_result = "DRY"
         else:
             r = self.runner_result = execute_script( 
-                script = self._gp("script_name"), 
-                args = self._gp("args"),
-                rundir = self._gp("rundir"),
-                log_file = self.get_log_path()
+                script = self._gp("script_name"), args = self._gp("args"), 
+                rundir = self._gp("rundir"), log_file = self.get_log_path()
             )
             if not r: self.runner_status = "OK"
             else: self.runner_status = "Return code !=0"
-      
 
     @classmethod
     def get_multi_value_params(cls) -> set[str]:
-        ret = super().get_multi_value_params()
-        ret.add("rundir_files")
-        ret.add("tar_gz_files")
-        return ret
+        return super().get_multi_value_params().union({"rundir_files", "tar_gz_files"})
          
     #===============================PRIVATE METHODS=============================
     def git_clone_str(self) -> str:
