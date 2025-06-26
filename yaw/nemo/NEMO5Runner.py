@@ -1,12 +1,9 @@
-from core import SlurmRunner
+from core import AbstractSlurmRunner
 from utils import *
 
 
-
-class NEMO5Runner(SlurmRunner):
-
-    
-    
+class NEMO5Runner(AbstractSlurmRunner):
+   
     @classmethod
     def get_params_dict(cls):
         aux = super().get_params_dict()
@@ -35,7 +32,7 @@ class NEMO5Runner(SlurmRunner):
             raise Exception("Either nemo5_run_cfg or nemo5_test_cfg must be set!")
         
         utils_files.copy_folder(Path(cfg_fldr, "EXP00"), 
-                                self._gp("rundir"), 
+                                Path(self._gp("rundir")), 
                                 self._gp("overwrite"), 
                                 False)
 
@@ -60,16 +57,13 @@ class NEMO5Runner(SlurmRunner):
             'nn_ltile_i': self._gp("tiling_i"),
             'nn_ltile_j': self._gp("tiling_j")
         })
-        
-
-    def manage_multi_recipie(self):
-        return 
+         
 
     def run(self):
         info("Generating NEMO5 SLURM script...")
         generate_slurm_script(
             f_path=Path(self._gp("rundir"), self._gp("slr_wrapper_name")), 
-            log_file=self.get_log_path(),
+            log_file=self.log_path,
             slurm_directives=self._get_slurm_directives(),
             cmds=
             [
@@ -80,13 +74,11 @@ class NEMO5Runner(SlurmRunner):
         )
         info("DONE!")
         if self._gp("dry"): 
-            print("DRY MODE: Not executing anything!")
-            ret = "DRY EXECUTION!"
-            self.runner_result = "DRY"
+            self.runner_print("DRY MODE: Not executing anything!")
+            self.set_result(0, "DRY EXECUTION!")
         else:
             execute_slurm_script(self._gp("slr_wrapper_name"), None, self._gp("rundir"))
-            self.runner_result = "OK"
-            self.runner_result_str = "SUBMITTED"
+            self.set_result(0, "SUBMITTED")
 
     
     @staticmethod

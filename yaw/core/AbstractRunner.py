@@ -51,6 +51,7 @@ class AbstractRunner(ABC):
             "mode": ("zip", "multi-parameter set: cartesian or zip (def)", "O"),
             "log_name": (None, "Log file to dump the STDOUT and STDERR.", "O"),
             "env_file": (None, "Environment file to use", "O"),
+            "track_env" : ("env.log", "File name to store the env of a run", "O"),
             "rundir": (None, "Rundir path to execute the runner.", "O"),
             "create_dir": (True, "Create a rundir", "O"),
             "same_rundir": (False, "All recipies run in the same rundir", "O"),
@@ -97,7 +98,7 @@ class AbstractRunner(ABC):
         pass
     
     #======================RESULT METHODS=======================================
-    def set_result(self, result: bool, res_str: str):
+    def set_result(self, result: int, res_str: str):
         self.runner_result = result
         self.runner_status = res_str
 
@@ -208,7 +209,7 @@ class AbstractRunner(ABC):
         parameters_info = cls._inflate_yaml_template_info()
         for parameter, comment in parameters_info:
             if parameter == "type":
-                ret += f"  {parameter}: {cls.get_runner_type()}\n"
+                ret += f"  {parameter}: {cls.__name__}\n"
             elif parameter == "comment":
                 ret += f" # {comment}\n"
             else:
@@ -217,6 +218,7 @@ class AbstractRunner(ABC):
 
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
+        #TODO: Skip shadow parameters?
         return [(param, info[1]) for param, info in 
                 list(cls.get_params_dict().items())]
 

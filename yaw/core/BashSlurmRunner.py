@@ -1,10 +1,10 @@
 from .BashRunner import BashRunner
-from .SlurmRunner import SlurmRunner
+from .AbstractSlurmRunner import AbstractSlurmRunner
 from utils import *
 from pathlib import Path
 
 
-class BashSlurmRunner(SlurmRunner, BashRunner):
+class BashSlurmRunner(AbstractSlurmRunner, BashRunner):
     """
     Run scripts or commands in bash with slurm.
     """

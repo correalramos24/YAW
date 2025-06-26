@@ -1,5 +1,5 @@
 from utils import *
-from . import AbstractRunner, BashRunner, SlurmRunner
+from . import AbstractRunner, BashRunner
 from . import VoidRunner, BashSlurmRunner
 from nemo import NEMO5Runner
 
@@ -10,7 +10,6 @@ class RunnerManager:
 
     runners: dict = {
         "BashRunner": BashRunner,
-        "SlurmRunner": SlurmRunner,
         "BashSlurmRunner": BashSlurmRunner,
         "NEMO5Runner": NEMO5Runner
     }
@@ -68,12 +67,12 @@ class RunnerManager:
     def run_steps(self):
         print("=" * 40 + "RUNNING" + "=" * 40)
         if self.run_step_name:
-            print("Only executting steps with name", stringfy(self.run_step_name))
+            print("Only executing steps with name", stringfy(self.run_step_name))
         
         for i, step in enumerate(self.steps_derived):
             
             name = step.recipie_name()
-            if self.run_step_name and name not in self.run_step_name: 
+            if self.run_step_name and not any(n in name for n in self.run_step_name):
                 info(f"Recipie {i} - {name} skipped due cmd line")
                 step.set_result(0, "skipped due cmd line --steps")
                 continue

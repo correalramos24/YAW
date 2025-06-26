@@ -17,7 +17,6 @@ class BashRunner(AbstractRunner):
             "bash_cmd": (None, "Script to execute (./s.sh) or command (ls)", "R"),
             "args" : (None, "Script arguments", "O"),
             "script_name" : ("yaw_wrapper.sh", "Bash script name", "O"),
-            "track_env" : ("env.log", "File name to store the env of a run", "O"),
             "ref_rundir": (None, "Reference rundir to use, (copy all to rundir)", "O"),
             "rundir_files": (None, "List of files to copy to the rundir", "O"),
             "tar_gz_files": (None, "List of tar.gz. files to uncomp. to then rundir", "O"),
@@ -68,6 +67,7 @@ class BashRunner(AbstractRunner):
                 self.runner_info("Updated params with recipie name", self._gp("rundir"))
         else:
             self.runner_info("Using different rundirs for each recipie(s)")
+            #TODO: This implies that the rundir must be different for each recipie!
             self.runner_info("==> No need to tune parameters!")
 
     def run(self):
