@@ -95,6 +95,29 @@ class TestBashRunner(unittest.TestCase):
             print("Exception caught:", str(e))
             self.assertEqual(str(e), "Creating an already existing dir!")
         
+    def test_no_rundir(self):
+        # Test the case where no rundir is provided
+        params = {
+            "type": "BashRunner", "recipie_name": "test_no_rundir",
+            "bash_cmd": "ls", "verbose": True, "create_dir": False
+        }
+        runner = BashRunner(**params)
+        runner.manage_parameters()
+        runner.run()
+    
+    def test_no_rundir_and_create_dir(self):
+        # Test the case where no rundir is provided
+        params = {
+            "type": "BashRunner", "recipie_name": "test_no_rundir",
+            "bash_cmd": "ls", "verbose": True, "create_dir": True
+        }
+        try:
+            runner = BashRunner(**params)
+            runner.manage_parameters()
+            runner.run()
+        except Exception as e:
+            print("Caught as expected:", str(e))
+            self.assertEqual(str(e), "Create rundir is set but no rundir defined!")
     
     def fill_rundir_files(self):
         pass

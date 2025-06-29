@@ -15,6 +15,7 @@ class AbstractSlurmRunner(AbstractRunner, ABC):
         aux.update({
             "slurm_nodes": (None, "Number of nodes to use", "R"),
             "slurm_mpi": (None, "Number of MPI tasks per node", "O"),
+            "slurm_tasks": (None, "Number of MPI tasks to use (srun)", "O"),
             "slurm_cpus": (None, "Number of CPUs per task", "O"),
             "slurm_queue": (None, "Queue to use", "R"),
             "slurm_account": (None, "Slurm account to use", "R"),
@@ -31,11 +32,8 @@ class AbstractSlurmRunner(AbstractRunner, ABC):
         #TODO: Add logic to add Nodes x MPI per node x cpu per node.
         super().manage_multi_recipie()
         if self._gp("same_rundir"):
-            self.runner_print("Need to tune parameters for multirecipie!")
-            self._sp("slr_wrapper_name", f"{self.recipie_name()}_{self._gp('slr_wrapper_name')}")
-        elif self._gp("create_dir"):
-            self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
-            self.runner_print("Updated rundir with recipie name", self._gp("rundir"))
+            self.runner_error("Using same rundir for all recipie(s) is forbidden for SlurmRunner!")
+            raise Exception("Using same rundir for all recipie(s) is forbidden for SlurmRunner!")
 
     @abstractmethod
     def run(self):

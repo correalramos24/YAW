@@ -21,7 +21,7 @@ YAW parses recipe files (in YAML format) and executes each step described in the
 
 The most powerful capability of this tool is the ability to generate recipe variations; if the recipe contains a multivalue parameter (list)
 YAW automatically generates all the combinations (cartesian mode) or joins by order of the different values(zip mode). This allows systematical executions
-with only writing a YAML file. There are several "runners" available to run steps using bash, manage a running directory, or submit the execution using SLURM.
+with only writing a YAML file. There are several "runners" available and you can extend the runnerns for a custom use case.
 
 ## Installation
 Clone the repository with `--recursive` or initialize the submodules.
@@ -42,6 +42,40 @@ Add the `bin` folder to the path of your system and call `yaw` to execute the ap
 
 3. Check the results: Check the output from the command line to see the execution results.
 
+## Runner hierarchy
+YAW was defined using a object-oriented hierarchy to be easy to extend.
+
+### AbstractRunner - Minimal parameters
+
+The abstract runner defines the minimal parameters to execute something. It manages:
+
+* type: Set the runner type
+* mode: Set the mode for multirecipie parameters. `zip` by default
+* log_file: Dump the execution to a log file
+* env_file: Set the environment file.
+* track_env: Dump the environment to a file. `env.log` by default
+* rundir: Set the rundir to execute the runner. If not set, it will be set to the current path where YAW was invoked.
+* create_dir: Create the rundir. 
+* overwrite: Overwrite the rundir
+* same_rundir: Execute all the multirecipies in the same rundir. `false` by default.
+* dry: Not execute anything, just set the rundir. `false` by default
+* mirror: Generate mirror runners.
+* verbose: Be verbose with this step. `false` by default.
+
+It also defines the two execution steps, a first one where the parameters are managed and a second one where the execution happens.
+
+### SlurmAbstractRunner - SLURM parameters
+
+Define an interface to interact with SLURM jobs. 
+
+### BashRunner
+
+Extends the abstract runner to execute commands using bash and inflate the rundir 
+with input files.
+
+### BashSlurmRunner
+TBD
+
 ## Examples
 TBD
 
@@ -53,71 +87,11 @@ to make it easy to extend the functionalities of this application.
 
 ### UML overview - Runners
 
-A runner is the basic object used by YAW to execute the steps of a recipe. The `RundirManager` contains all the logic to 
-parse the recipes and execute them; if you want to include a new runner you need to include it and added to the `runners` dictionary.
-
-![alt text](misc/UML.png)
+TBD
 
 ### Creating your runner
 
-You can inherit from any of the core objects to extende the functionality 
-to meet your requirements. The Abstract runner defines differents sub-steps
-common for all the recipies in order to parse the recipie and execute it:
-
-1. builder: The build method of the object checks the required arguments, defined at each object in the `get_required_params()` method.
-2. `manage_parameters()` : Checks about the parameters (line build rundir, print warning logs)
-3. `run()` : Execute the recipe.
-
-Apart from the execution, for the template generation there is one specific method, 
-called `generate_yaml_template()`, which contains all the logic to generate
-the template YAML file, with some comments. 
-
-Check the `core/AbstractRunner.py` for mode details. The utils python package
-contains utilities methods to manage bash scripts, environments and SLURM scripts.
-
-
-As an example, here you have an example to extend the Slurm runner to add
-new type of runner.
-
-````python
-@dataclass
-class NemoRunner(SlurmRunner):
-    type: str = "NemoRunner"
-    nemo_root : Path = None
-    nemo_cfg : str = None
-    WRAPPER_NAME="nemo.slurm"
-    def manage_parameters(self):
-        super().manage_parameters()
-        # YOUR OVERIDE
-        
-        
-    def inflate_runner(self):
-        generate_slurm_script(Path(self.rundir, self.WRAPPER_NAME),
-            self.log_name, self._get_slurm_directives(), 
-            [
-                "# loading and saving the source:",
-                f"source {self.env_file}" if self.env_file else "",
-                "printenv &> env.log",
-                "# Editing namelist parameters:",
-                f"sed -i 's/nn_stock=.*/nn_stock=-1/' \"namelist_cfg\"",
-                f"sed -i 's/[[:space:]]*nn_stock[[:space:]]*=[[:space:]]*.*/nn_stock=-1/' \"namelist_cfg\"",
-                f"sed -i \"s/nn_itend[ \\t]*=.*/nn_itend={self.steps}/\" namelist_cfg",
-                "# Running the model:",
-                f"srun ./nemo.exe $@"
-            ]
-        )
-    
-    @classmethod
-    def _inflate_yaml_template_info(cls):
-        parameters_info = super()._inflate_yaml_template_info()
-        parameters_info.extend([
-            ("comment", "NEMO PARAMETERS"),
-            ("nemo_root", "nemo installation root"),
-            ("nemo_cfg" ,  "nemo cfg to be executed"),
-            ("steps" , "model steps to be executed (10 by default)")
-        ])
-        return parameters_info
-````
+TBD
 
 
 ### Using pytests

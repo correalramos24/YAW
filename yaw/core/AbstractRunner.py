@@ -27,18 +27,13 @@ class AbstractRunner(ABC):
         self.invoked_path = not self._gp("rundir")
         if self.invoked_path:
             self._sp("rundir", Path(os.getcwd()))
-            self.runner_info("Recipie rundir @ curr. path", self._gp("rundir"))
+            self.runner_warn("Using curr. path as rundir!")
+        if self._gp("create_dir") and self.invoked_path:
+            self.runner_error("Create rundir is set but no rundir defined!")
+            raise Exception("Create rundir is set but no rundir defined!")
             
         # Initialize runner results:
-        self.runner_result = 0
-        self.runner_status = "READY"
-
-    def recipie_name(self) -> str:
-        """
-        Get the name of the recipe. It is used to identify the recipe type
-        """
-        return self._gp("recipie_name")
-    
+        self.set_result(0, "READY")
     
     @classmethod
     def get_params_dict(cls) -> dict[str, (object|None, str, str)]:
@@ -68,15 +63,12 @@ class AbstractRunner(ABC):
         and the environment.
         """
         self.manage_multi_recipie()
-        if self.invoked_path and self._gp("create_dir"):
-            self.runner_warn("Create rundir is set but no rundir defined!")
-        if not self.invoked_path:
-            if self._gp("create_dir"):
-                create_dir(self._gp("rundir"), self._gp("overwrite"))
-            else:
-                check_path_exists_exception(self._gp("rundir"))
-                self.runner_info("Using rundir @", self._gp("rundir"))
-        self.runner_info("Rundir set to", self._gp("rundir"))
+
+        if self._gp("create_dir"):
+            create_dir(self._gp("rundir"), self._gp("overwrite"))
+        else:
+            check_path_exists_exception(self._gp("rundir"))        
+        self.runner_info("Runner rundir points @", self._gp("rundir"))
 
         if self._gp("env_file"):
             self.runner_info("Using environment", self._gp("env_file"))
@@ -84,8 +76,8 @@ class AbstractRunner(ABC):
             self.runner_warn("Environment NOT set!")
 
         if self._gp("log_name"):
-            self.runner_info("Redirecting STDOUT and STDERR to", self._gp("log_name"), "log")
             self.log_path = Path(self._gp("rundir"), self._gp("log_name"))
+            self.runner_info("Redirecting output to", self._gp("log_name"))
         else: 
             self.log_path = None        
 
@@ -96,7 +88,6 @@ class AbstractRunner(ABC):
     @abstractmethod
     def run(self):
         pass
-    
     #======================RESULT METHODS=======================================
     def set_result(self, result: int, res_str: str):
         self.runner_result = result
@@ -104,8 +95,9 @@ class AbstractRunner(ABC):
 
     def get_result(self) -> str:
         return f"{self.recipie_name()} #> {self.runner_status} ({self.runner_result})"
-
     #===============================PARAMETER METHODS===========================
+    def recipie_name(self) -> str: return self._gp("recipie_name")
+    
     @classmethod
     def get_parameters(cls) -> list[str]:
         return list(cls.get_params_dict().keys())
@@ -226,6 +218,7 @@ class AbstractRunner(ABC):
     def runner_print(self, *msg): print(f"{self.recipie_name()} #>", *msg)
     def runner_info(self, *msg): info(f"{self.recipie_name()} #>", *msg)
     def runner_warn(self, *msg): warning(f"{self.recipie_name()} #>", *msg)
+    def runner_error(self, *msg): error(f"{self.recipie_name()} #>", *msg)
     
     def _gp(self, key: str) -> str:
         """

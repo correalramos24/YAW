@@ -8,16 +8,16 @@ def main():
     app_args = parse_user_args()
     input_files : list[Path] = app_args.input
     gen_template: str        = app_args.generate
-    print_multi : bool       = app_args.print_combinations
+    #print_multi : bool       = app_args.print_combinations
     step_names  : list[str]  = app_args.steps
     info_enable : bool       = app_args.info
 
     enable_info(info_enable)
+
     # 0. PARSE ARGUMENTS THAT OVERRIDES RECIPIES:
+    manager = RunnerManager(input_files, step_names)
 
-    manager = RunnerManager(input_files, step_names, print_multi)
-
-    # 1. Manage generation of templates:
+    # 1. GENERATE TEMPLATE USE CASE:
     if gen_template:
         info("Generating", gen_template, "template")
         manager.generate_template(gen_template)

@@ -8,20 +8,17 @@ from pathlib import Path
 
 class RunnerManager:
 
-    runners: dict = {
+    runners: dict = {   
         "BashRunner": BashRunner,
         "BashSlurmRunner": BashSlurmRunner,
         "NEMO5Runner": NEMO5Runner
     }
 
-    def __init__(self, input_files: list[Path], 
-        run_step_names : list[str], print_multi : bool
-    ):
+    def __init__(self, input_files: list[Path], run_step_names : list[str]):
         self.input_files        : list[Path] = input_files
         self.steps              : list[AbstractRunner|None] = []
         self.steps_derived      : list[AbstractRunner|None] = []
-        self.print_multi        : bool = print_multi
-        self.run_step_name      : list[str] = run_step_names
+        self.tr_steps           : list[str] = run_step_names
         self.generic_params     : dict = dict()     # At YAW level
     
     # PARSE:
@@ -66,13 +63,12 @@ class RunnerManager:
     # RUN:
     def run_steps(self):
         print("=" * 40 + "RUNNING" + "=" * 40)
-        if self.run_step_name:
-            print("Only executing steps with name", stringfy(self.run_step_name))
+        if self.tr_steps:
+            print("Only executing steps with name", stringfy(self.tr_steps))
         
         for i, step in enumerate(self.steps_derived):
-            
             name = step.recipie_name()
-            if self.run_step_name and not any(n in name for n in self.run_step_name):
+            if self.tr_steps and not any(n in name for n in self.tr_steps):
                 info(f"Recipie {i} - {name} skipped due cmd line")
                 step.set_result(0, "skipped due cmd line --steps")
                 continue
@@ -90,8 +86,6 @@ class RunnerManager:
                 error(f"While executing recipe {i} ->", str(e))
                 step.set_result(-1, f"{str(e)}")
             print("-" * 87)
-            
-                
         print("=" * 87)
         
     # PRINT:

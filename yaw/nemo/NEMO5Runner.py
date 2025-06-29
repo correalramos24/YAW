@@ -51,12 +51,13 @@ class NEMO5Runner(AbstractSlurmRunner):
             utils_fortran.update_f90nml_key_value(nml, "namrun", "nn_itend", self._gp("nemo5_timesteps"))
 
         # SET NAMELISTS PARAMETERS: TILING
-        info("Adding tiling values!")
-        utils_fortran.add_f90nml(nml, "namtile", {
-            'ln_tile': self._gp("tiling_i") != 99999 or self._gp("tiling_j") != 99999,
+        if self._gp("tiling_i") != 99999 or self._gp("tiling_j") != 99999:
+            info("Adding tiling values!")
+            utils_fortran.add_f90nml(nml, "namtile", {
+            'ln_tile': True,
             'nn_ltile_i': self._gp("tiling_i"),
             'nn_ltile_j': self._gp("tiling_j")
-        })
+            })
          
 
     def run(self):
