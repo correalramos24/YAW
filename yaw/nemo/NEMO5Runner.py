@@ -5,8 +5,8 @@ from utils import *
 class NEMO5Runner(AbstractSlurmRunner):
    
     @classmethod
-    def get_params_dict(cls):
-        aux = super().get_params_dict()
+    def get_tmp_params(cls):
+        aux = super().get_tmp_params()
         aux.update({
             "slurm_nodes": (None, "Number of nodes to use", "O"),
             "nemo5_root" : (None, "Root of the nemo source.", "R"),

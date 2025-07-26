@@ -10,8 +10,8 @@ class BashRunner(AbstractRunner):
     """
 
     @classmethod
-    def get_params_dict(cls):
-        aux = super().get_params_dict()
+    def get_tmp_params(cls):
+        aux = super().get_tmp_params()
         aux.update({
             "bash_cmd": (None, "Script to execute (./s.sh) or command (ls)", "R"),
             "args" : (None, "Script arguments", "O"),
@@ -60,11 +60,11 @@ class BashRunner(AbstractRunner):
             self._sp("track_env", f"{self.recipie_name()}_{self._gp('track_env')}")
             if self._gp('log_name') is not None:
                 self._sp("log_name", f"{self.recipie_name()}_{self._gp('log_name')}")
-            self.runner_info("Updated params with recipie name", self._gp("rundir"))
+            self.runner_info("Updated params to", self._gp("rundir"))
         else:
             self.runner_info("Using different rundirs for each recipie(s)")
             self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
-            self.runner_info("Updated rundir with recipie name", self._gp("rundir"))
+            self.runner_info("Updated rundir to", self._gp("rundir"))
             
     def run(self):        
         generate_bash_script(self.wrapper_script,[

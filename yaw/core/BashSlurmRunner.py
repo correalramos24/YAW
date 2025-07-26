@@ -7,8 +7,8 @@ from pathlib import Path
 class BashSlurmRunner(AbstractSlurmRunner, BashRunner):
     
     @classmethod
-    def get_params_dict(cls):
-        aux = super().get_params_dict()
+    def get_tmp_params(cls):
+        aux = super().get_tmp_params()
         aux.update({
             "bash_or_slurm" : ("slurm", "Select bash or slurm to execute the script", "R")
         })

@@ -36,9 +36,9 @@ class AbstractRunner(ABC):
         self.set_result(0, "READY")
     
     @classmethod
-    def get_params_dict(cls) -> dict[str, (object|None, str, str)]:
+    def get_tmp_params(cls) -> dict[str, (object|None, str, str)]:
         """
-        Define the parameters of the runner. Parameters are defined as:
+        Define the template params of the runner. Parameters are defined as:
         R: Required parameter - O: Optional parameter - S: Shadow parameter
         """
         return {
@@ -51,8 +51,8 @@ class AbstractRunner(ABC):
             "create_dir": (True, "Create a rundir", "O"),
             "same_rundir": (False, "All recipies run in the same rundir", "O"),
             "overwrite": (False, "Overwrite previous content of the rundir", "O"),
-            "dry": (False, "Dry run, only manage parameters, not run anything", "O"),
-            "mirror": (None, "Execute several time the same step", "O"),
+            "dry": (False, "Dry run, only manage parameters, not run anything", ""),
+            "mirror": (None, "Execute several time the same step", "S"),
             "recipie_name": (None, "Name of the recipe", "S"),
             "verbose": (False, "Enable verbosity", "S"),
         }
@@ -87,28 +87,28 @@ class AbstractRunner(ABC):
 
     @abstractmethod
     def run(self):
-        pass
+        pass #ABC Method
     #======================RESULT METHODS=======================================
     def set_result(self, result: int, res_str: str):
-        self.runner_result = result
-        self.runner_status = res_str
+        self.r_result = result
+        self.r_status = res_str
 
     def get_result(self) -> str:
-        return f"{self.recipie_name()} #> {self.runner_status} ({self.runner_result})"
+        return f"{self.recipie_name()} #> {self.r_status} ({self.r_result})"
     #===============================PARAMETER METHODS===========================
     def recipie_name(self) -> str: return self._gp("recipie_name")
     
     @classmethod
     def get_parameters(cls) -> list[str]:
-        return list(cls.get_params_dict().keys())
+        return list(cls.get_tmp_params().keys())
 
     @classmethod
     def get_required_params(cls) -> list[str]:
-        return [p for p, info in cls.get_params_dict().items() if info[2] == "R"]
+        return [p for p, info in cls.get_tmp_params().items() if info[2] == "R"]
     
     @classmethod
     def get_optional_params(cls) -> list[str]:
-        return [p for p, info in cls.get_params_dict().items() if info[2] == "O"]
+        return [p for p, info in cls.get_tmp_params().items() if info[2] == "O"]
 
     @classmethod
     def get_multi_value_params(cls) -> set[str]:
@@ -162,7 +162,7 @@ class AbstractRunner(ABC):
             {**unique_params, **dict(zip(multi_param_names, variation))}
             for variation in variations_values
         ]
-        self.runner_info("# Found ", len(variations), "multi-params combinations")
+        self.runner_info("# Found ", len(variations), "multi-params combs")
         for i_comb, variation in enumerate(variations):
             variation["recipie_name"] = f"{self.recipie_name()}_{i_comb}"
             self.runner_info(i_comb, variation)
@@ -198,21 +198,17 @@ class AbstractRunner(ABC):
         Generate the content to be place in the template
         """
         ret = ""
-        parameters_info = cls._inflate_yaml_template_info()
-        for parameter, comment in parameters_info:
+        for parameter, comment in cls._inflate_yaml_template_info():
             if parameter == "type":
                 ret += f"  {parameter}: {cls.__name__}\n"
-            elif parameter == "comment":
-                ret += f" # {comment}\n"
             else:
                 ret += f"  {parameter}: #{comment}\n"
         return ret
 
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
-        #TODO: Skip shadow parameters?
         return [(param, info[1]) for param, info in 
-                list(cls.get_params_dict().items())]
+            list(cls.get_tmp_params().items()) if info[2] != "S"]
 
     #=============================PRIVATE METHODS===============================
     def runner_print(self, *msg): print(f"{self.recipie_name()} #>", *msg)
@@ -226,8 +222,8 @@ class AbstractRunner(ABC):
         return the default value defined in the class.
         """
         user_value = self.parameters.get(key, None)
-        if user_value is None and key in self.get_params_dict():
-            return self.get_params_dict()[key][0]
+        if user_value is None and key in self.get_tmp_params():
+            return self.get_tmp_params()[key][0]
         else:
             return user_value
 
