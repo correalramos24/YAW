@@ -51,6 +51,7 @@ class BashRunner(AbstractRunner):
                 check_file_exists_exception(f)
                 with tarfile.open(f, "r:gz") as tar:
                     tar.extractall(path=self._gp("rundir"))
+        self.wrapper_script = Path(self._gp("rundir"), self._gp("script_name"))
         
     def manage_multi_recipie(self):
         if self._gp("same_rundir"):
@@ -66,10 +67,10 @@ class BashRunner(AbstractRunner):
             self.runner_info("Updated rundir with recipie name", self._gp("rundir"))
             
     def run(self):        
-        generate_bash_script(Path(self._gp("rundir"), self._gp("script_name")),[
-            self.__get_env_str(),
-            self.__get_env_trk_str(),
-            self.__get_cmd_str(),
+        generate_bash_script(self.wrapper_script,[
+            self._get_env_str(),
+            self._get_env_trk_str(),
+            self._get_cmd_str(),
         ])
         self.runner_info("Generated bash script:", self._gp("script_name"))
 
@@ -95,15 +96,15 @@ class BashRunner(AbstractRunner):
     def git_branch_str(self) -> str:
         return f"-b {self._gp('git_branch')}" if self._gp("git_branch") else ""
     
-    def __get_env_str(self) -> str:
+    def _get_env_str(self) -> str:
         if self._gp("env_file"): return f"source {self._gp('env_file')}"
         else: return ""
 
-    def __get_env_trk_str(self) -> str:
+    def _get_env_trk_str(self) -> str:
         if self._gp("track_env"): return f"printenv &> {self._gp('track_env')}"
         else: return ""
 
-    def __get_cmd_str(self) -> str:
+    def _get_cmd_str(self) -> str:
         """
         Get the command string to execute.
         """
