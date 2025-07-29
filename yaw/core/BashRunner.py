@@ -57,16 +57,17 @@ class BashRunner(AbstractRunner):
         if self._gp("same_rundir"):
             self.runner_info("Using same rundir for all recipie(s)")
             self._sp("script_name", f"{self.recipie_name()}_{self._gp('script_name')}")
-            self._sp("track_env", f"{self.recipie_name()}_{self._gp('track_env')}")
+            if self._gp('trak_env') is not None:
+                self._sp("track_env", f"{self.recipie_name()}_{self._gp('track_env')}")
             if self._gp('log_name') is not None:
                 self._sp("log_name", f"{self.recipie_name()}_{self._gp('log_name')}")
-            self.runner_info("Updated params to", self._gp("rundir"))
+            self.runner_info("Updated some params. with", self._gp("rundir"))
         else:
             self.runner_info("Using different rundirs for each recipie(s)")
             self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
             self.runner_info("Updated rundir to", self._gp("rundir"))
             
-    def run(self):        
+    def run(self):
         generate_bash_script(self.wrapper_script,[
             self._get_env_str(),
             self._get_env_trk_str(),
@@ -113,5 +114,5 @@ class BashRunner(AbstractRunner):
             ret += f"{self._gp('wrapper')} "
         ret += self._gp("bash_cmd")
         if self._gp("args"):
-            ret += " " + " ".join(self._gp("args"))
+            ret += " " + "".join(self._gp("args"))
         return ret

@@ -62,6 +62,8 @@ class AbstractRunner(ABC):
         Previous stage before run the runner. It manages the parameters
         and the environment.
         """
+        self.__expand_yaw_vars()
+
         self.manage_multi_recipie()
 
         if self._gp("create_dir"):
@@ -235,6 +237,35 @@ class AbstractRunner(ABC):
         return self.parameters[key]
 
     #===========================EXPAND BASH VARIABLES===========================
+    
+    def __expand_yaw_vars(self) -> None:
+        yaw_vars_par = { 
+            param: value for param, value in self.parameters.items()
+            if is_a_str(value) and "&" in value
+        }
+        if len(yaw_vars_par) != 0:
+            self.runner_info("Expanding YAW for:", yaw_vars_par)
+        
+        for param, val_w_yaw_var in yaw_vars_par.items():
+            expand_value = val_w_yaw_var 
+            ii = search_char_in_str(expand_value, "&")
+            while len(ii) >= 1:
+                ref_param = expand_value[ii[0]+1:ii[1]]
+                
+                if not ref_param in self.parameters:
+                    raise Exception(f"YAW var {ref_param} not found!")
+                
+                ref_value = self.parameters[ref_param]
+                expand_value = expand_value[:ii[0]] + str(ref_value) + expand_value[ii[1]+1:]
+                
+                ii = search_char_in_str(expand_value, "&")
+            
+            if len(ii) == 1: 
+                raise Exception(f"YAW variable error, you must close it with &")
+            
+            self.runner_info(f"Expanding {param} from {val_w_yaw_var} to {expand_value}")
+            self.parameters[param] = expand_value
+        
     def __expand_bash_vars(self) -> None:
         """Convert the bash variables ($VAR or ${VAR}) to the value.
         """

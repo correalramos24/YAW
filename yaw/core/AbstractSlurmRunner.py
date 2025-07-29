@@ -22,9 +22,10 @@ class AbstractSlurmRunner(AbstractRunner, ABC):
             "slurm_time_limit": (None, "Time limit for the job (DD:HH:MM:SS)", "O"),
             "slurm_contiguous": (None, "place contiguous nodes?", "O"),
             "slurm_job_name": ("yaw-job", "SLURM job name", "O"),
-            "slr_wait": (False, "Wait sbatch until job finishes", "O"),
+            "slurm_wait": (False, "Wait sbatch until job finishes", "O"),
+            "slurm_exclusive" : (True, "Use exclusive nodes", "O"),
             "slr_other_cmds": (None, "Other slurm commands", "O"),
-            "slr_wrapper_name": ("run.slurm", "slurm script wrapper name. run.slurm by def.", "O"),
+            "script_name": ("run.slurm", "slurm script name. run.slurm by def.", "O"),
         })
         return aux
 

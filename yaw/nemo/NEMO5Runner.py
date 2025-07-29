@@ -13,7 +13,7 @@ class NEMO5Runner(AbstractSlurmRunner):
             "nemo5_run_cfg" : (None, "CFG to be executed", "O"),
             "nemo5_inputs" : (None, "Inputs to be copied to the rundir", "O"),
             "nemo5_test_cfg" : (None, "CFG to be executed from /tests", "O"),
-            "nemo5_resolution" : (None, f"Set resolution to be used: {cls.__supported_resolutions()}", "R"),
+            "nemo5_resolution" : (None, f"Set resolution to be used: {cls.__supported_resolutions()}", "O"),
             "nemo5_timesteps" : (0, "Simulation timesteps. Namelist default if 0", "O"),
             "nemo5_jpni" : (-1, "JPNI file to be used", "O"),
             "nemo5_jpnj" : (-1, "JPNJ file to be used", "O"),
@@ -47,6 +47,8 @@ class NEMO5Runner(AbstractSlurmRunner):
             self.runner_print(f"NEMO using cfg: {self._gp('nemo5_run_cfg')}")
             cfg_fldr  = Path(self._gp("nemo5_root"), "cfgs", self._gp("nemo5_run_cfg"))
         elif self._gp("nemo5_test_cfg") is not None:
+            if self._gp("nemo5_resolution"):
+                raise Exception("nemo5_resolution must not be set when using nemo5_test_cfg!")
             self.runner_print(f"NEMO using test cfg: {self._gp('nemo5_test_cfg')}")
             cfg_fldr = Path(self._gp("nemo5_root"), "tests", self._gp("nemo5_test_cfg"))
         else:
@@ -54,8 +56,7 @@ class NEMO5Runner(AbstractSlurmRunner):
         
         utils_files.copy_folder(Path(cfg_fldr, "EXP00"), 
                                 Path(self._gp("rundir")), 
-                                self._gp("overwrite"), 
-                                False)
+                                True, False) # Folder will be created by inheritance.
 
         # SET INPUTS:
         if self._gp("nemo5_test_cfg"):
@@ -97,7 +98,6 @@ class NEMO5Runner(AbstractSlurmRunner):
     def manage_multi_recipie(self):
         if self._gp("same_rundir"):
             self.runner_info("Using same rundir for all recipie(s)")
-            self.runner_info("Updated params with recipie name", self._gp("rundir"))
         else:
             self.runner_info("Using different rundirs for each recipie(s)")
             if self._gp("nemo5_tiling_i") != 99999 or self._gp("nemo5_tiling_j") != 99999:
@@ -107,7 +107,10 @@ class NEMO5Runner(AbstractSlurmRunner):
                 self.runner_info("Updated rundir with recipie name", self._gp("rundir"))
 
     def run(self):
-        info("Generating NEMO5 SLURM script...")
+        script_name = self._gp("script_name")
+        script_path = Path(self._gp("rundir"), script_name)
+        self.runner_info(f"Generating NEMO5 SLURM script ({script_name})...")
+        
         launch_cmd = "srun"
         if self._gp("tasks"):
             info(f"Overriding number of tasks to {self._gp('tasks')}")
@@ -115,8 +118,7 @@ class NEMO5Runner(AbstractSlurmRunner):
         launch_cmd += " nemo"
         
         generate_slurm_script(
-            f_path=Path(self._gp("rundir"), self._gp("slr_wrapper_name")), 
-            log_file=self.log_path,
+            f_path=script_path, log_file=self._gp("log_name"),
             slurm_directives=self._get_slurm_directives(),
             cmds=
             [
@@ -125,12 +127,12 @@ class NEMO5Runner(AbstractSlurmRunner):
             launch_cmd,
             ]
         )
-        info("DONE!")
+        self.runner_info("DONE!")
         if self._gp("dry"): 
             self.runner_print("DRY MODE: Not executing anything!")
             self.set_result(0, "DRY EXECUTION!")
         else:
-            execute_slurm_script(self._gp("slr_wrapper_name"), None, self._gp("rundir"))
+            execute_slurm_script(script_path, None, self._gp("rundir"))
             self.set_result(0, "SUBMITTED")
 
     
