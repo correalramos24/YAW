@@ -29,11 +29,6 @@ class AbstractSlurmRunner(AbstractRunner, ABC):
         })
         return aux
 
-    def manage_multi_recipie(self):
-        super().manage_multi_recipie()
-        if self._gp("same_rundir"):
-            self.runner_error("Using same rundir for all recipie(s) is forbidden for SlurmRunner!")
-            raise Exception("Using same rundir for all recipie(s) is forbidden for SlurmRunner!")
 
     @abstractmethod
     def run(self):

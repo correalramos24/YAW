@@ -94,17 +94,6 @@ class NEMO5Runner(AbstractSlurmRunner):
             info(f"Setting jpnj value to {self._gp('nemo5_jpnj')}")
             utils_fortran.update_f90nml_key_value(nml, "nammpp", "jpnj", self._gp("nemo5_jpnj"))
         
-            
-    def manage_multi_recipie(self):
-        if self._gp("same_rundir"):
-            self.runner_info("Using same rundir for all recipie(s)")
-        else:
-            self.runner_info("Using different rundirs for each recipie(s)")
-            if self._gp("nemo5_tiling_i") != 99999 or self._gp("nemo5_tiling_j") != 99999:
-                self._sp("rundir", Path(self._gp("rundir"),f"{self._gp('nemo5_tiling_i')}x{self._gp('nemo5_tiling_j')}"))
-            else:
-                self._sp("rundir", Path(self._gp("rundir"), self.recipie_name()))
-                self.runner_info("Updated rundir with recipie name", self._gp("rundir"))
 
     def run(self):
         script_name = self._gp("script_name")

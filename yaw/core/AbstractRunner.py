@@ -49,7 +49,6 @@ class AbstractRunner(ABC):
             "track_env" : ("env.log", "File name to store the env of a run", "O"),
             "rundir": (None, "Rundir path to execute the runner.", "O"),
             "create_dir": (True, "Create a rundir", "O"),
-            "same_rundir": (False, "All recipies run in the same rundir", "O"),
             "overwrite": (False, "Overwrite previous content of the rundir", "O"),
             "dry": (False, "Dry run, only manage parameters, not run anything", ""),
             "mirror": (None, "Execute several time the same step", "S"),
@@ -64,7 +63,6 @@ class AbstractRunner(ABC):
         """
         self.__expand_yaw_vars()
 
-        self.manage_multi_recipie()
 
         if self._gp("create_dir"):
             create_dir(self._gp("rundir"), self._gp("overwrite"))
@@ -83,9 +81,6 @@ class AbstractRunner(ABC):
         else: 
             self.log_path = None        
 
-    @abstractmethod
-    def manage_multi_recipie(self):
-        pass #ABC Method
 
     @abstractmethod
     def run(self):
