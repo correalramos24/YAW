@@ -22,6 +22,11 @@ class AbstractFilesRunner(AbstractRunner):
         })
         return aux
 
+    @classmethod
+    def get_multi_value_params(cls) -> set[str]:
+        return super().get_multi_value_params().union({"rundir_files", "tar_gz_files"})
+             
+
     def manage_parameters(self):
         super().manage_parameters()
 

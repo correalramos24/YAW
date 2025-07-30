@@ -43,10 +43,6 @@ class BashRunner(AbstractFilesRunner):
             if not r: self.set_runner_result(0, "OK")
             else: self.set_runner_result(-1, "Return code !=0")
 
-    @classmethod
-    def get_multi_value_params(cls) -> set[str]:
-        return super().get_multi_value_params().union({"rundir_files", "tar_gz_files"})
-             
     def _get_env_str(self) -> str:
         if self._gp("env_file"): return f"source {self._gp('env_file')}"
         else: return ""

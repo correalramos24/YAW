@@ -19,7 +19,8 @@ class BashSlurmRunner(BashRunner, AbstractSlurmRunner):
     
     def manage_parameters(self):
         if self._gp("bash_or_slurm") == "slurm":
-            #TODO: Check if slurm Optional parameters are set.
+            if not self._gp("slurm_nodes") or not self._gp("slurm_queue") or not self._gp("slurm_account"):
+                raise Exception("If using SLURM, you must specify slurm_nodes, queue and account!")
             self.runner_info("Using SLURM to execute the script")
             AbstractSlurmRunner.manage_parameters(self)
         elif self._gp("bash_or_slurm") == "bash":
