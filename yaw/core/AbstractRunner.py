@@ -61,8 +61,8 @@ class AbstractRunner(ABC):
         Previous stage before run the runner. It manages the parameters
         and the environment.
         """
+        self.runner_print("Managin steps @ AbstractRunner")
         self.__expand_yaw_vars()
-
 
         if self._gp("create_dir"):
             create_dir(self._gp("rundir"), self._gp("overwrite"))
@@ -79,7 +79,8 @@ class AbstractRunner(ABC):
             self.log_path = Path(self._gp("rundir"), self._gp("log_name"))
             self.runner_info("Redirecting output to", self._gp("log_name"))
         else: 
-            self.log_path = None        
+            self.log_path = None
+        self.runner_print(">>>>DONE")
 
 
     @abstractmethod
@@ -180,11 +181,11 @@ class AbstractRunner(ABC):
         """
         YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
         with open(cls.__name__ + ".yaml", mode="w") as tmpl:
-            tmpl.write(f"{YAML_DELIM}\n## TEMPLATE FOR {cls.__name__} RUNNER\n")
-            tmpl.write("## Required parameters:")
-            tmpl.write(' '.join(cls.get_required_params()) + "\n")
-            tmpl.write("## Optional parameters:")
-            tmpl.write(' '.join(cls.get_optional_params()) + "\n")
+            tmpl.write(f"{YAML_DELIM}\n## TEMPLATE FOR {cls.__name__}\n")
+            #tmpl.write("## Required parameters:")
+            #tmpl.write(' '.join(cls.get_required_params()) + "\n")
+            #tmpl.write("## Optional parameters:")
+            #tmpl.write(' '.join(cls.get_optional_params()) + "\n")
             tmpl.write(f"your_recipe_name:\n")
             tmpl.write(cls.__generate_yaml_template_content())
             tmpl.write(YAML_DELIM)

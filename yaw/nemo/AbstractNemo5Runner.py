@@ -1,4 +1,5 @@
 from core import AbstractSlurmRunner
+
 from utils import utils_fortran as uf
 from utils import utils_files as ufile
 from pathlib import Path
@@ -11,8 +12,8 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
             "slurm_nodes": (None, "Number of nodes to use", "O"),
             "nemo5_root" : (None, "Root of the nemo source.", "R"),
             "nemo5_timesteps" : (0, "Simulation timesteps. Namelist default if 0", "O"),
-            "nemo5_jpni" : (None, "JPNI file to be used", "O"),
-            "nemo5_jpnj" : (None, "JPNJ file to be used", "O"),
+            "nemo5_jpni" : (None, "JPNI file to be used.", "O"),
+            "nemo5_jpnj" : (None, "JPNJ file to be used.", "O"),
             "nemo5_cpn" : (None, "Number of cores per node of the machine", "O"),
             "nemo5_tiling_i" : (None, "Set tiling i", "O"),
             "nemo5_tiling_j" : (None, "Set tiling j", "O"),
@@ -27,12 +28,9 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
         
         if self._gp("slurm_nodes") is None:
             tasks, nodes = self.__compute_nodes_from_jpni_jpnj()
-            self._sp("tasks", tasks)
+            self._sp("slurm_tasks", tasks)
             self._sp("slurm_nodes", nodes)
-            self.runner_info(f"Executin NEMO5 with {tasks} @ {nodes}.")                        
-        else:
-            if self._gp("nemo5_jpni") is None: self._sp("nemo5_jpni", -1)
-            if self._gp("nemo5_jpnj") is None: self._sp("nemo5_jpnj", -1)
+            self.runner_info(f"Executin NEMO5 with {tasks} @ {nodes}.")
     
     def update_namelist(self):
         """Set namelist values according runner params"""

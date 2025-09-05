@@ -1,7 +1,7 @@
 from utils import *
 from . import AbstractRunner, BashRunner
 from . import VoidRunner, BashSlurmRunner
-from nemo import NEMO5Runner
+from nemo import NEMO5Runner, TestNEMO5Runner,NEMO5XIOSRunner
 
 from pathlib import Path
 
@@ -11,7 +11,9 @@ class RunnerManager:
     runners: dict = {   
         "BashRunner": BashRunner,
         "BashSlurmRunner": BashSlurmRunner,
-        "NEMO5Runner": NEMO5Runner
+        "NEMO5Runner": NEMO5Runner,
+        "NEMO5XIOSRunner": NEMO5XIOSRunner,
+        "TestNEMO5Runner": TestNEMO5Runner,
     }
 
     def __init__(self, input_files: list[Path], run_step_names : list[str]):

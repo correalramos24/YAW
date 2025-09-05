@@ -18,13 +18,15 @@ class AbstractFilesRunner(AbstractRunner):
             "rundir_files": (None, "List of files to copy to the rundir", "O"),
             "tar_gz_files": (None, "List of tar.gz. files to uncomp. to then rundir", "O"),
             "git_repo": (None, "Git repository to fill the rundir", "O"),
-            "git_branch": (None, "Git branch for git_repo", "O"),
+            "git_branch": (None, "Git branch for git_repo", "O")
         })
         return aux
 
     @classmethod
     def get_multi_value_params(cls) -> set[str]:
-        return super().get_multi_value_params().union({"rundir_files", "tar_gz_files"})
+        return super().get_multi_value_params().union({
+            "ref_rundir", "rundir_files", "tar_gz_files"}
+        )
              
 
     def manage_parameters(self):
@@ -42,7 +44,13 @@ class AbstractFilesRunner(AbstractRunner):
             execute_command(self.git_clone_str(), self._gp("rundir"))
         
         if self._gp("ref_rundir"):
-            copy_folder(self._gp("ref_rundir"), self._gp("rundir"), True)
+            for fldr in self._gp("ref_rundir"): 
+                utils_files.check_path_exists_exception(fldr)
+            
+            for fldr in self._gp("ref_rundir"):
+                print(fldr, "...")
+                copy_folder_content(fldr, self._gp("rundir"), True, True,
+                                    self._gp("symlink_big_f"))            
         
         if self._gp("rundir_files"):
             for f in [Path(f) for f in self._gp("rundir_files")]:
@@ -53,7 +61,7 @@ class AbstractFilesRunner(AbstractRunner):
                 check_file_exists_exception(f)
                 with tarfile.open(f, "r:gz") as tar:
                     tar.extractall(path=self._gp("rundir"))
-    
+
     #===============================PRIVATE METHODS=============================
     def git_clone_str(self) -> str:
         return "git clone " + self._gp("git_repo") + " " + self.git_branch_str() + "."

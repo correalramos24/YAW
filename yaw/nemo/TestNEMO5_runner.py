@@ -9,8 +9,7 @@ class TestNEMO5Runner(AbstractNemo5Runner):
         aux = super().get_tmp_params()
         aux.update({
             "nemo5_test_cfg" : (None, "CFG to be executed from /tests", "R"),
-            "nemo5_resolution" : (None, f"Resolution to be used: \
-                                  {cls.__supported_resolutions()}", "R")
+            "nemo5_resolution" : (None, f"Resolution to be used: {cls.__supported_resolutions()}", "R")
         })
         return aux
     
