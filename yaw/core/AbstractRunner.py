@@ -216,22 +216,6 @@ class AbstractRunner(metaAbstractClass):
         return [(param, info[1]) for param, info in 
             list(cls.get_tmp_params().items()) if info[2] != "S"]
 
-    #=============================PRIVATE METHODS===============================
-    def _gp(self, key: str) -> str:
-        """
-        Get parameter from the user. If the parameter is not found, it will
-        return the default value defined in the class.
-        """
-        return self.parameters.get(key)
-
-    def _sp(self, key: str, new_val: object) -> object:
-        """
-        Update the parameter with the new value. It returns the new value.
-        """
-        self.parameters[key] = new_val
-        setattr(self, key, new_val)
-        return self.parameters[key]
-
     #===========================EXPAND BASH VARIABLES===========================
     def __expand_yaw_vars(self) -> None:
         yaw_vars_par = { 
