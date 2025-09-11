@@ -4,15 +4,18 @@
 
 Version: v0.96.0 - Alpha
 
-- [YAW](#yaw)
-  - [Introduction](#introduction)
-  - [Installation](#installation)
-  - [Usage](#usage)
-  - [Examples](#examples)
-  - [Extending the functionalities](#extending-the-functionalities)
-    - [UML overview - Runners](#uml-overview---runners)
-    - [Creating your runner](#creating-your-runner)
+## Table of Contents
 
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Creating your runner - Runner hierarchy](#creating-your-runner---runner-hierarchy)
+  - [AbstractRunner - Minimal parameters](#abstractrunner---minimal-parameters)
+  - [SlurmAbstractRunner - SLURM parameters](#slurmabstractrunner---slurm-parameters)
+  - [BashRunner](#bashrunner)
+  - [BashSlurmRunner](#bashslurmrunner)
+- [Examples](#examples)
+- [Using pytests](#using-pytests)
 
 ## Introduction
 YAW parses recipe files (in YAML format) and executes each step described in the recipe. Each step contains several parameters that tune the execution of the step.
@@ -37,13 +40,15 @@ Add the `bin` folder to the path of your system and call `yaw` to execute the ap
 
 ## Usage
 1. Generate recipe template: Use `--generate <recipie type>` to generate an empty template.
+2. Fill the YAML file with your values for the required parameters.
+3. Executing the recipie with `yaw <recipe file(s)> --parse` will explain what is going to be executed
+4. Run recipies: Use `yaw <recipe file(s)>` to run the recipies. YAW will first parse the recipes and then run them sequentially.
+5. Check the results: Check the output from the command line to see the execution results.
 
-2. Run recipies: Use `yaw <recipe file(s)>` to run the recipies. YAW will first parse the recipes and then run them sequentially.
+## Creating your runner - Runner hierarchy
+YAW was defined using a object-oriented hierarchy to be easy to extend:
 
-3. Check the results: Check the output from the command line to see the execution results.
-
-## Runner hierarchy
-YAW was defined using a object-oriented hierarchy to be easy to extend.
+| TODO: Add UML here!
 
 ### AbstractRunner - Minimal parameters
 
@@ -57,40 +62,30 @@ The abstract runner defines the minimal parameters to execute something. It mana
 * rundir: Set the rundir to execute the runner. If not set, it will be set to the current path where YAW was invoked.
 * create_dir: Create the rundir. 
 * overwrite: Overwrite the rundir
-* same_rundir: Execute all the multirecipies in the same rundir. `false` by default.
 * dry: Not execute anything, just set the rundir. `false` by default
 * mirror: Generate mirror runners.
-* verbose: Be verbose with this step. `false` by default.
 
 It also defines the two execution steps, a first one where the parameters are managed and a second one where the execution happens.
 
 ### SlurmAbstractRunner - SLURM parameters
 
 Define an interface to interact with SLURM jobs. 
+### AbstractFilesRunner
 
 ### BashRunner
 
-Extends the abstract runner to execute commands using bash and inflate the rundir 
-with input files.
+Extends the abstract runner to execute commands using bash and inflate the rundir.
+It uses the AbstractFilesRunner functionalities.
+* bash_cmd: Bash command to be executed.
+* args: Arguments of the `bash_cmd`.
+* wrapper: wrapper of the bash_cmd (`time` for example).
+* script_name: name of the script to encapsulate the commands. `yaw_wrapper.sh` by default.
+
 
 ### BashSlurmRunner
 TBD
 
 ## Examples
-TBD
-
-## Extending the functionalities
-
-Despite being recommended to tune your functionalities using your bash scripts you can also extend YAW
-core to support **new types of recipie**. This section will briefly summarize the modular design,
-to make it easy to extend the functionalities of this application.
-
-### UML overview - Runners
-
-TBD
-
-### Creating your runner
-
 TBD
 
 

@@ -1,10 +1,14 @@
 
-from utils import *
+from utils.utils_controllers import metaAbstractClass
+from utils.utils_files import *
+from utils.utils_py import *
+from utils.utils_bash import expand_bash_env_vars
 from pathlib import Path
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from itertools import product
+import os
 
-class AbstractRunner(ABC):
+class AbstractRunner(metaAbstractClass):
     """
     Contains the minimum parameters to run "something". Build
     from a YAML recipe. It also defines required parameters as execution
@@ -18,18 +22,20 @@ class AbstractRunner(ABC):
         Raises: 
             Exception: If some bad parameter found
         """
+        # Initialize parameters:
         self.parameters = parameters
-        if self._gp("verbose"): enable_info(True)
+        defaults = {k: v[0] for k, v in self.get_tmp_params().items()}
+        merged_p = {**defaults, **parameters}
+        [setattr(self, k, v) for k, v in merged_p.items()]
+
+        # Parameter sanity checks & bash expansions:
         self.__check_req_parameters(parameters)
-        self.__expand_bash_vars()
+        self.__expand_bash_vars()   #TODO: Should I move this down?
 
         # Rundir or YAW invocation path:
-        self.invoked_path = not self._gp("rundir")
-        if self.invoked_path:
-            self._sp("rundir", Path(os.getcwd()))
-            self.runner_warn("Using curr. path as rundir!")
-        if self._gp("create_dir") and self.invoked_path:
-            self.runner_error("Create rundir is set but no rundir defined!")
+        self.invoked_path = not self.rundir
+        if self.create_dir and self.invoked_path:
+            self._err("Create rundir is set but no rundir defined!")
             raise Exception("Create rundir is set but no rundir defined!")
             
         # Initialize runner results:
@@ -53,48 +59,50 @@ class AbstractRunner(ABC):
             "dry": (False, "Dry run, only manage parameters, not run anything", ""),
             "mirror": (None, "Execute several time the same step", "S"),
             "recipie_name": (None, "Name of the recipe", "S"),
-            "verbose": (False, "Enable verbosity", "S"),
         }
 
+    def check_recipie(self):
+        """
+        Previous stage before manage_steps. Shows what is set in the recipie.
+        Sets internal variables as well.
+        """
+        #TODO: Expand here bash and yaw variables!
+        #ERROR if values not found
+        if self.invoked_path:
+            self.rundir = Path(os.getcwd())
+            self._warn("Using curr. path as rundir!")
+        if not self.create_dir:
+            check_path_exists_exception(self.rundir)
+        self._info("Runner rundir points @", self.rundir)
+        
+        if self.env_file:self._info(f"Using environment {self.env_file}")
+        else: self._warn("Environment NOT set!")
+        
+        if self.log_name:
+            self.log_path = Path(self.rundir, self.log_name)
+            self._info("Redirecting output to", self.log_name)
+        else: 
+            self.log_path = None
+            
     def manage_parameters(self):
         """
         Previous stage before run the runner. It manages the parameters
         and the environment.
         """
-        self.runner_print("Managin steps @ AbstractRunner")
         self.__expand_yaw_vars()
-
-        if self._gp("create_dir"):
-            create_dir(self._gp("rundir"), self._gp("overwrite"))
-        else:
-            check_path_exists_exception(self._gp("rundir"))        
-        self.runner_info("Runner rundir points @", self._gp("rundir"))
-
-        if self._gp("env_file"):
-            self.runner_info("Using environment", self._gp("env_file"))
-        else:
-            self.runner_warn("Environment NOT set!")
-
-        if self._gp("log_name"):
-            self.log_path = Path(self._gp("rundir"), self._gp("log_name"))
-            self.runner_info("Redirecting output to", self._gp("log_name"))
-        else: 
-            self.log_path = None
-        self.runner_print(">>>>DONE")
-
+        self.check_recipie()
+        if self.create_dir: create_dir(self.rundir, self.overwrite)
 
     @abstractmethod
-    def run(self):
-        pass #ABC Method
+    def run(self): pass #ABC Method
     #======================RESULT METHODS=======================================
     def set_result(self, result: int, res_str: str):
-        self.r_result = result
-        self.r_status = res_str
+        self.r_result, self.r_status = result, res_str
 
     def get_result(self) -> str:
-        return f"{self.recipie_name()} #> {self.r_status} ({self.r_result})"
+        return f"{self.get_recipie_name()} #> {self.r_status} ({self.r_result})"
     #===============================PARAMETER METHODS===========================
-    def recipie_name(self) -> str: return self._gp("recipie_name")
+    def get_recipie_name(self) -> str: return self.recipie_name
     
     @classmethod
     def get_parameters(cls) -> list[str]:
@@ -132,19 +140,20 @@ class AbstractRunner(ABC):
             if is_a_list(val) and
             not param in self.get_multi_value_params()
         ]
-        print("Multi-parameters found:", multi_params)
         multi_param_names = [param for param, _ in multi_params]
+        self._info("Found multi-parameters for:", stringfy(multi_param_names))
+        self._log(multi_params)
         unique_params = {
             param: value for param, value in self.parameters.items() 
             if param not in multi_param_names
         }
         
         # 2. CHECK MODE FOR VARIATION GENERATION:
-        self.runner_info(f"Deriving recipies using {self._gp("mode")}.")
-        join_op = product if self._gp("mode") == "cartesian" else zip    
+        self._info(f"Deriving recipies using {self.mode}.")
+        join_op = product if self.mode == "cartesian" else zip    
         
         # Check params len: all multi-params needs to be the same!
-        if self._gp("zip") and not all([
+        if self.mode and not all([
             len(self.parameters[param]) == len(self.parameters[multi_params[0][0]])
             for param, _ in multi_params
         ]):
@@ -160,10 +169,10 @@ class AbstractRunner(ABC):
             {**unique_params, **dict(zip(multi_param_names, variation))}
             for variation in variations_values
         ]
-        self.runner_info("# Found ", len(variations), "multi-params combs")
+        self._log("# Found ", len(variations), "multi-params combs")
         for i_comb, variation in enumerate(variations):
-            variation["recipie_name"] = f"{self.recipie_name()}_{i_comb}"
-            self.runner_info(i_comb, variation)
+            variation["recipie_name"] = f"{self.recipie_name}_{i_comb}"
+            self._log(i_comb, variation)
             
         # 4. RETURN DERIVED RECIPIES:
         return [self.__class__(**variation) for variation in variations]
@@ -188,7 +197,7 @@ class AbstractRunner(ABC):
             #tmpl.write(' '.join(cls.get_optional_params()) + "\n")
             tmpl.write(f"your_recipe_name:\n")
             tmpl.write(cls.__generate_yaml_template_content())
-            tmpl.write(YAML_DELIM)
+            tmpl.write(YAML_DELIM + "\n")
 
     @classmethod
     def __generate_yaml_template_content(cls) -> str:
@@ -209,38 +218,29 @@ class AbstractRunner(ABC):
             list(cls.get_tmp_params().items()) if info[2] != "S"]
 
     #=============================PRIVATE METHODS===============================
-    def runner_print(self, *msg): print(f"{self.recipie_name()} #>", *msg)
-    def runner_info(self, *msg): info(f"{self.recipie_name()} #>", *msg)
-    def runner_warn(self, *msg): warning(f"{self.recipie_name()} #>", *msg)
-    def runner_error(self, *msg): error(f"{self.recipie_name()} #>", *msg)
-    
     def _gp(self, key: str) -> str:
         """
         Get parameter from the user. If the parameter is not found, it will
         return the default value defined in the class.
         """
-        user_value = self.parameters.get(key, None)
-        if user_value is None and key in self.get_tmp_params():
-            return self.get_tmp_params()[key][0]
-        else:
-            return user_value
+        return self.parameters.get(key)
 
     def _sp(self, key: str, new_val: object) -> object:
         """
         Update the parameter with the new value. It returns the new value.
         """
         self.parameters[key] = new_val
+        setattr(self, key, new_val)
         return self.parameters[key]
 
     #===========================EXPAND BASH VARIABLES===========================
-    
     def __expand_yaw_vars(self) -> None:
         yaw_vars_par = { 
             param: value for param, value in self.parameters.items()
             if is_a_str(value) and "&" in value
         }
         if len(yaw_vars_par) != 0:
-            self.runner_info("Expanding YAW for:", yaw_vars_par)
+            self._log("Expanding YAW for:", yaw_vars_par)
         
         for param, val_w_yaw_var in yaw_vars_par.items():
             expand_value = val_w_yaw_var 
@@ -259,7 +259,7 @@ class AbstractRunner(ABC):
             if len(ii) == 1: 
                 raise Exception(f"YAW variable error, you must close it with &")
             
-            self.runner_info(f"Expanding {param} from {val_w_yaw_var} to {expand_value}")
+            self._log(f"Expanding {param} from {val_w_yaw_var} to {expand_value}")
             self.parameters[param] = expand_value
         
     def __expand_bash_vars(self) -> None:

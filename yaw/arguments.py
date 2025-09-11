@@ -1,11 +1,19 @@
 import argparse
+from pathlib import Path
 
 from core.RunnerManager import RunnerManager
 from yaw_ascii import *
-from utils import *
+from utils.utils_print2 import myLoggerLevels, myLogger
+from utils.utils_bash import execute_command_get_ouput
 
 # Version:
 VERSION="v0.99.0 - Alfa"
+
+def parse_log_level(level_str):
+    try:
+        return myLoggerLevels[level_str.upper()]
+    except KeyError:
+        raise argparse.ArgumentTypeError(f"Invalid log level: {level_str}")
 
 def parse_user_args():
     # Declare the flags:
@@ -18,7 +26,9 @@ def parse_user_args():
 
     parser.add_argument('--generate', help="Generate template to be \
                         filled by the user", choices=RunnerManager.get_runners())
-
+    parser.add_argument("--parse", help="Only parse file(s)", 
+                        action='store_true')
+    
     parser.add_argument("--steps", metavar="S", nargs="*",
                         help="Run only step(s) with name R from the input recipies")
 
@@ -28,7 +38,9 @@ def parse_user_args():
     parser.add_argument('--version', help="Print YAW version", action='store_true')
     parser.add_argument('--dev-version', help="Print YAW version, detailed", action='store_true')
 
-    parser.add_argument('--info', help="Add info messages", action='store_true')
+    parser.add_argument('--verbose', help="Set verbose level", 
+                        type=parse_log_level, default=myLoggerLevels.INFO, 
+                        choices=list(myLoggerLevels))    
 
     # Parse the arguments:
     if parser.parse_args().dev_version:
@@ -44,6 +56,8 @@ def parse_user_args():
         print(f"VERSION: {VERSION}")
         print(logo_ascii)
         exit(0)
+        
+    myLogger.set_verbose_lvl(parser.parse_args().verbose)
 
     return parser.parse_args()
 
