@@ -18,18 +18,18 @@ class BashSlurmRunner(BashRunner, AbstractSlurmRunner):
         return aux
     
     def manage_parameters(self):
-        if self._gp("bash_or_slurm") == "slurm":
-            if not self._gp("slurm_nodes") or not self._gp("slurm_queue") or not self._gp("slurm_account"):
+        if self.bash_or_slurm == "slurm":
+            if not self.slurm_nodes or not self.slurm_queue or not self.slurm_account:
                 raise Exception("If using SLURM, you must specify slurm_nodes, queue and account!")
-            self.runner_info("Using SLURM to execute the script")
+            self._info("Using SLURM to execute the script")
             AbstractSlurmRunner.manage_parameters(self)
-        elif self._gp("bash_or_slurm") == "bash":
-            self.runner_info("Using bash to execute the script")
+        elif self.bash_or_slurm == "bash":
+            self._info("Using bash to execute the script")
             BashRunner.manage_parameters(self)
             
         else:
-            raise Exception("bash_or_slurm must be slurm or bash; not |" + self._gp("bash_or_slurm"))
-        self.wrapper_script = Path(self._gp("rundir"), self._gp("script_name"))
+            raise Exception("bash_or_slurm must be slurm or bash, got: " + self.bash_or_slurm)
+        self.wrapper_script = Path(self.rundir, self.script_name)
     
     def run(self):
         info("Generatig SLURM script....")
@@ -41,17 +41,17 @@ class BashSlurmRunner(BashRunner, AbstractSlurmRunner):
                 self._get_cmd_str(),
             ]
         )
-        if self._gp("dry"):
+        if self.dry:
             print("DRY MODE: Not executing anything!")
             self.set_result(0, "DRY RUN")
-        elif self._gp("bash_or_slurm").lower() == "slurm":
-            execute_slurm_script(self.wrapper_script, None, self._gp("rundir"))
+        elif self.bash_or_slurm.lower() == "slurm":
+            execute_slurm_script(self.wrapper_script, None, self.rundir)
             self.set_result(0, "SUBMITTED")
-        elif self._gp("bash_or_slurm").lower() == "bash":
+        elif self.bash_or_slurm.lower() == "bash":
             r = execute_script( 
                 script = self.wrapper_script, 
-                args = self._gp("args"),
-                rundir = self._gp("rundir"),
+                args = self.args,
+                rundir = self.rundir,
                 log_file = self.log_path
             )
             if not r: self.set_result(0, "OK")

@@ -31,23 +31,26 @@ class BashRunner(AbstractFilesRunner):
         ])
         self._ok("Generated bash script:", self.script_name)
 
-        if self._gp("dry"): 
+        if self.dry: 
             self._ok("DRY MODE: Not executing anything!")
             self.set_result(0, "DRY RUN")
         else:
             r = self.runner_result = execute_script( 
-                script = self._gp("script_name"), args = self._gp("args"), 
-                rundir = self._gp("rundir"), log_file = self.log_path
+                script = self.script_name, args = self.args, 
+                rundir = self.rundir, log_file = self.log_path
             )
             if not r: self.set_result(0, "OK")
             else: self.set_result(-1, "Return code !=0")
 
     def _get_env_str(self) -> str:
-        if self._gp("env_file"): return f"source {self._gp('env_file')}"
+        if self.env_file: return f"source {self.env_file}"
         else: return ""
 
     def _get_env_trk_str(self) -> str:
-        if self._gp("track_env"): return f"printenv &> {self._gp('track_env')}"
+        """
+        Get track env string.
+        """
+        if self.track_env: return f"printenv &> {self.track_env}"
         else: return ""
 
     def _get_cmd_str(self) -> str:
@@ -55,9 +58,9 @@ class BashRunner(AbstractFilesRunner):
         Get the command string to execute.
         """
         ret = ""
-        if self._gp("wrapper"):
-            ret += f"{self._gp('wrapper')} "
-        ret += self._gp("bash_cmd")
-        if self._gp("args"):
-            ret += " " + "".join(self._gp("args"))
+        if self.wrapper:
+            ret += f"{self.wrapper} "
+        ret += self.bash_cmd
+        if self.args:
+            ret += " " + "".join(self.args)
         return ret

@@ -35,7 +35,6 @@ class AbstractRunner(metaAbstractClass):
         # Rundir or YAW invocation path:
         self.invoked_path = not self.rundir
         if self.create_dir and self.invoked_path:
-            self._err("Create rundir is set but no rundir defined!")
             raise Exception("Create rundir is set but no rundir defined!")
             
         # Initialize runner results:
