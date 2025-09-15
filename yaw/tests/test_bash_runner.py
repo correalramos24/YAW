@@ -17,8 +17,8 @@ class TestBashRunner(unittest.TestCase):
                   "rundir":self.test_dir,"verbose":True}
         runner = BashRunner(**params)
         self.assertIsInstance(runner, BashRunner)
-        self.assertEqual(runner.runner_result, 0)
-        self.assertEqual(runner.runner_status, "READY")
+        self.assertEqual(runner.r_result, 0)
+        self.assertEqual(runner.r_status, "READY")
         # Inovked path must be false -> rundir is set
         self.assertEqual(runner.invoked_path, False)
 
@@ -30,7 +30,7 @@ class TestBashRunner(unittest.TestCase):
         runner = BashRunner(**params)
         runner.manage_parameters()
         runner.run()
-        self.assertEqual(runner.runner_status, "OK")
+        self.assertEqual(runner.r_status, "OK")
         self.assertTrue(Path("yaw_wrapper.sh").exists())
         self.assertTrue(Path("env.log").exists())
 

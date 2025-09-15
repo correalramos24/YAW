@@ -19,25 +19,20 @@ class AbstractRunner(metaAbstractClass):
         """
         Initialize runner. 
         Check the required arguments, expand bash variables and manage class types.
-        Raises: 
-            Exception: If some bad parameter found
+        Raises: Exception: If some bad parameter found
         """
-        # Initialize parameters:
+        
         self.parameters = parameters
         defaults = {k: v[0] for k, v in self.get_tmp_params().items()}
         merged_p = {**defaults, **parameters}
         [setattr(self, k, v) for k, v in merged_p.items()]
-
-        # Parameter sanity checks & bash expansions:
-        self.__check_req_parameters(parameters)
-        self.__expand_bash_vars()   #TODO: Should I move this down?
-
-        # Rundir or YAW invocation path:
         self.invoked_path = not self.rundir
-        if self.create_dir and self.invoked_path:
-            raise Exception("Create rundir is set but no rundir defined!")
-            
-        # Initialize runner results:
+
+        self.__check_req_parameters(parameters)
+        self.__expand_bash_vars()
+        self.__expand_yaw_vars()
+        self.check_parameters()
+
         self.set_result(0, "READY")
     
     @classmethod
@@ -60,46 +55,53 @@ class AbstractRunner(metaAbstractClass):
             "recipie_name": (None, "Name of the recipe", "S"),
         }
 
-    def check_recipie(self):
+    def check_parameters(self):
         """
-        Previous stage before manage_steps. Shows what is set in the recipie.
-        Sets internal variables as well.
+        Sanity checks for parameters after manage.
         """
-        #TODO: Expand here bash and yaw variables!
-        #ERROR if values not found
+        if self.create_dir and self.invoked_path:
+            raise Exception("Create rundir is set but no rundir defined!")
+        
         if self.invoked_path:
             self.rundir = Path(os.getcwd())
             self._warn("Using curr. path as rundir!")
         if not self.create_dir:
             check_path_exists_exception(self.rundir)
-        self._info("Runner rundir points @", self.rundir)
+        self._log("Runner rundir points @", self.rundir)
         
-        if self.env_file:self._info(f"Using environment {self.env_file}")
-        else: self._warn("Environment NOT set!")
+        if self.env_file: 
+            self._log(f"Using environment {self.env_file}")
+        else:
+            self._warn("Environment NOT set!")
         
         if self.log_name:
             self.log_path = Path(self.rundir, self.log_name)
-            self._info("Redirecting output to", self.log_name)
+            self._log("Redirecting output to", self.log_name)
         else: 
             self.log_path = None
             
     def manage_parameters(self):
         """
         Previous stage before run the runner. It manages the parameters
-        and the environment.
+        and the environment but didn't run nothing.
         """
-        self.__expand_yaw_vars()
-        self.check_recipie()
         if self.create_dir: create_dir(self.rundir, self.overwrite)
 
     @abstractmethod
     def run(self): pass #ABC Method
+    
+    def check_dry(self) -> bool:
+        """Generic dry method execution + set results"""
+        self._ok("DRY MODE: Not executing anything!")
+        self.set_result(0, "DRY RUN")
+        return self.dry
+    
     #======================RESULT METHODS=======================================
     def set_result(self, result: int, res_str: str):
         self.r_result, self.r_status = result, res_str
 
     def get_result(self) -> str:
-        return f"{self.get_recipie_name()} #> {self.r_status} ({self.r_result})"
+        return f"{self.recipie_name} #> {self.r_status} ({self.r_result})"
     #===============================PARAMETER METHODS===========================
     def get_recipie_name(self) -> str: return self.recipie_name
     
@@ -140,7 +142,7 @@ class AbstractRunner(metaAbstractClass):
             not param in self.get_multi_value_params()
         ]
         multi_param_names = [param for param, _ in multi_params]
-        self._info("Found multi-parameters for:", stringfy(multi_param_names))
+        self._log("Found multi-parameters for:", stringfy(multi_param_names))
         self._log(multi_params)
         unique_params = {
             param: value for param, value in self.parameters.items() 
@@ -174,6 +176,7 @@ class AbstractRunner(metaAbstractClass):
             self._log(i_comb, variation)
             
         # 4. RETURN DERIVED RECIPIES:
+        self._ok(f" {self.recipie_name} derived with {self.mode}")
         return [self.__class__(**variation) for variation in variations]
     
     def is_a_multirecipie(self) -> bool:

@@ -31,11 +31,8 @@ class BashRunner(AbstractFilesRunner):
         ])
         self._ok("Generated bash script:", self.script_name)
 
-        if self.dry: 
-            self._ok("DRY MODE: Not executing anything!")
-            self.set_result(0, "DRY RUN")
-        else:
-            r = self.runner_result = execute_script( 
+        if not self.check_dry():
+            r = execute_script( 
                 script = self.script_name, args = self.args, 
                 rundir = self.rundir, log_file = self.log_path
             )

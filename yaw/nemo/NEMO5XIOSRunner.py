@@ -63,12 +63,9 @@ class NEMO5XIOSRunner(NEMO5Runner):
             ]
         )
         self.runner_info("DONE!")
-        if self.dry: 
-            self.runner_print("DRY MODE: Not executing anything!")
-            self.runner_print("Required env to execute this runner:")
-            self.runner_print(env)
-            self.set_result(0, "DRY EXECUTION!")
-        else:
+        self.runner_print("Required env to execute this runner:")
+        self.runner_print(env)
+        if not self.check_dry():
             execute_slurm_script(script_path, None, self.rundir, env)
             self.set_result(0, "SUBMITTED")
 

@@ -56,10 +56,7 @@ class TestNEMO5Runner(AbstractNemo5Runner):
             ]
         )
         self.runner_info("DONE!")
-        if self.dry: 
-            self.runner_print("DRY MODE: Not executing anything!")
-            self.set_result(0, "DRY EXECUTION!")
-        else:
+        if not self.check_dry():
             execute_slurm_script(script_path, None, self.rundir)
             self.set_result(0, "SUBMITTED")
 
