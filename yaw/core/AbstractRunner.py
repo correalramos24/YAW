@@ -234,5 +234,6 @@ class AbstractRunner(metaAbstractClass):
             expanded_value = expand_bash_env_vars(value)
             if expanded_value:
                 self.parameters[param] = expanded_value
+                setattr(self, param, expanded_value)
             else:
                 raise Exception("Unable to find env variable for", value)
