@@ -10,8 +10,8 @@ bash_runner_test:
     args:
         - "-la"
         - "-hs *"
-    script_name: yaw_script.sh
-    track_env: yaw_env.env
-    log_name: test_log.log
+    script_name: "&bash_cmd&.sh"
+    track_env: "&bash_cmd&.env"
+    log_name: "&bash_cmd&.log"
     create_dir: False
 #####################################-YAW-######################################
