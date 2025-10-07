@@ -1,4 +1,4 @@
-from core import AbstractSlurmRunner
+from yaw.core import AbstractSlurmRunner
 
 from utils import utils_fortran as uf
 from utils import utils_files as ufile

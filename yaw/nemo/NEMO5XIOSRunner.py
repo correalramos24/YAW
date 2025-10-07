@@ -1,4 +1,4 @@
-from nemo import NEMO5Runner
+from yaw.nemo import NEMO5Runner
 from utils import *
 
 

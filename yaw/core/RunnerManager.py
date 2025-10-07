@@ -1,8 +1,8 @@
 
 from utils import *
-from . import AbstractRunner, BashRunner
-from . import VoidRunner, BashSlurmRunner
-from nemo import NEMO5Runner, TestNEMO5Runner, NEMO5XIOSRunner
+from yaw.core import AbstractRunner, BashRunner
+from yaw.core import VoidRunner, BashSlurmRunner
+from yaw.nemo import NEMO5Runner, TestNEMO5Runner, NEMO5XIOSRunner
 
 from pathlib import Path
 from typing import Iterable

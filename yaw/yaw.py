@@ -1,5 +1,5 @@
-from arguments import parse_user_args
-from core.RunnerManager import RunnerManager
+from .arguments import parse_user_args
+from yaw.core.RunnerManager import RunnerManager
 from utils import *
 from utils.utils_print import *
 from pathlib import Path
