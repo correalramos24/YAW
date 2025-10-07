@@ -41,9 +41,8 @@ Add the `bin` folder to the path of your system and call `yaw` to execute the ap
 ## Usage
 1. Generate recipe template: Use `--generate <recipie type>` to generate an empty template.
 2. Fill the YAML file with your values for the required parameters.
-3. Executing the recipie with `yaw <recipe file(s)> --parse` will explain what is going to be executed
-4. Run recipies: Use `yaw <recipe file(s)>` to run the recipies. YAW will first parse the recipes and then run them sequentially.
-5. Check the results: Check the output from the command line to see the execution results.
+3. Run recipies: Use `yaw <recipe file(s)>` to run the recipies. YAW will first parse the recipes and then run them sequentially.
+4. Check the results: Check the output from the command line to see the execution results.
 
 ## Creating your runner - Runner hierarchy
 YAW was defined using a object-oriented hierarchy to be easy to extend:
@@ -81,20 +80,11 @@ It uses the AbstractFilesRunner functionalities.
 * wrapper: wrapper of the bash_cmd (`time` for example).
 * script_name: name of the script to encapsulate the commands. `yaw_wrapper.sh` by default.
 
-
 ### BashSlurmRunner
 TBD
 
 ## Examples
 TBD
 
-
 ### Using pytests
-
-There is support of use unittest. To use them you need to:
-
-````bash
-# Go to yaw folder
-source tests/test_env.sh
-python3 tests/test_your_test_name.py
-````
+TBD
