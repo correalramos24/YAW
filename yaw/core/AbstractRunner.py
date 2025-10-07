@@ -14,14 +14,14 @@ class AbstractRunner(metaAbstractClass):
     from a YAML recipe. It also defines required parameters as execution
     parameters that cannot be null value (None).
     """
-    
+
     def __init__(self, **parameters):
         """
-        Initialize runner. 
+        Initialize runner.
         Check the required arguments, expand bash variables and manage class types.
         Raises: Exception: If some bad parameter found
         """
-        
+
         self.parameters = parameters
         defaults = {k: v[0] for k, v in self.get_tmp_params().items()}
         merged_p = {**defaults, **parameters}
@@ -31,10 +31,9 @@ class AbstractRunner(metaAbstractClass):
         self.__check_req_parameters(parameters)
         self.__expand_bash_vars()
         self.__expand_yaw_vars()
-        self.check_parameters()
 
         self.set_result(0, "READY")
-    
+
     @classmethod
     def get_tmp_params(cls) -> dict[str, (object|None, str, str)]:
         """
@@ -61,25 +60,26 @@ class AbstractRunner(metaAbstractClass):
         """
         if self.create_dir and self.invoked_path:
             raise Exception("Create rundir is set but no rundir defined!")
-        
+
         if self.invoked_path:
             self.rundir = Path(os.getcwd())
-            self._warn("Using curr. path as rundir!")
+            self._warn(f"Using current path as rundir! ({self.rundir})")
         if not self.create_dir:
             check_path_exists_exception(self.rundir)
-        self._log("Runner rundir points @", self.rundir)
-        
-        if self.env_file: 
+
+        if self.env_file:
             self._log(f"Using environment {self.env_file}")
         else:
             self._warn("Environment NOT set!")
-        
+
         if self.log_name:
             self.log_path = Path(self.rundir, self.log_name)
             self._log("Redirecting output to", self.log_name)
-        else: 
+        else:
             self.log_path = None
-            
+
+        self._ok("Rundir points @", self.rundir)
+
     def manage_parameters(self):
         """
         Previous stage before run the runner. It manages the parameters
@@ -89,13 +89,13 @@ class AbstractRunner(metaAbstractClass):
 
     @abstractmethod
     def run(self): pass #ABC Method
-    
+
     def check_dry(self) -> bool:
         """Generic dry method execution + set results"""
-        self._ok("DRY MODE: Not executing anything!")
+        self._ok("DRY MODE ENABLE!")
         self.set_result(0, "DRY RUN")
         return self.dry
-    
+
     #======================RESULT METHODS=======================================
     def set_result(self, result: int, res_str: str):
         self.r_result, self.r_status = result, res_str
@@ -104,7 +104,7 @@ class AbstractRunner(metaAbstractClass):
         return f"{self.recipie_name} #> {self.r_status} ({self.r_result})"
     #===============================PARAMETER METHODS===========================
     def get_recipie_name(self) -> str: return self.recipie_name
-    
+
     @classmethod
     def get_parameters(cls) -> list[str]:
         return list(cls.get_tmp_params().keys())
@@ -112,7 +112,7 @@ class AbstractRunner(metaAbstractClass):
     @classmethod
     def get_required_params(cls) -> list[str]:
         return [p for p, info in cls.get_tmp_params().items() if info[2] == "R"]
-    
+
     @classmethod
     def get_optional_params(cls) -> list[str]:
         return [p for p, info in cls.get_tmp_params().items() if info[2] == "O"]
@@ -127,7 +127,7 @@ class AbstractRunner(metaAbstractClass):
         missing = [p for p in cls.get_required_params() if not params.get(p)]
         if missing:
             raise Exception(f"Not found req argument(s) {stringfy(missing)}")
-        
+
         # Check if there are parameters not defined in the class:
         bad_params = [p for p in params.keys() if p not in cls.get_parameters()]
         if any(bad_params):
@@ -135,24 +135,24 @@ class AbstractRunner(metaAbstractClass):
 
     def derive_recipies(self) -> list["AbstractRunner"]:
         if not self.is_a_multirecipie(): return [self]
-
+        print(f"Deriving {self.recipie_name} recipie...")
         # 1. SORT PARAMETERS:
         multi_params = [ (param, val) for param, val in self.parameters.items()
-            if is_a_list(val) and
+            if is_list(val) and
             not param in self.get_multi_value_params()
         ]
         multi_param_names = [param for param, _ in multi_params]
         self._log("Found multi-parameters for:", stringfy(multi_param_names))
-        self._log(multi_params)
+        self._dbg(multi_params)
         unique_params = {
-            param: value for param, value in self.parameters.items() 
+            param: value for param, value in self.parameters.items()
             if param not in multi_param_names
         }
-        
+
         # 2. CHECK MODE FOR VARIATION GENERATION:
-        self._info(f"Deriving recipies using {self.mode}.")
-        join_op = product if self.mode == "cartesian" else zip    
-        
+        self._log(f"Deriving recipies using {self.mode}.")
+        join_op = product if self.mode == "cartesian" else zip
+
         # Check params len: all multi-params needs to be the same!
         if self.mode and not all([
             len(self.parameters[param]) == len(self.parameters[multi_params[0][0]])
@@ -160,7 +160,7 @@ class AbstractRunner(metaAbstractClass):
         ]):
             Exception("Invalid size for multi-parameters",
                 str([len(self.parameters[param]) for param, _ in multi_params]))
-        
+
         # 3. GENERATE COMBINATIONS
         # TODO: Add support for mirror!
         variations_values = list(
@@ -170,18 +170,18 @@ class AbstractRunner(metaAbstractClass):
             {**unique_params, **dict(zip(multi_param_names, variation))}
             for variation in variations_values
         ]
-        self._log("# Found ", len(variations), "multi-params combs")
+        self._info("# Found", len(variations), "multi-params combs")
         for i_comb, variation in enumerate(variations):
             variation["recipie_name"] = f"{self.recipie_name}_{i_comb}"
-            self._log(i_comb, variation)
-            
+            self._dbg(i_comb, variation)
+
         # 4. RETURN DERIVED RECIPIES:
         self._ok(f" {self.recipie_name} derived with {self.mode}")
         return [self.__class__(**variation) for variation in variations]
-    
+
     def is_a_multirecipie(self) -> bool:
         return any(
-            is_a_list(val) and param not in self.get_multi_value_params()
+            is_list(val) and param not in self.get_multi_value_params()
             for param, val in self.parameters.items()
         )
     # =========================YAML GENERATION METHODS==========================
@@ -216,43 +216,43 @@ class AbstractRunner(metaAbstractClass):
 
     @classmethod
     def _inflate_yaml_template_info(cls) -> list[(str, str)]:
-        return [(param, info[1]) for param, info in 
+        return [(param, info[1]) for param, info in
             list(cls.get_tmp_params().items()) if info[2] != "S"]
 
     #===========================EXPAND BASH VARIABLES===========================
     def __expand_yaw_vars(self) -> None:
-        yaw_vars_par = { 
+        yaw_vars_par = {
             param: value for param, value in self.parameters.items()
-            if is_a_str(value) and "&" in value
+            if is_str(value) and "&" in value
         }
         if len(yaw_vars_par) != 0:
             self._log("Expanding YAW for:", yaw_vars_par)
-        
+
         for param, val_w_yaw_var in yaw_vars_par.items():
-            expand_value = val_w_yaw_var 
+            expand_value = val_w_yaw_var
             ii = search_char_in_str(expand_value, "&")
             while len(ii) >= 1:
                 ref_param = expand_value[ii[0]+1:ii[1]]
-                
+
                 if not ref_param in self.parameters:
                     raise Exception(f"YAW var {ref_param} not found!")
-                
+
                 ref_value = self.parameters[ref_param]
                 expand_value = expand_value[:ii[0]] + str(ref_value) + expand_value[ii[1]+1:]
-                
+
                 ii = search_char_in_str(expand_value, "&")
-            
-            if len(ii) == 1: 
+
+            if len(ii) == 1:
                 raise Exception(f"YAW variable error, you must close it with &")
-            
+
             self._log(f"Expanding {param} from {val_w_yaw_var} to {expand_value}")
             self.parameters[param] = expand_value
-        
+
     def __expand_bash_vars(self) -> None:
         """Convert the bash variables ($VAR or ${VAR}) to the value.
         """
-        no_empty_params = {k : v for k, v in self.parameters.items() 
-                        if v and is_a_str(v) and "$" in v}
+        no_empty_params = {k : v for k, v in self.parameters.items()
+                        if v and is_str(v) and "$" in v}
 
         for param, value in no_empty_params.items():
             expanded_value = expand_bash_env_vars(value)
@@ -260,4 +260,3 @@ class AbstractRunner(metaAbstractClass):
                 self.parameters[param] = expanded_value
             else:
                 raise Exception("Unable to find env variable for", value)
-

@@ -4,9 +4,7 @@ from pathlib import Path
 from utils import *
 
 class BashRunner(AbstractFilesRunner):
-    """
-    Run scripts or commands in bash.
-    """
+    """Run scripts or commands in bash."""
 
     @classmethod
     def get_tmp_params(cls):
@@ -22,18 +20,18 @@ class BashRunner(AbstractFilesRunner):
     def manage_parameters(self):
         super().manage_parameters()
         self.wrapper_script = Path(self.rundir, self.script_name)
-        
+
     def run(self):
         generate_bash_script(self.wrapper_script,[
             self._get_env_str(),
             self._get_env_trk_str(),
             self._get_cmd_str(),
         ])
-        self._ok("Generated bash script:", self.script_name)
+        self._info("Generated bash script:", self.script_name)
 
         if not self.check_dry():
-            r = execute_script( 
-                script = self.script_name, args = self.args, 
+            r = execute_script(
+                script = self.script_name, args = self.args,
                 rundir = self.rundir, log_file = self.log_path
             )
             if not r: self.set_result(0, "OK")
@@ -44,16 +42,12 @@ class BashRunner(AbstractFilesRunner):
         else: return ""
 
     def _get_env_trk_str(self) -> str:
-        """
-        Get track env string.
-        """
+        """Get track env string."""
         if self.track_env: return f"printenv &> {self.track_env}"
         else: return ""
 
     def _get_cmd_str(self) -> str:
-        """
-        Get the command string to execute.
-        """
+        """Get the command string to execute."""
         ret = ""
         if self.wrapper:
             ret += f"{self.wrapper} "
