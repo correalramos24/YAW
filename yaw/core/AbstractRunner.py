@@ -35,7 +35,7 @@ class AbstractRunner(metaAbstractClass):
         self.set_result(0, "READY")
 
     @classmethod
-    def get_tmp_params(cls) -> dict[str, (object|None, str, str)]:
+    def get_tmp_params(cls) -> dict[str, tuple]:
         """
         Define the template params of the runner. Parameters are defined as:
         R: Required parameter - O: Optional parameter - S: Shadow parameter
@@ -215,9 +215,9 @@ class AbstractRunner(metaAbstractClass):
         return ret
 
     @classmethod
-    def _inflate_yaml_template_info(cls) -> list[(str, str)]:
-        return [(param, info[1]) for param, info in
-            list(cls.get_tmp_params().items()) if info[2] != "S"]
+    def _inflate_yaml_template_info(cls) -> list[tuple[str, str]]:
+        return [(param, info[1]) for param, info in 
+                list(cls.get_tmp_params().items()) if info[2] != "S"]
 
     #===========================EXPAND BASH VARIABLES===========================
     def __expand_yaw_vars(self) -> None:
