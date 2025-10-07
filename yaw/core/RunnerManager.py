@@ -45,7 +45,10 @@ class RunnerManager(metaAbstractClass):
                     step_type = r_params["type"]
                     self.steps.append(self.runners[step_type](**r_params))
                 except Exception as e:
-                    self._err(f"Excluding step {r_name} from {r_name}")
+                    if isinstance(e, KeyError):
+                        self._err(f"Runner {step_type} not found! {str(e)}")    
+                    else:
+                        self._err(f"Excluding step {r_name} from {r_name}")
                     self.steps.append(VoidRunner(r_name, str(e)))
         if(len(self.steps) == 0):
             raise Exception("No steps found to derive recipies")

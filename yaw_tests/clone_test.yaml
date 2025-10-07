@@ -1,8 +1,8 @@
 #####################################-YAW-######################################
 ## TEMPLATE FOR BashRunnerRundir RUNNER
 ## Required parameters:type rundir bash_cmd
-rundir_tests:
-  type: BashRunnerRundir
+clone_repo_test:
+  type: BashRunner
   rundir: $HOME/yaw_test_rundir
   overwrite: true
   bash_cmd: ls
