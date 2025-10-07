@@ -16,8 +16,7 @@ class AbstractRunner(metaAbstractClass):
     """
 
     def __init__(self, **parameters):
-        """
-        Initialize runner.
+        """Initialize runner.
         Check the required arguments, expand bash variables and manage class types.
         Raises: Exception: If some bad parameter found
         """
@@ -30,14 +29,11 @@ class AbstractRunner(metaAbstractClass):
 
         self.__check_req_parameters(parameters)
         self.__expand_bash_vars()
-        self.__expand_yaw_vars()
-
         self.set_result(0, "READY")
 
     @classmethod
     def get_tmp_params(cls) -> dict[str, tuple]:
-        """
-        Define the template params of the runner. Parameters are defined as:
+        """Define the template params of the runner. Parameters are defined as:
         R: Required parameter - O: Optional parameter - S: Shadow parameter
         """
         return {
@@ -55,34 +51,24 @@ class AbstractRunner(metaAbstractClass):
         }
 
     def check_parameters(self):
-        """
-        Sanity checks for parameters after manage.
-        """
+        """Sanity checks for parameters after manage."""
+        self.__expand_yaw_vars()
         if self.create_dir and self.invoked_path:
             raise Exception("Create rundir is set but no rundir defined!")
-
         if self.invoked_path:
             self.rundir = Path(os.getcwd())
             self._warn(f"Using current path as rundir! ({self.rundir})")
         if not self.create_dir:
             check_path_exists_exception(self.rundir)
-
-        if self.env_file:
-            self._log(f"Using environment {self.env_file}")
-        else:
+        if not self.env_file:
             self._warn("Environment NOT set!")
-
-        if self.log_name:
-            self.log_path = Path(self.rundir, self.log_name)
-            self._log("Redirecting output to", self.log_name)
-        else:
-            self.log_path = None
-
+        self.log_path = None
+        if self.log_name: self.log_path = Path(self.rundir, self.log_name)
+        
         self._ok("Rundir points @", self.rundir)
 
     def manage_parameters(self):
-        """
-        Previous stage before run the runner. It manages the parameters
+        """Previous stage before run the runner. It manages the parameters
         and the environment but didn't run nothing.
         """
         if self.create_dir: create_dir(self.rundir, self.overwrite)
@@ -118,8 +104,7 @@ class AbstractRunner(metaAbstractClass):
         return [p for p, info in cls.get_tmp_params().items() if info[2] == "O"]
 
     @classmethod
-    def get_multi_value_params(cls) -> set[str]:
-        return set()
+    def get_multi_value_params(cls) -> set[str]: return set()
 
     @classmethod
     def __check_req_parameters(cls, params):
@@ -187,25 +172,17 @@ class AbstractRunner(metaAbstractClass):
     # =========================YAML GENERATION METHODS==========================
     @classmethod
     def generate_yaml_template(cls) -> None:
-        """
-        Generate a YAML template for the runner
-        """
+        """Generate a YAML template for the runner"""
         YAML_DELIM = "#" * 37 + "-YAW-" + "#" * 38
         with open(cls.__name__ + ".yaml", mode="w") as tmpl:
             tmpl.write(f"{YAML_DELIM}\n## TEMPLATE FOR {cls.__name__}\n")
-            #tmpl.write("## Required parameters:")
-            #tmpl.write(' '.join(cls.get_required_params()) + "\n")
-            #tmpl.write("## Optional parameters:")
-            #tmpl.write(' '.join(cls.get_optional_params()) + "\n")
             tmpl.write(f"your_recipe_name:\n")
             tmpl.write(cls.__generate_yaml_template_content())
             tmpl.write(YAML_DELIM + "\n")
 
     @classmethod
     def __generate_yaml_template_content(cls) -> str:
-        """
-        Generate the content to be place in the template
-        """
+        """Generate the content to be place in the template"""
         ret = ""
         for parameter, comment in cls._inflate_yaml_template_info():
             if parameter == "type":
@@ -225,8 +202,7 @@ class AbstractRunner(metaAbstractClass):
             param: value for param, value in self.parameters.items()
             if is_str(value) and "&" in value
         }
-        if len(yaw_vars_par) != 0:
-            self._log("Expanding YAW for:", yaw_vars_par)
+        if len(yaw_vars_par) != 0: self._log("Expanding YAW variables...")
 
         for param, val_w_yaw_var in yaw_vars_par.items():
             expand_value = val_w_yaw_var
@@ -247,10 +223,10 @@ class AbstractRunner(metaAbstractClass):
 
             self._log(f"Expanding {param} from {val_w_yaw_var} to {expand_value}")
             self.parameters[param] = expand_value
+            setattr(self, param, expand_value)
 
     def __expand_bash_vars(self) -> None:
-        """Convert the bash variables ($VAR or ${VAR}) to the value.
-        """
+        """Convert the bash variables ($VAR or ${VAR}) to the value."""
         no_empty_params = {k : v for k, v in self.parameters.items()
                         if v and is_str(v) and "$" in v}
 
