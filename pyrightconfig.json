@@ -1,0 +1,9 @@
+{
+    "typeCheckingMode": "basic",
+    "reportUnusedImport": false,
+    "reportUnknownVariableType": false,
+    "reportOptionalMemberAccess": false,
+    "reportUnsupportedDunderAll": false,
+    "reportAttributeAccessIssue": false,
+    "exclude": ["venv"]
+}
