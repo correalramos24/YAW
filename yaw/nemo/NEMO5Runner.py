@@ -9,7 +9,7 @@ class NEMO5Runner(AbstractNemo5Runner):
         aux = super().get_tmp_params()
         aux.update({
             "nemo5_run_cfg" : (None, "CFG to be executed", "R"),
-            "nemo5_inputs" : (None, "NEMO5 Inputs (list of fldrs or fldr)", "R")
+            "nemo5_inputs" : (None, "NEMO5 Inputs (list of fldrs or fldr)", "R"),
         })
         return aux
     
