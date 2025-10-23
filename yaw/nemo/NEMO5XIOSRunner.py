@@ -32,9 +32,11 @@ class NEMO5XIOSRunner(NEMO5Runner):
     def run(self):
         mpi_lib = self.mpi_lib        
         if mpi_lib == "OPEN-MPI": self.__run_ompi()
-        elif mpi_lib == "INTEL-MPI": self.__run_ompi()
+        elif mpi_lib == "INTEL-MPI": self.__run_impi()
         else: raise Exception("Invalid MPI LIB", mpi_lib)
     
+    def __run_impi(self):
+        raise Exception("Not implemented yet!")
     
     def __run_ompi(self):
         script_name = self.script_name

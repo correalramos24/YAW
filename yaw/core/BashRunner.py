@@ -13,7 +13,7 @@ class BashRunner(AbstractFilesRunner):
             "bash_cmd": (None, "Script to execute (./s.sh) or command (ls)", "R"),
             "args" : (None, "Script arguments", "O"),
             "wrapper" : (None, "execute your command with a wrapper", "O"),
-            "script_name" : ("yaw_wrapper.sh", "Bash script name", "O")
+            "script_name" : ("yaw_wrapper.sh", "Bash script name", "O"),
         })
         return aux
 

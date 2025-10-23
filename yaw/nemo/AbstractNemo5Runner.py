@@ -17,7 +17,9 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
             "nemo5_cpn" : (None, "Number of cores per node of the machine", "O"),
             "nemo5_tiling_i" : (None, "Set tiling i", "O"),
             "nemo5_tiling_j" : (None, "Set tiling j", "O"),
+            "nemo5_nncomm" : (None, "Set nn_comm parameter, default 1", "O"),
             "tasks" : (None, "Number of tasks to be used", "S"),
+            "ld_preload"  : (None, "Add a dynamic librarie before nemo", "O")
         })
         return aux
     
@@ -37,6 +39,7 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
         self.__set_jpni_jpnj()
         self.__set_timesteps()
         self.__set_tilling()
+        self.__set_nncom()
     
     #===============================PRIVATE METHODS=============================
     def __compute_nodes_from_jpni_jpnj(self):
@@ -93,4 +96,10 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
                 'nn_ltile_j': self.nemo5_tiling_j
             })
     
+    @with_nml
+    def __set_nncom(self, nml):
+        nncomm = self._gp('nemo5_nncomm')
+        if nncomm:
+            self.runner_info(f"Setting nn_comm to {nncomm}")
+            uf.update_f90nml_key_value(nml, "nammpp", "nn_comm", nncomm)
     

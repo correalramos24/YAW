@@ -24,6 +24,7 @@ class AbstractSlurmRunner(AbstractRunner, ABC):
             "slurm_job_name": ("yaw-job", "SLURM job name", "O"),
             "slurm_wait": (False, "Wait sbatch until job finishes", "O"),
             "slurm_exclusive" : (True, "Use exclusive nodes", "O"),
+            "slurm_perfparanoid" : (False, "Use perfparanoid", "O"),
             "slr_other_cmds": (None, "Other slurm commands", "O"),
             "script_name": ("run.slurm", "slurm script name. run.slurm by def.", "O"),
         })

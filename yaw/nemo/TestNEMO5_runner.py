@@ -41,17 +41,25 @@ class TestNEMO5Runner(AbstractNemo5Runner):
         
         launch_cmd = "srun"
         if self.tasks:
-            info(f"Overriding number of tasks to {self.tasks}")
+            self.runner_info(f"Overriding number of tasks to {self.tasks}")
             launch_cmd += f" -n {self.tasks}"
-        launch_cmd += " nemo"
+        launch_cmd += " --cpu-bind=cores nemo"
         
+        preload_str = ""
+        if self._gp("ld_preload") is not None:
+            print("Using ld_preload", self._gp("ld_preload"), "...")
+            preload_str += f"export LD_PRELOAD={self._gp("ld_preload")}\n"
+            preload_str += "export PAPI_LIST=\"PAPI_TOT_CYC,PAPI_L3_TCM\""
+
         generate_slurm_script(
             f_path=script_path, log_file=self.log_name,
             slurm_directives=self._get_slurm_directives(),
             cmds=
             [
-            f"source {self.env_file}" if self.env_file else "",
-            f"printenv &> {self.track_env}" if self.track_env else "",
+            f"source {self._gp("env_file")}" if self._gp("env_file") else "",
+            "export SRUN_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}",
+            f"printenv &> {self._gp("track_env")}" if self._gp("track_env") else "",
+            preload_str,
             launch_cmd,
             ]
         )
