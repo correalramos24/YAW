@@ -4,9 +4,7 @@ from pathlib import Path
 from utils import *
 
 class BashRunner(AbstractFilesRunner):
-    """
-    Run scripts or commands in bash.
-    """
+    """Run scripts or commands in bash."""
 
     @classmethod
     def get_tmp_params(cls):
@@ -21,44 +19,39 @@ class BashRunner(AbstractFilesRunner):
 
     def manage_parameters(self):
         super().manage_parameters()
+        self.wrapper_script = Path(self.rundir, self.script_name)
 
-        self.wrapper_script = Path(self._gp("rundir"), self._gp("script_name"))
-        
     def run(self):
         generate_bash_script(self.wrapper_script,[
             self._get_env_str(),
             self._get_env_trk_str(),
             self._get_cmd_str(),
         ])
-        self.runner_info("Generated bash script:", self._gp("script_name"))
+        self._info("Generated bash script:", self.script_name)
 
-        if self._gp("dry"): 
-            self.runner_print("DRY MODE: Not executing anything!")
-            self.set_runner_result(0, "DRY RUN")
-        else:
-            r = self.runner_result = execute_script( 
-                script = self._gp("script_name"), args = self._gp("args"), 
-                rundir = self._gp("rundir"), log_file = self.log_path
+        if not self.check_dry():
+            r = execute_script(
+                script = self.script_name, args = self.args,
+                rundir = self.rundir, log_file = self.log_path
             )
-            if not r: self.set_runner_result(0, "OK")
-            else: self.set_runner_result(-1, "Return code !=0")
+            if not r: self.set_result(0, "OK")
+            else: self.set_result(-1, "Return code !=0")
 
     def _get_env_str(self) -> str:
-        if self._gp("env_file"): return f"source {self._gp('env_file')}"
+        if self.env_file: return f"source {self.env_file}"
         else: return ""
 
     def _get_env_trk_str(self) -> str:
-        if self._gp("track_env"): return f"printenv &> {self._gp('track_env')}"
+        """Get track env string."""
+        if self.track_env: return f"printenv &> {self.track_env}"
         else: return ""
 
     def _get_cmd_str(self) -> str:
-        """
-        Get the command string to execute.
-        """
+        """Get the command string to execute."""
         ret = ""
-        if self._gp("wrapper"):
-            ret += f"{self._gp('wrapper')} "
-        ret += self._gp("bash_cmd")
-        if self._gp("args"):
-            ret += " " + "".join(self._gp("args"))
+        if self.wrapper:
+            ret += f"{self.wrapper} "
+        ret += self.bash_cmd
+        if self.args:
+            ret += " " + "".join(self.args)
         return ret

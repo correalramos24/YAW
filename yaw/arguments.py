@@ -1,23 +1,34 @@
-import argparse
+from yaw.core.RunnerManager import RunnerManager
+from yaw.yaw_ascii import *
 
-from core.RunnerManager import RunnerManager
-from yaw_ascii import *
-from utils import *
+from utils.utils_print import LoggerLevels, MyLogger
+from utils.utils_bash import execute_command_get_ouput
+
+import argparse
+from pathlib import Path
 
 # Version:
-VERSION="v0.99.0 - Alfa"
+VERSION="v1.0"
+
+def parse_log_level(level_str):
+    try:
+        return LoggerLevels[level_str.upper()]
+    except KeyError:
+        raise argparse.ArgumentTypeError(f"Invalid log level: {level_str}")
 
 def parse_user_args():
     # Declare the flags:
     parser = argparse.ArgumentParser(description="YAW - Yet another workflow",
-                                    usage="yaw.py input [input ...] [options]", 
+                                    usage="yaw.py input [input ...] [options]",
                                     epilog=f"VERSION: {VERSION}")
-    parser.add_argument('input', 
+    parser.add_argument('input',
                         help="Select YAW recipe input file(S)",
                         nargs ="*", type=Path)
 
     parser.add_argument('--generate', help="Generate template to be \
                         filled by the user", choices=RunnerManager.get_runners())
+    parser.add_argument("--parse", help="Only parse file(s)",
+                        action='store_true')
 
     parser.add_argument("--steps", metavar="S", nargs="*",
                         help="Run only step(s) with name R from the input recipies")
@@ -28,10 +39,14 @@ def parse_user_args():
     parser.add_argument('--version', help="Print YAW version", action='store_true')
     parser.add_argument('--dev-version', help="Print YAW version, detailed", action='store_true')
 
-    parser.add_argument('--info', help="Add info messages", action='store_true')
+    parser.add_argument('--silent', help="Disable info printing", action='store_true')
+    parser.add_argument('--info', help="Enable INFO printing", action="store_true")
+    parser.add_argument('--log', help="Enable log printing", action="store_true")
+    parser.add_argument('--debug', help="Enable log printing", action="store_true")
 
     # Parse the arguments:
-    if parser.parse_args().dev_version:
+    parsed = parser.parse_args()
+    if parsed.dev_version:
         yaw_home = Path(__file__).parent
         print("Yaw installed at", yaw_home)
         br = execute_command_get_ouput("git rev-parse --abbrev-ref HEAD", yaw_home)
@@ -40,10 +55,14 @@ def parse_user_args():
         print(f"VERSION: {VERSION} ({tg}) => BRANCH: {br} @ COMMIT: {cm}")
         print(logo_ascii)
         exit(0)
-    if parser.parse_args().version:
+    if parsed.version:
         print(f"VERSION: {VERSION}")
         print(logo_ascii)
         exit(0)
-
-    return parser.parse_args()
-
+    if parsed.log:
+        MyLogger.set_verbose_level(LoggerLevels.LOG)
+    if parsed.debug:
+        MyLogger.set_verbose_level(LoggerLevels.DEBUG)
+    if parsed.silent:
+        MyLogger.set_verbose_level(LoggerLevels.NO)
+    return parsed

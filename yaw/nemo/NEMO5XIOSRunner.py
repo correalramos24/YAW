@@ -1,4 +1,4 @@
-from nemo import NEMO5Runner
+from yaw.nemo import NEMO5Runner
 from utils import *
 
 
@@ -24,13 +24,13 @@ class NEMO5XIOSRunner(NEMO5Runner):
     def manage_parameters(self):
         super().manage_parameters()
         
-        utils_files.copy_file(Path(self._gp("xios_path")), self._gp("rundir"))
+        utils_files.copy_file(Path(self.xios_path), self.rundir)
         
-        if self._gp("slurm_nodes") != self._gp("xios_nodes") + self._gp("nemo_nodes"):
+        if self.slurm_nodes != self.xios_nodes + self.nemo_nodes:
             raise Exception("Inconsisten number of nodes!")        
 
     def run(self):
-        mpi_lib = self._gp("mpi_lib")        
+        mpi_lib = self.mpi_lib        
         if mpi_lib == "OPEN-MPI": self.__run_ompi()
         elif mpi_lib == "INTEL-MPI": self.__run_impi()
         else: raise Exception("Invalid MPI LIB", mpi_lib)
@@ -39,14 +39,14 @@ class NEMO5XIOSRunner(NEMO5Runner):
         raise Exception("Not implemented yet!")
     
     def __run_ompi(self):
-        script_name = self._gp("script_name")
-        script_path = Path(self._gp("rundir"), script_name)
+        script_name = self.script_name
+        script_path = Path(self.rundir, script_name)
         
-        env=f"NEMO_NODES={self._gp("nemo_nodes")},NEMO_TPN={self._gp("nemo_tpn")},"
-        env+=f"XIOS_NODES={self._gp("xios_nodes")},XIOS_TPN={self._gp("xios_tpn")}"
+        env=f"NEMO_NODES={self.nemo_nodes},NEMO_TPN={self.nemo_tpn},"
+        env+=f"XIOS_NODES={self.xios_nodes},XIOS_TPN={self.xios_tpn}"
         self.runner_info(f"Generating NEMO5 SLURM script ({script_name})...")
         generate_slurm_script(
-            f_path=script_path, log_file=self._gp("log_name"),
+            f_path=script_path, log_file=self.log_name,
             slurm_directives=self._get_slurm_directives(),
             cmds=
             [
@@ -57,21 +57,18 @@ class NEMO5XIOSRunner(NEMO5Runner):
             "source generate_rankfile.sh",
             "rankfile_generation_logic",
             "# LOAD ENV:",
-            f"source {self._gp("env_file")}" if self._gp("env_file") else "",
+            f"source {self.env_file}" if self.env_file else "",
             "export SLURM_CPU_BIND=none",
-            f"printenv &> {self._gp("track_env")}" if self._gp("track_env") else "",
+            f"printenv &> {self.track_env}" if self.track_env else "",
             "# RUN XIOS+NEMO!",
             "mpirun -rf $RF_NAME --display-allocation --display-map -n $NEMO_TASKS ./nemo : -n $XIOS_TASKS ./xios_server.exe"
             ]
         )
         self.runner_info("DONE!")
-        if self._gp("dry"): 
-            self.runner_print("DRY MODE: Not executing anything!")
-            self.runner_print("Required env to execute this runner:")
-            self.runner_print(env)
-            self.set_result(0, "DRY EXECUTION!")
-        else:
-            execute_slurm_script(script_path, None, self._gp("rundir"), env)
+        self.runner_print("Required env to execute this runner:")
+        self.runner_print(env)
+        if not self.check_dry():
+            execute_slurm_script(script_path, None, self.rundir, env)
             self.set_result(0, "SUBMITTED")
 
     def __run_impi(self):

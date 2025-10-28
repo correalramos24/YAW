@@ -1,44 +1,41 @@
-from arguments import parse_user_args
-from core.RunnerManager import RunnerManager
+from .arguments import parse_user_args
+from yaw.core.RunnerManager import RunnerManager
 from utils import *
+from utils.utils_print import *
 from pathlib import Path
 
 def main():
-    # 0. PARSE GENERIC ARGUMENTS:
+    # 0. PARSE APP ARGUMENTS:
     app_args = parse_user_args()
     input_files : list[Path] = app_args.input
     gen_template: str        = app_args.generate
-    #print_multi : bool       = app_args.print_combinations
     step_names  : list[str]  = app_args.steps
-    info_enable : bool       = app_args.info
+    parse       : bool       = app_args.parse
 
-    enable_info(info_enable)
-
-    # 0. PARSE ARGUMENTS THAT OVERRIDES RECIPIES:
-    manager = RunnerManager(input_files, step_names)
-
-    # 1. GENERATE TEMPLATE USE CASE:
-    if gen_template:
-        info("Generating", gen_template, "template")
-        manager.generate_template(gen_template)
+    if gen_template: # A. GENERATE TEMPLATE USE CASE:
+        RunnerManager([], []).generate_template(gen_template)
+        MyLogger.success("Generated", gen_template, "template")
         exit(0)
+    else: # B. RUN RECIPIE USE CASE:
+        if not input_files:
+            MyLogger.critical("You must provide any YAW recipe!", "1")
+            exit(1)
 
-    if not input_files:
-        critical("You must provide any YAW recipe!", "1")
+        manager = RunnerManager(input_files, step_names)
+        print("=" * 40 + "PARSING" + "=" * 40)
+        manager.parse_files()
+        print("=" * 40 + "DERIVING" + "=" * 39)
+        manager.derive_recipies()
+        if parse:
+            print("PARSING ONLY ENABLED VIA --parse")
+            print("FINISHING YAW...")
+            return
 
-    # 1. PARSE RECIPIE INPUT FILES:
-    manager.parse_files()
+        print("=" * 40 + "RUNNING" + "=" * 40)
+        manager.run_steps()
 
-    # 2. DERIVE RECIPIES:
-    manager.derive_recipies()
-
-    # 3. RUN RECIPE(S)
-    manager.run_steps()
-    
-    # 4. PRINT RESULTS:
-    manager.print_results()
-
+        print("=" * 40 + "RESULTS" + "=" * 40)
+        manager.print_results()
 
 if __name__ == "__main__":
-
     main()

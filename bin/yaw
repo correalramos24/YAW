@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$SCRIPT_DIR/.."
 
-export PYTHONPATH="$SCRIPT_DIR/.."
-python3 $SCRIPT_DIR/../yaw/yaw.py $@
+cd "$PROJECT_ROOT" || exit 1
+exec python3 -m yaw.yaw $@

@@ -1,4 +1,4 @@
-from core import AbstractSlurmRunner
+from yaw.core import AbstractSlurmRunner
 
 from utils import utils_fortran as uf
 from utils import utils_files as ufile
@@ -26,12 +26,12 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
     def manage_parameters(self):
         super().manage_parameters()
         
-        ufile.check_path_exists_exception(self._gp("nemo5_root"))
+        ufile.check_path_exists_exception(self.nemo5_root)
         
-        if self._gp("slurm_nodes") is None:
+        if self.slurm_nodes is None:
             tasks, nodes = self.__compute_nodes_from_jpni_jpnj()
-            self._sp("slurm_tasks", tasks)
-            self._sp("slurm_nodes", nodes)
+            self.slurm_tasks = tasks
+            self.slurm_nodes = nodes
             self.runner_info(f"Executin NEMO5 with {tasks} @ {nodes}.")
     
     def update_namelist(self):
@@ -46,9 +46,9 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
         """
         Compute the number of nodes from jpni and jpnj.
         """
-        jpni= self._gp("nemo5_jpni")
-        jpnj= self._gp("nemo5_jpnj")
-        cpn = self._gp("nemo5_cpn")
+        jpni= self.nemo5_jpni
+        jpnj= self.nemo5_jpnj
+        cpn = self.nemo5_cpn
         
         if not jpni or not jpnj or not cpn:
             raise Exception("nemo5_jpni/_jpnj/_cpn or slurm_nodes must be set!")
@@ -65,35 +65,35 @@ class AbstractNemo5Runner(AbstractSlurmRunner):
     
     def with_nml(func):
         def wrapper(self, *args, **kwargs):
-            nml = Path(self._gp("rundir"), "namelist_cfg")
+            nml = Path(self.rundir, "namelist_cfg")
             return func(self, nml, *args, **kwargs)
         return wrapper
     
     @with_nml
     def __set_timesteps(self, nml):
-        ts = self._gp("nemo5_timesteps")
+        ts = self.nemo5_timesteps
         if ts > 0:
             uf.update_f90nml_key_value(nml, "namrun", "nn_itend", ts)
         else:
-            self.runner_warn("nemo5_timesteps was negative!")
+            raise Exception("nemo5_timesteps was negative!")
     
     @with_nml
     def __set_jpni_jpnj(self, nml):
-        if self._gp("nemo5_jpni"):
-            self.runner_info(f"Setting jpni value to {self._gp('nemo5_jpni')}")
-            uf.update_f90nml_key_value(nml, "nammpp", "jpni", self._gp("nemo5_jpni"))
-        if self._gp("nemo5_jpnj"):
-            self.runner_info(f"Setting jpnj value to {self._gp('nemo5_jpnj')}")
-            uf.update_f90nml_key_value(nml, "nammpp", "jpnj", self._gp("nemo5_jpnj"))
+        if self.nemo5_jpni:
+            self.runner_info(f"Setting jpni value to {self.nemo5_jpni}")
+            uf.update_f90nml_key_value(nml, "nammpp", "jpni", self.nemo5_jpni)
+        if self.nemo5_jpnj:
+            self.runner_info(f"Setting jpnj value to {self.nemo5_jpnj}")
+            uf.update_f90nml_key_value(nml, "nammpp", "jpnj", self.nemo5_jpnj)
     
     @with_nml
     def __set_tilling(self, nml):
-        if self._gp("nemo5_tiling_i") or self._gp("nemo5_tiling_j"):
-            self.runner_info(f"Adding tiling values {self._gp('nemo5_tiling_i')}x{self._gp('nemo5_tiling_j')}")
+        if self.nemo5_tiling_i or self.nemo5_tiling_j:
+            self.runner_info(f"Adding tiling values {self.nemo5_tiling_i}x{self.nemo5_tiling_j}")
             uf.add_f90nml(nml, "namtile", {
                 'ln_tile': True,
-                'nn_ltile_i': self._gp("nemo5_tiling_i"),
-                'nn_ltile_j': self._gp("nemo5_tiling_j")
+                'nn_ltile_i': self.nemo5_tiling_i,
+                'nn_ltile_j': self.nemo5_tiling_j
             })
     
     @with_nml

@@ -2,15 +2,16 @@
 ## TEMPLATE FOR BashRunner RUNNER
 ## Required parameters:type bash_cmd
 bash_runner_test:
-  type: BashRunner
-  wrapper: time
-  bash_cmd: 
-    - ls
-    - du
-  args: 
-    - "-la"
-    - "-hs *"
-  script_name: yaw_script.sh
-  track_env: yaw_env.env
-  log_name: test_log.log
+    type: BashRunner
+    wrapper: time
+    bash_cmd:
+        - ls
+        - du
+    args:
+        - "-la"
+        - "-hs *"
+    script_name: "&bash_cmd&.sh"
+    track_env: "&bash_cmd&.env"
+    log_name: "&bash_cmd&.log"
+    create_dir: False
 #####################################-YAW-######################################
