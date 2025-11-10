@@ -2,7 +2,7 @@ from yaw.core.RunnerManager import RunnerManager
 from yaw.yaw_ascii import *
 
 from utils.utils_print import LoggerLevels, MyLogger
-from utils.utils_bash import execute_command_get_ouput
+from utils.utils_develop import GitProject
 
 import argparse
 from pathlib import Path
@@ -46,17 +46,12 @@ def parse_user_args():
 
     # Parse the arguments:
     parsed = parser.parse_args()
-    if parsed.dev_version:
+    if parsed.version or parsed.dev_version:
         yaw_home = Path(__file__).parent
-        print("Yaw installed at", yaw_home)
-        br = execute_command_get_ouput("git rev-parse --abbrev-ref HEAD", yaw_home)
-        cm = execute_command_get_ouput("git rev-parse --short HEAD", yaw_home)
-        tg = execute_command_get_ouput("git describe --tags --abbrev=0", yaw_home)
-        print(f"VERSION: {VERSION} ({tg}) => BRANCH: {br} @ COMMIT: {cm}")
-        print(logo_ascii)
-        exit(0)
-    if parsed.version:
         print(f"VERSION: {VERSION}")
+        print("Yaw installed at", yaw_home)
+        if parsed.dev_version:
+            print(GitProject(yaw_home))
         print(logo_ascii)
         exit(0)
     if parsed.log:
