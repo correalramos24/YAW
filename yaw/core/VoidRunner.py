@@ -19,8 +19,3 @@ class VoidRunner(AbstractRunner):
     def manage_parameters(self):
         raise Exception(f"VOID RUNNER. Check input recipie")
 
-    #def get_result(self):
-    #    return "VOID Runner #> Check input recipie(s)"
-
-    def is_a_multirecipie(self):
-        return False

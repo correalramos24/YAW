@@ -1,33 +1,27 @@
+
 from .AbstractRunner import AbstractRunner
-from pathlib import Path
-from utils import *
+
+import utils.utils_files as ufiles
+import utils.utils_bash as ubash
+
 import tarfile
+from pathlib import Path
+from abc import ABC
+from dataclasses import dataclass, field, fields
+from typing import Optional
 
-
-class AbstractFilesRunner(AbstractRunner):
+@dataclass(kw_only=True)
+class AbstractFilesRunner(AbstractRunner , ABC):
     """
     Abstract class for runners that manage files.
     It provides methods to manage input files, output files, and other file-related tasks.
     """
-
-    @classmethod
-    def get_tmp_params(cls):
-        aux = super().get_tmp_params()
-        aux.update({
-            "ref_rundir": (None, "Reference rundir to use, (copy all to rundir)", "O"),
-            "rundir_files": (None, "List of files to copy to the rundir", "O"),
-            "tar_gz_files": (None, "List of tar.gz. files to uncomp. to then rundir", "O"),
-            "git_repo": (None, "Git repository to fill the rundir", "O"),
-            "git_branch": (None, "Git branch for git_repo", "O"),
-            "symlink_big_f" : (True, "Symlink big files from ref_rundir instead of copying them", "O"),
-        })
-        return aux
-
-    @classmethod
-    def get_multi_value_params(cls) -> set[str]:
-        return super().get_multi_value_params().union({
-            "ref_rundir", "rundir_files", "tar_gz_files"}
-        )
+    ref_rundir: Optional[set[str]] = field(default=None, metadata={'kind': "O","desc": "Reference rundir to use, (copy all to rundir)", "multi": True})
+    rundir_files: Optional[set[str]] = field(default=None, metadata={"kind": "O","desc": "List of files to copy to the rundir", "multi": True})
+    tar_gz_files: Optional[set[str]] = field(default=None, metadata={"kind": "O","desc": "List of tar.gz. files to uncomp. to then rundir", "multi": True})
+    git_repo: Optional[str] = field(default=None, metadata={"kind": "O","desc": "Git repository to fill the rundir"})
+    git_branch: Optional[str] = field(default=None, metadata={"kind": "O","desc": "Git branch for git_repo"})
+    sym_link_big: bool = field(default=True, metadata={"kind": "O","desc": "Symlink big files from ref_rundir instead of copying them"})
 
     def check_parameters(self):
         super().check_parameters()
@@ -43,27 +37,28 @@ class AbstractFilesRunner(AbstractRunner):
             
         if self.ref_rundir:
             for fldr in self.ref_rundir: 
-                utils_files.check_path_exists_exception(fldr)
+                ufiles.check_path_exists_exception(fldr)
 
         if self.tar_gz_files:
             for f in [Path(f) for f in self.tar_gz_files]:
-                check_file_exists_exception(f)
+                ufiles.check_file_exists_exception(f)
 
     def manage_parameters(self):
         super().manage_parameters()
 
-        if self.git_repo: execute_command(self.git_clone_str(), self.rundir)
-        
+        if self.git_repo:
+            ubash.execute_command(self.git_clone_str(), self.rundir)
+
         if self.ref_rundir:
             for fldr in self.ref_rundir:
                 self._log(fldr, "...")
-                copy_folder_content(fldr, self.rundir, True, True,
-                                    self.symlink_big_f)
-        
+                ufiles.copy_folder_content(fldr, self.rundir, True,
+                                           True, self.sym_link_big)
+
         if self.rundir_files:
             for f in [Path(f) for f in self.rundir_files]:
-                copy_file(f, Path(self.rundir, f.name))
-        
+                ufiles.copy_file(f, Path(self.rundir, f.name))
+
         if self.tar_gz_files:
             for f in [Path(f) for f in self.tar_gz_files]:
                 with tarfile.open(f, "r:gz") as tar:

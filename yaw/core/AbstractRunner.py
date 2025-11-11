@@ -6,8 +6,7 @@ from utils.utils_bash import expand_bash_env_vars
 from pathlib import Path
 from abc import abstractmethod
 from dataclasses import dataclass, field, fields
-from typing import Optional, Any, Type
-from itertools import product
+from typing import Optional, Any
 import os
 
 @dataclass(kw_only=True)
@@ -152,7 +151,6 @@ class AbstractRunner(metaAbstractClass):
 
     def __expand_bash_vars(self):
         """Convert the bash variables ($VAR or ${VAR}) to the value."""
-
         bashed_pars = {p : v for p, v in self.get_params_values().items()
                         if v and is_str(v) and "$" in v}
         if len(bashed_pars) != 0: self._log("Expanding bash variables...")
