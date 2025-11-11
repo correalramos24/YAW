@@ -34,7 +34,6 @@ class AbstractRunner2(metaAbstractClass):
     def __post_init__(self):
         self.invoked_path = not self.rundir
         self.set_result(0, "READY")
-        pass
 
     # ======================RUNNER INTERFACE====================================
     def check_parameters(self):
