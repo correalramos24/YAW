@@ -1,22 +1,25 @@
+from utils.logger import MyLogger
 from .arguments import parse_user_args
+
 from yaw.core.RunnerManager import RunnerManager
-from utils import *
-from utils.utils_print import *
 from pathlib import Path
+
 
 def main():
     # 0. PARSE APP ARGUMENTS:
     app_args = parse_user_args()
-    input_files : list[Path] = app_args.input
-    gen_template: str        = app_args.generate
-    step_names  : list[str]  = app_args.steps
-    parse       : bool       = app_args.parse
+    input_files: list[Path] = app_args.input
+    gen_template: str = app_args.generate
+    step_names: list[str] = app_args.steps
+    parse: bool = app_args.parse
 
-    if gen_template: # A. GENERATE TEMPLATE USE CASE:
+    if gen_template:
+        # A. GENERATE TEMPLATE USE CASE:
         RunnerManager([], []).generate_template(gen_template)
         MyLogger.success("Generated", gen_template, "template")
         exit(0)
-    else: # B. RUN RECIPIE USE CASE:
+    else:
+        # B. RUN RECIPIE USE CASE:
         if not input_files:
             MyLogger.critical("You must provide any YAW recipe!", "1")
             exit(1)
@@ -36,6 +39,7 @@ def main():
 
         print("=" * 40 + "RESULTS" + "=" * 40)
         manager.print_results()
+
 
 if __name__ == "__main__":
     main()

@@ -1,14 +1,15 @@
 from yaw.core.RunnerManager import RunnerManager
-from yaw.yaw_ascii import *
+from yaw.yaw_ascii import logo_ascii
 
-from utils.utils_print import LoggerLevels, MyLogger
-from utils.utils_develop import GitProject
+from utils.logger import LoggerLevels, MyLogger
+from utils.git_project import GitProject
 
 import argparse
 from pathlib import Path
 
 # Version:
-VERSION="v1.0"
+VERSION = "v1.0"
+
 
 def parse_log_level(level_str):
     try:
@@ -16,14 +17,15 @@ def parse_log_level(level_str):
     except KeyError:
         raise argparse.ArgumentTypeError(f"Invalid log level: {level_str}")
 
+
 def parse_user_args():
     # Declare the flags:
     parser = argparse.ArgumentParser(description="YAW - Yet another workflow",
-                                    usage="yaw.py input [input ...] [options]",
-                                    epilog=f"VERSION: {VERSION}")
+                                     usage="yaw.py input [input ...] [options]",
+                                     epilog=f"VERSION: {VERSION}")
     parser.add_argument('input',
                         help="Select YAW recipe input file(S)",
-                        nargs ="*", type=Path)
+                        nargs="*", type=Path)
 
     parser.add_argument('--generate', help="Generate template to be \
                         filled by the user", choices=RunnerManager.get_runners())
@@ -37,7 +39,8 @@ def parse_user_args():
                         help="Print combinations of multi-parameters")
 
     parser.add_argument('--version', help="Print YAW version", action='store_true')
-    parser.add_argument('--dev-version', help="Print YAW version, detailed", action='store_true')
+    parser.add_argument('--dev-version', help="Print YAW version, detailed", 
+                        action='store_true')
 
     parser.add_argument('--silent', help="Disable info printing", action='store_true')
     parser.add_argument('--info', help="Enable INFO printing", action="store_true")
