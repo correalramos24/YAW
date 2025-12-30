@@ -1,17 +1,18 @@
 
-from utils.utils_controllers import metaAbstractClass
+from utils.controllers import metaAbstractClass
 import utils.utils_files as ufiles
-from utils.utils_py import *
-from utils.utils_bash import expand_bash_env_vars
+from utils.utils_py import is_str, search_char_in_str
+
 from pathlib import Path
 from abc import abstractmethod
 from dataclasses import dataclass, field, fields
 from typing import Optional, Any
 import os
 
+
 @dataclass(kw_only=True)
 class AbstractRunner(metaAbstractClass):
-    """Contains the minimum parameters to run "something" """
+    """Contains the minimum parameters to run something """
     type: str = field(metadata={'kind': "R", "desc": "Type of runner"})
     mode: str = field(default="zip", metadata={"kind": "O", "desc": "multi-parameter set: cartesian or zip (def)"})
     track_env: str = field(default="env.log", metadata={"kind": "O", "desc": "File name to store the env of a run"})
@@ -20,9 +21,9 @@ class AbstractRunner(metaAbstractClass):
     dry: bool = field(default=False, metadata={"kind": "O"})
     mirror: int = field(default=0, metadata={"kind": "O"})
     recipie_name: str = field(default="recipie", metadata={"kind": "S"})
-    log_name: Optional[str] = field(default=None, metadata={"kind": "O","desc": "Log file to dump STDOUT/STDERR"})
-    env_file: Optional[str] = field(default=None, metadata={"kind": "O","desc": "Environment file to use"})
-    rundir: Optional[Path | str] = field(default=None, metadata={"kind": "O","desc": "Rundir path to execute the runner"})
+    log_name: Optional[str] = field(default=None, metadata={"kind": "O", "desc": "Log file to dump STDOUT/STDERR"})
+    env_file: Optional[str] = field(default=None, metadata={"kind": "O", "desc": "Environment file to use"})
+    rundir: Optional[Path | str] = field(default=None, metadata={"kind": "O", "desc": "Rundir path to execute the runner"})
 
     invoked_path: bool = field(default=None, metadata={"kind": "S"})
     result: tuple[int, str] = field(default=None, metadata={"kind": "S"})
@@ -42,8 +43,10 @@ class AbstractRunner(metaAbstractClass):
         if self.invoked_path:
             self.rundir = Path(os.getcwd())
             self._warn(f"Using current path as rundir! ({self.rundir})")
-        if not self.create_dir: ufiles.check_path_exists_exception(self.rundir)
-        if not self.env_file: self._warn("Environment NOT set!")
+        if not self.create_dir: 
+            ufiles.check_path_exists_exception(self.rundir)
+        if not self.env_file: 
+            self._warn("Environment NOT set!")
         if self.log_name:
             self.log_file = Path(self.rundir, self.log_name)
 
@@ -65,12 +68,13 @@ class AbstractRunner(metaAbstractClass):
         self.set_result(0, "DRY RUN")
         return self.dry
 
-    #======================RESULT METHODS=======================================
+    # ======================RESULT METHODS======================================
     def set_result(self, result: int, res_str: str): self.result = result, res_str
 
     def get_result(self) -> str:
         return f"{self.recipie_name} #> {self.result[0]} ({self.result[1]})"
-    #===============================PARAMETER METHODS===========================
+
+    # ==============================PARAMETER METHODS===========================
     @classmethod
     def get_parameters(cls) -> list[str]:
         return [f.name for f in fields(cls)]
@@ -117,7 +121,7 @@ class AbstractRunner(metaAbstractClass):
         return [(f.name, f.metadata.get("desc")) for f in fields(cls)
                 if f.metadata.get("kind") != "S"]
 
-    #=======================PRIVATE/INTERNAL METHODS=========================
+    # ======================PRIVATE/INTERNAL METHODS============================
     def _check_dry(self):
         """Generic dry method execution + set results"""
         self._ok("DRY MODE ENABLE!")
@@ -135,7 +139,7 @@ class AbstractRunner(metaAbstractClass):
             while len(ii) >= 1:
                 ref_param = expand_value[ii[0] + 1:ii[1]]
 
-                if not ref_param in self.get_parameters():
+                if ref_param not in self.get_parameters():
                     raise Exception(f"YAW var {ref_param} not found!")
 
                 ref_value = getattr(self, ref_param)
@@ -144,7 +148,7 @@ class AbstractRunner(metaAbstractClass):
                 ii = search_char_in_str(expand_value, "&")
 
             if len(ii) == 1:
-                raise Exception(f"YAW variable error, you must close it with &")
+                raise Exception("YAW variable error, you must close it with &")
 
             self._log(f"Expanding {param} from {val_w_yaw_var} to {expand_value}")
             setattr(self, param, expand_value)
