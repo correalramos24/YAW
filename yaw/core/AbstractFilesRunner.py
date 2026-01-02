@@ -9,6 +9,13 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 
+REF_RD = {"desc": "Reference rundir to be used", 'kind': "O", "multi": True}
+RD_FLS = {"desc": "List of files to copy to the rundir", "kind": "O", "multi": True} 
+TRGZ_F = {"desc": "List of tar.gz. files to uncomp.", "kind": "O", "multi": True} 
+GIT_RP = {"desc": "Git repository to clone and add to the rundir", "kind": "O"} 
+GIT_BR = {"desc": "Git branch for git_repo", "kind": "O"} 
+BIGLNK = {"desc": "Symlink big files from instead of copying them", "kind": "O"}
+
 
 @dataclass(kw_only=True)
 class AbstractFilesRunner(AbstractRunner):
@@ -16,12 +23,12 @@ class AbstractFilesRunner(AbstractRunner):
     Abstract class for runners that manage files.
     It provides methods to manage input files, output files and other use cases.
     """
-    ref_rundir: Optional[set[str]] = field(default=None, metadata={'kind': "O", "desc": "Reference rundir to use, (copy all to rundir)", "multi": True})
-    rundir_files: Optional[set[str]] = field(default=None, metadata={"kind": "O", "desc": "List of files to copy to the rundir", "multi": True})
-    tar_gz_files: Optional[set[str]] = field(default=None, metadata={"kind": "O", "desc": "List of tar.gz. files to uncomp. to then rundir", "multi": True})
-    git_repo: Optional[str] = field(default=None, metadata={"kind": "O", "desc": "Git repository to fill the rundir"})
-    git_branch: Optional[str] = field(default=None, metadata={"kind": "O", "desc": "Git branch for git_repo"})
-    sym_link_big: bool = field(default=True, metadata={"kind": "O", "desc": "Symlink big files from ref_rundir instead of copying them"})
+    ref_rundir: Optional[set[str]] = field(default=None, metadata=REF_RD)
+    rundir_files: Optional[set[str]] = field(default=None, metadata=RD_FLS)
+    tar_gz_files: Optional[set[str]] = field(default=None, metadata=TRGZ_F)
+    git_repo: Optional[str] = field(default=None, metadata=GIT_RP)
+    git_branch: Optional[str] = field(default=None, metadata=GIT_BR)
+    sym_link_big: bool = field(default=True, metadata=BIGLNK)
 
     def check_parameters(self):
         super().check_parameters()
