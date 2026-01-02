@@ -1,4 +1,4 @@
-from yaw.core.RunnerManager import RunnerManager
+from .core.RunnerFactory import RunnerFactory
 from yaw.yaw_ascii import logo_ascii
 
 from utils.logger import LoggerLevels, MyLogger
@@ -28,7 +28,7 @@ def parse_user_args():
                         nargs="*", type=Path)
 
     parser.add_argument('--generate', help="Generate template to be \
-                        filled by the user", choices=RunnerManager.get_runners())
+                        filled by the user", choices=RunnerFactory.get_runners())
     parser.add_argument("--parse", help="Only parse file(s)",
                         action='store_true')
 

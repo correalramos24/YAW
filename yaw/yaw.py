@@ -1,7 +1,9 @@
 from utils.logger import MyLogger
 from .arguments import parse_user_args
 
-from yaw.core.RunnerManager import RunnerManager
+from .core.RunnerManager import RunnerManager
+from .core.RunnerFactory import RunnerFactory
+
 from pathlib import Path
 
 
@@ -15,7 +17,7 @@ def main():
 
     if gen_template:
         # A. GENERATE TEMPLATE USE CASE:
-        RunnerManager([], []).generate_template(gen_template)
+        RunnerFactory.generate(gen_template)
         MyLogger.success("Generated", gen_template, "template")
         exit(0)
     else:

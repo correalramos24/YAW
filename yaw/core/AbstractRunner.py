@@ -56,11 +56,12 @@ class AbstractRunner(MetaAbstractClass):
         """Previous stage before run the runner. It manages the parameters
         and the environment but didn't run anything.
         """
-        if self.create_dir: ufiles.create_dir(self.rundir, self.overwrite)
+        if self.create_dir:
+            ufiles.create_dir(self.rundir, self.overwrite)
         self._ok("PARAMETERS MANAGED")
 
     @abstractmethod
-    def run(self): pass #ABC Method
+    def run(self): pass
 
     def check_dry(self) -> bool:
         """Generic dry method execution + set results"""
@@ -101,7 +102,7 @@ class AbstractRunner(MetaAbstractClass):
         yaml_delim = "#" * 37 + "-YAW-" + "#" * 38
         with open(cls.__name__ + ".yaml", mode="w") as tmpl:
             tmpl.write(f"{yaml_delim}\n## TEMPLATE FOR {cls.__name__}\n")
-            tmpl.write(f"your_recipe_name:\n")
+            tmpl.write("recipe_name:\n")
             tmpl.write(cls.__generate_yaml_template_content())
             tmpl.write(yaml_delim + "\n")
 
@@ -131,7 +132,8 @@ class AbstractRunner(MetaAbstractClass):
     def __expand_yaw_vars(self):
         yaw_vars_par = {p: v for p, v in self.get_params_values().items()
                         if is_str(v) and "&" in v}
-        if len(yaw_vars_par) != 0: self._log("Expanding YAW variables...")
+        if len(yaw_vars_par) != 0: 
+            self._log("Expanding YAW variables...")
 
         for param, val_w_yaw_var in yaw_vars_par.items():
             expand_value = val_w_yaw_var

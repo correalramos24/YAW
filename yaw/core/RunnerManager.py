@@ -1,19 +1,17 @@
 
-from utils import *
-from yaw.core import AbstractRunner, BashRunner
-from yaw.core import VoidRunner, BashSlurmRunner
-from yaw.nemo import NEMO5Runner, TestNEMO5Runner, NEMO5XIOSRunner
+from utils.meta import MetaAbstractClass
+from utils.logger import MyLogger
+from utils.utils_py import stringfy, remove_keys, inter_dict_keys
+from utils.yaml_file import get_yaml_content
+
+from .AbstractRunner import AbstractRunner
+from .VoidRunner import VoidRunner
+from .RunnerFactory import RunnerFactory
 
 from pathlib import Path
-from typing import Iterable
-# import traceback
 
-class RunnerManager(metaAbstractClass):
-    runners: dict = {
-        "BashRunner": BashRunner,"BashSlurmRunner": BashSlurmRunner,
-        "NEMO5Runner": NEMO5Runner,"NEMO5XIOSRunner": NEMO5XIOSRunner,
-        "TestNEMO5Runner": TestNEMO5Runner
-    }
+
+class RunnerManager(MetaAbstractClass):
 
     def __init__(self, input_files: list[Path], run_step_names: list[str]):
         self.input_files: list[Path] = input_files
@@ -30,6 +28,7 @@ class RunnerManager(metaAbstractClass):
     def __parse_file(self, input_file) -> None:
         """Parse a recepie file from input_file."""
         print(f"Parsing {input_file}...")
+        _ = RunnerFactory.parse(input_file)
         with open(input_file, "r") as yaml_file:
             # 1. Get generic parameters for all the recipies on the file:
             all_recipies_content = get_yaml_content(yaml_file)
@@ -50,7 +49,7 @@ class RunnerManager(metaAbstractClass):
                     else:
                         self._err(f"Excluding step {r_name} from {r_name}")
                     self.steps.append(VoidRunner(r_name, str(e)))
-        if(len(self.steps) == 0):
+        if len(self.steps) == 0:
             raise Exception("No steps found to derive recipies")
 
     # ============================DERIVE========================================
@@ -106,25 +105,3 @@ class RunnerManager(metaAbstractClass):
                 print(f"Step {i}: Undefined")
             else:
                 print(f"Step {i}: {step.get_result()}")
-
-    # =========================GENERATION=======================================
-    @classmethod
-    def generate_template(cls, runner_name):
-        if not runner_name in cls.runners:
-            cls._err(f"Not found {runner_name}, unable to generate template")
-            exit(1)
-        else:
-            cls.runners[runner_name].generate_yaml_template()
-
-    @classmethod
-    def get_runners(cls) -> list[str]:
-        return [str(k) for k in cls.runners.keys()]
-
-    # ========================PRIVATE METHODS===================================
-    def __params(self) -> Iterable[str]:
-        """
-        Gather all the parameters used by the runners, as they
-        are reserved names (cannot be used for recipie names)
-        """
-        aux = list(self.runners.values()) + [AbstractRunner]
-        return {param for runner in aux for param in runner.get_parameters()}

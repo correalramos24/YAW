@@ -1,7 +1,7 @@
 
 from .AbstractFilesRunner import AbstractFilesRunner
 from pathlib import Path
-from utils import *
+
 
 class BashRunner(AbstractFilesRunner):
     """Run scripts or commands in bash."""

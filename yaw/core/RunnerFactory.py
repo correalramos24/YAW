@@ -1,13 +1,33 @@
 
-from yaw.core.AbstractRunner import AbstractRunner
 from utils.utils_py import is_list
 from utils.logger import MyLogger
 
+from .AbstractRunner import AbstractRunner
+
+from pathlib import Path
 from itertools import product
-from typing import List
+from typing import List, Type, Iterable
+
+
+_RUNNER_REGISTRY: dict[str, Type[AbstractRunner]] = {}
+
+
+def register_runner(cls: Type[AbstractRunner]):
+    if not issubclass(cls, AbstractRunner):
+        raise TypeError(f"{cls.__name__} is not a subclass of AbstractRunner")
+
+    name = str.lower(cls.__name__)
+    if name in _RUNNER_REGISTRY:
+        raise ValueError(f"Runner '{name}' is already used!")
+
+    _RUNNER_REGISTRY[name] = cls
+    return cls
 
 
 class RunnerFactory:
+    def parse(recipie: Path) -> AbstractRunner:
+        return None
+
     @staticmethod
     def derive(runner: AbstractRunner) -> List[AbstractRunner]:
         deriving_params = [(p, v) for p, v in runner.get_params_values().items()
@@ -34,3 +54,19 @@ class RunnerFactory:
         else:
             MyLogger.log(f"Found {len(deriving_values)} recipies.")
         return [runner.__class__(**variation) for variation in variations] * m
+
+    @staticmethod
+    def generate(runner_name: str) -> None:
+        if runner_name not in _RUNNER_REGISTRY:
+            MyLogger.critical(f"Cannot generate template for {runner_name}")
+            exit(1)
+        else:
+            _RUNNER_REGISTRY[runner_name].generate_yaml_template()
+
+    @staticmethod
+    def get_runners() -> Iterable[str]:
+        return [str(k) for k in _RUNNER_REGISTRY.keys()]
+
+    def all_params() -> Iterable[str]:
+        aux = list(_RUNNER_REGISTRY.values())
+        return {param for runner in aux for param in runner.get_parameters()}
