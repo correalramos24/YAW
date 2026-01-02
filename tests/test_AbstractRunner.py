@@ -63,3 +63,9 @@ class TestAbstractRunner(TestCase):
 
     def test_manage_parameters(self):
         pass
+
+    def overwrite_rundir(self):
+        pass
+
+    def create_rundir(self):
+        pass
