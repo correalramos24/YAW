@@ -14,16 +14,21 @@ import os
 class AbstractRunner(MetaAbstractClass):
     """Contains the minimum parameters to run something """
     type: str = field(metadata={'kind': "R", "desc": "Type of runner"})
-    mode: str = field(default="zip", metadata={"kind": "O", "desc": "multi-parameter set: cartesian or zip (def)"})
-    track_env: str = field(default="env.log", metadata={"kind": "O", "desc": "File name to store the env of a run"})
+    mode: str = field(default="zip", metadata={"kind": "O", 
+                      "desc": "multi-parameter set: cartesian or zip (def)"})
+    track_env: str = field(default="env.log", metadata={"kind": "O", 
+                           "desc": "File name to store the env of a run"})
     create_dir: bool = field(default=True, metadata={"kind": "O"})
     overwrite: bool = field(default=False, metadata={"kind": "O"})
     dry: bool = field(default=False, metadata={"kind": "O"})
     mirror: int = field(default=0, metadata={"kind": "O"})
     recipie_name: str = field(default="recipie", metadata={"kind": "S"})
-    log_name: Optional[str] = field(default=None, metadata={"kind": "O", "desc": "Log file to dump STDOUT/STDERR"})
-    env_file: Optional[str] = field(default=None, metadata={"kind": "O", "desc": "Environment file to use"})
-    rundir: Optional[Path | str] = field(default=None, metadata={"kind": "O", "desc": "Rundir path to execute the runner"})
+    log_name: Optional[str] = field(default=None, metadata={"kind": "O", 
+                                    "desc": "Log file to dump STDOUT/STDERR"})
+    env_file: Optional[str] = field(default=None, metadata={"kind": "O", 
+                                    "desc": "Environment file to use"})
+    rundir: Optional[Path | str] = field(default=None, metadata={"kind": "O", 
+                                         "desc": "Rundir path to execute the runner"})
 
     invoked_path: bool = field(default=None, metadata={"kind": "S"})
     result: tuple[int, str] = field(default=None, metadata={"kind": "S"})
@@ -157,9 +162,17 @@ class AbstractRunner(MetaAbstractClass):
 
     def __expand_bash_vars(self):
         """Convert the bash variables ($VAR or ${VAR}) to the value."""
+        def expand_bash_env_vars(value: str | list[str]) -> str | list[str] | None:
+            """Convert the bash variables ($VAR or ${VAR}) to the value."""
+            if isinstance(value, str):
+                return os.path.expandvars(value) if "$" in value else None
+            if isinstance(value, list) and any("$" in v for v in value):
+                return [os.path.expandvars(v) for v in value]
+            return None
         bashed_pars = {p : v for p, v in self.get_params_values().items()
-                        if v and is_str(v) and "$" in v}
-        if len(bashed_pars) != 0: self._log("Expanding bash variables...")
+                       if v and is_str(v) and "$" in v}
+        if len(bashed_pars) != 0: 
+            self._log("Expanding bash variables...")
         for param, value in bashed_pars.items():
             expanded_value = expand_bash_env_vars(value)
             if expanded_value:
