@@ -1,20 +1,21 @@
 import unittest
 from yaw.core.BashRunner import BashRunner
-from yaw.utils import enable_info
+
 from pathlib import Path
-import shutil
 import os
+
+
 class TestBashRunner(unittest.TestCase):
 
     def setUp(self):
         # Initialize any necessary objects or state before each test
         self.test_dir = "$HOME/yaw_test_dir"
-        
+
     def test_initialization(self):
         # Test the initialization of the BashRunner
         params = {"recipie_name": "test_init",
-                  "type":"BashRunner", "bash_cmd":"ls", 
-                  "rundir":self.test_dir,"verbose":True}
+                  "type": "BashRunner", "bash_cmd": "ls", 
+                  "rundir": self.test_dir, "verbose": True}
         runner = BashRunner(**params)
         self.assertIsInstance(runner, BashRunner)
         self.assertEqual(runner.r_result, 0)
@@ -25,8 +26,8 @@ class TestBashRunner(unittest.TestCase):
     def test_simple_run(self):
         # Test a simple run of the BashRunner
         params = {"recipie_name": "test_simple_run",
-                  "type":"BashRunner", "bash_cmd":"ls", 
-                  "verbose":True}
+                  "type": "BashRunner", "bash_cmd": "ls", 
+                  "verbose": True}
         runner = BashRunner(**params)
         runner.manage_parameters()
         runner.run()
@@ -36,21 +37,21 @@ class TestBashRunner(unittest.TestCase):
 
     def test_derive_recipie(self):
         params = {"recipie_name": "test_derive",
-                  "type":"BashRunner", 
-                  "bash_cmd":"ls", "create_dir":False,
+                  "type": "BashRunner", 
+                  "bash_cmd": "ls", "create_dir": False,
                   "args": ["-l", "-a", "-lah"],
-                  "rundir":self.test_dir,
-                  "verbose":True}
+                  "rundir": self.test_dir,
+                  "verbose": True}
         runner = BashRunner(**params)
         derived_list = runner.derive_recipies()
-        
-        for l in derived_list:
-            l.manage_parameters()
-            l.run()
-        
+
+        for dl in derived_list:
+            dl.manage_parameters()
+            dl.run()
+
     def test_required_param_missing(self):
         try:
-            runner = BashRunner(
+            _ = BashRunner(
                 recipie_name="test_missing_param",
                 type="BashRunner",
                 rundir=self.test_dir,
@@ -58,11 +59,11 @@ class TestBashRunner(unittest.TestCase):
             self.assertEqual(1, 2)
         except Exception as e:
             self.assertEqual(str(e), "Not found req argument(s) bash_cmd")
-            
+
     def test_bad_param_set(self):
         try:
-            runner = BashRunner(type = "BashRunner", bash_cmd = "ls",
-                                rundir = self.test_dir, invent = 1)
+            _ = BashRunner(type="BashRunner", bash_cmd="ls",
+                                rundir=self.test_dir, invent=1)
             raise Exception("Exception no thrown")
         except Exception as e:
             self.assertEqual(str(e), "Invalid parameter(s) invent")
@@ -73,7 +74,7 @@ class TestBashRunner(unittest.TestCase):
         params = {
             "type": "BashRunner", "recipie_name": "yaw-test-simple-ls",
             "bash_cmd": "ls", "overwrite" : True,
-            "rundir" : test_path, "verbose":True
+            "rundir" : test_path, "verbose": True
         }
         runner = BashRunner(**params)
         runner.manage_parameters()
@@ -81,9 +82,9 @@ class TestBashRunner(unittest.TestCase):
         test_path_obj = Path(os.path.expandvars(test_path))
         self.assertTrue(Path(test_path_obj, "yaw_wrapper.sh").exists())
         self.assertTrue(Path(test_path_obj, "env.log").exists())
-        
+
     def test_no_overwrite_rundir(self):
-        #overwrite is false by default
+        # overwrite is false by default
         params = {
             "type": "BashRunner", "recipie_name": "test_no_overwrite_rundir",
             "bash_cmd": "ls", "verbose": True, "rundir" : self.test_dir
@@ -94,7 +95,7 @@ class TestBashRunner(unittest.TestCase):
         except Exception as e:
             print("Exception caught:", str(e))
             self.assertEqual(str(e), "Creating an already existing dir!")
-        
+
     def test_no_rundir(self):
         # Test the case where no rundir is provided
         params = {
@@ -104,7 +105,7 @@ class TestBashRunner(unittest.TestCase):
         runner = BashRunner(**params)
         runner.manage_parameters()
         runner.run()
-    
+
     def test_no_rundir_and_create_dir(self):
         # Test the case where no rundir is provided
         params = {
@@ -118,14 +119,15 @@ class TestBashRunner(unittest.TestCase):
         except Exception as e:
             print("Caught as expected:", str(e))
             self.assertEqual(str(e), "Create rundir is set but no rundir defined!")
-    
+
     def fill_rundir_files(self):
         pass
 
     def tearDown(self):
         # Auto delete self.test_dir if everything was OK. 
         pass
-    
+
+
 if __name__ == '__main__':
     print("Running tests for BashRunner...")
     unittest.main()

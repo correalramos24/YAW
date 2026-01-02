@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from utils import LoggerLevels
 from yaw.core.AbstractRunner import AbstractRunner
-from utils.utils_print import MyLogger
+from utils.logger import MyLogger, LoggerLevels
 import os
+
 
 class ConcreteRunner(AbstractRunner):
     def __init__(self, **kwargs):
@@ -12,21 +12,22 @@ class ConcreteRunner(AbstractRunner):
     def run(self):
         print("Testing...")
 
+
 class TestAbstractRunner(TestCase):
     MyLogger.set_verbose_level(LoggerLevels.DEBUG)
 
     def test_init(self):
-        r = ConcreteRunner(** {"type":"type"})
+        r = ConcreteRunner(** {"type": "type"})
         print(r)
 
     def test_bad_parmeters(self):
         with self.assertRaises(TypeError) as exception:
-            r = ConcreteRunner(**{"type":"test-type","alfa": "beta"})
+            _ = ConcreteRunner(**{"type": "test-type", "alfa": "beta"})
         print("Succesfully failed:", exception.exception)
 
     def test_missing_req_args(self):
         with self.assertRaises(TypeError) as exception:
-            r = ConcreteRunner(**{"recipie_name" : "test-recipie-name"})
+            _ = ConcreteRunner(**{"recipie_name" : "test-recipie-name"})
         print("Succesfully failed:", exception.exception)
 
     def test_expand_bash_vars(self):

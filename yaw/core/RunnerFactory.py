@@ -1,10 +1,11 @@
 
 from yaw.core.AbstractRunner import AbstractRunner
 from utils.utils_py import is_list
-from utils.utils_print import MyLogger
+from utils.logger import MyLogger
 
 from itertools import product
 from typing import List
+
 
 class RunnerFactory:
     @staticmethod
@@ -23,14 +24,13 @@ class RunnerFactory:
         )
 
         variations = [
-            {   **runner.get_params_values(),
-                **dict(zip(deriving_p_names, variation))
-            }   for variation in deriving_values
+            {**runner.get_params_values(), **dict(zip(deriving_p_names, variation))} 
+            for variation in deriving_values
         ]
-        if runner.mirror != 0:
-            MyLogger.log(f"Adding {runner.mirror} mirror recipies!")
-            MyLogger.log(f"Found {len(deriving_values)*runner.mirror} recipies.")
+        m = runner.mirror
+        if m != 0:
+            MyLogger.log(f"Adding {m} mirror recipies!")
+            MyLogger.log(f"Found {len(deriving_values)*m} recipies.")
         else:
             MyLogger.log(f"Found {len(deriving_values)} recipies.")
-        return [runner.__class__(**variation) for variation in variations] * runner.mirror
-
+        return [runner.__class__(**variation) for variation in variations] * m

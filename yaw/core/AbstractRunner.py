@@ -1,5 +1,5 @@
 
-from utils.controllers import metaAbstractClass
+from utils.controllers import MetaAbstractClass
 import utils.utils_files as ufiles
 from utils.utils_py import is_str, search_char_in_str
 
@@ -11,7 +11,7 @@ import os
 
 
 @dataclass(kw_only=True)
-class AbstractRunner(metaAbstractClass):
+class AbstractRunner(MetaAbstractClass):
     """Contains the minimum parameters to run something """
     type: str = field(metadata={'kind': "R", "desc": "Type of runner"})
     mode: str = field(default="zip", metadata={"kind": "O", "desc": "multi-parameter set: cartesian or zip (def)"})
