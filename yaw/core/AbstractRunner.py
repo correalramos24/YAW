@@ -150,7 +150,8 @@ class AbstractRunner(MetaAbstractClass):
                     raise Exception(f"YAW var {ref_param} not found!")
 
                 ref_value = getattr(self, ref_param)
-                expand_value = expand_value[:ii[0]] + str(ref_value) + expand_value[ii[1] + 1:]
+                expand_value = expand_value[:ii[0]] + str(ref_value) \
+                + expand_value[ii[1] + 1:]
 
                 ii = search_char_in_str(expand_value, "&")
 
