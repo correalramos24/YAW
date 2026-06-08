@@ -1,0 +1,15 @@
+[project]
+name = "yaw"
+version = "0.9.99"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "py-utils",
+]
+
+[tool.uv.sources]
+py-utils = { git = "https://github.com/correalramos24/py_utils.git" }
+
+[tool.hatch.build.targets.wheel]
+packages = ["yaw"]
